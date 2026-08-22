@@ -546,23 +546,36 @@ router.post('/apikey/:platform', auth, async (req, res, next) => {
     // —— 2) 探活：先调用适配器 probeCredentials / syncOrders（dry mode）验证凭证是否真实可用 ——
     const adapters = require('../platforms');
     const adapter = adapters.lookup(platform);
+    // —— 2.1) 占位适配器平台：一律拒绝密钥录入，明确告诉用户"真 API 还没接好，不要瞎输" ——
+    //     （允许手动录入做订单归属登记 /shops POST，但不允许保存任何密钥，避免"空架子"错觉）
+    if (adapter && adapter.__stub) {
+      const realOnes = ['Temu','SHEIN','OZON','Wildberries','Coupang','Walmart','Fruugo','Qoo10','Kaufland','OnBuy',
+                        'Amazon','AliExpress','Lazada','eBay','Mercado Libre','Allegro',
+                        'Shopee','TikTok Shop','Douyin','抖音小店','独立站'].filter(p => {
+        const a = adapters.lookup(p); return a && !a.__stub;
+      }).slice(0, 14);
+      return res.status(400).json({
+        error: `「${platform}」真实 API 暂未接入，暂不开放密钥录入（拒绝保存任何凭证，避免无效登记）。`
+               + ` 当前真实支持密钥校验的平台：${realOnes.join('、')}；其他平台可通过「手动录入」做订单归属登记，等运营商接入后再保存密钥。`
+      });
+    }
     let probeMsg = null;
     if (adapter && typeof adapter.probeCredentials === 'function') {
       try {
         await adapter.probeCredentials(values, platform);
+        probeMsg = 'adapter.probeCredentials ok';
       } catch (e) {
         probeMsg = e.message || '凭证无效';
         return res.status(400).json({ error: `凭证校验失败：${probeMsg}（请确认从「${def.where || '平台后台'}」正确复制）` });
       }
     } else if (adapter && typeof adapter.syncOrders === 'function') {
-      // stub 适配器：至少能走通流程不会抛 notImplemented（即使 imported = 0）
+      // 真实适配器：调 syncOrders(dry)，任何抛错都当凭证无效处理，不再允许"蒙混过关"
       try {
         const fakeShop = {
           tenant_id: req.user.tenantId,
           platform,
           id: 0,
           name: shop_name || def.name,
-          // 传进未加密字段：用一个短期假行让 buildContext 读取到 raw keys（探活不落库）
           api_key_enc: 'raw:' + (values.api_key || values[Object.keys(values)[0]] || ''),
           api_secret_enc: 'raw:' + (values.api_secret || values[Object.keys(values)[1]] || ''),
           ext_fields_enc: 'raw:' + Buffer.from(JSON.stringify(values)).toString('base64')
@@ -571,12 +584,10 @@ router.post('/apikey/:platform', auth, async (req, res, next) => {
         if (!resProbe || typeof resProbe !== 'object') {
           return res.status(400).json({ error: '平台响应异常，无法确认凭证有效性' });
         }
+        probeMsg = 'adapter.syncOrders dry ok';
       } catch (e) {
-        if (/not implemented|NOT_IMPLEMENTED|UNSUPPORTED/i.test(e.message)) {
-          // 未实现的：至少字段校验过了，允许保存
-        } else {
-          return res.status(400).json({ error: `凭证校验失败：${e.message || '未知错误'}` });
-        }
+        // 真实适配器任何异常都认为凭证无效（包括 network / auth failed / invalid key / bad signature）
+        return res.status(400).json({ error: `凭证校验失败：${e.message || '未知错误'}（请核对字段后再提交）` });
       }
     }
 

@@ -11,14 +11,15 @@ const Base = require('./base');
 function createStub(platform, authMode = 'apikey') {
   async function syncOrders(shop, app) {
     await Base.buildContext(shop, app);
-    // 未接入的平台：返回 0 导入 + 跳过提示；不抛错（避免 sync_logs 全是 failed 红）
-    return { imported: 0, skipped: 0, mode: authMode, stub: true, platform };
+    return { imported: 0, skipped: 0, mode: authMode, __stub: true, stub: true, platform,
+             note: '占位适配器：该平台 OpenAPI 真实同步尚未接入，同步不报错但不会写入订单/商品。请联系运营商接入后再开启自动同步。' };
   }
   async function syncProducts(shop, app) {
     await Base.buildContext(shop, app);
-    return { created: 0, updated: 0, skipped: 0, mode: authMode, stub: true, platform };
+    return { created: 0, updated: 0, skipped: 0, mode: authMode, __stub: true, stub: true, platform,
+             note: '占位适配器：该平台真实商品同步尚未接入。' };
   }
-  return { syncOrders, syncProducts };
+  return { syncOrders, syncProducts, __stub: true, __authMode: authMode, __platform: platform };
 }
 
 module.exports = {

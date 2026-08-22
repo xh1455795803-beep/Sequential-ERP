@@ -452,16 +452,9 @@ function go(view) {
 }
 window.addEventListener('hashchange', () => {
   const v = String(location.hash.replace('#/', '')).split('?')[0];
-  // —— 落地页统一：无论有无 token，只要用户跳到 shops/platforms（书签 / 手动改 URL），立即洗到空 / dashboard ——
-  if (v === 'shops' || v === 'platforms') {
-    if (token && VIEW_TITLES[v]) {
-      // 有 token → 当成内嵌子页，进入 enterApp 逻辑里跳 dashboard
-      location.hash = '#/dashboard';
-      go('dashboard');
-    } else {
-      // 无 token → 直接改 URL 为 #/（登录页），不保留 shops
-      location.replace(location.pathname + '#/');
-    }
+  // 未登录时：shops/platforms 直接洗回登录页（避免手动改地址栏）
+  if (!token && (v === 'shops' || v === 'platforms')) {
+    location.replace(location.pathname + '#/');
     return;
   }
   if (token && VIEW_TITLES[v]) go(v);
