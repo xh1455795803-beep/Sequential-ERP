@@ -48,18 +48,72 @@ function stdOAuth(name, opt) {
   };
 }
 
-// ===== API 密钥型平台定义 =====
+// ===== API 密钥型平台定义（新增到 34 个：覆盖北美/欧洲/东南亚/南亚/中东/非/拉美/澳新）=====
 const KEY_PLATFORMS = {
+  // 北美
   'Temu': { name: 'Temu 半托管', fields: [{ key: 'api_key', label: 'Access ID' }, { key: 'api_secret', label: 'Secret' }], where: 'Temu 商家后台 → 服务市场 → 开放平台', portal: 'https://seller.temu.com' },
   'SHEIN': { name: 'SHEIN', fields: [{ key: 'api_key', label: 'App Key' }, { key: 'api_secret', label: 'App Secret' }], where: 'SHEIN 开放平台（邀请制）', portal: 'https://open.sheincorp.com' },
+  'Walmart': { name: 'Walmart', fields: [{ key: 'api_key', label: 'Client ID' }, { key: 'api_secret', label: 'Client Secret' }], where: 'Walmart Marketplace 开发者中心', portal: 'https://developer.walmart.com' },
+  'Newegg': { name: 'Newegg', fields: [{ key: 'api_key', label: 'API Key' }, { key: 'api_secret', label: 'Secret Key' }], where: 'Newegg Seller Portal → Developer API', portal: 'https://seller.newegg.com' },
+  'Houzz': { name: 'Houzz', fields: [{ key: 'api_key', label: 'API Token' }], where: 'Houzz Pro 商家后台 → API 设置', portal: 'https://www.houzz.com/pro' },
+  'Overstock': { name: 'Overstock', fields: [{ key: 'api_key', label: 'API Key' }, { key: 'api_secret', label: 'API Secret' }], where: 'Overstock Supplier Central', portal: 'https://supplier.overstock.com' },
+  'Home Depot': { name: 'Home Depot', fields: [{ key: 'api_key', label: 'API Key' }], where: 'Home Depot Supplier API Portal', portal: 'https://supplier.homedepot.com' },
+  'Costco': { name: 'Costco', fields: [{ key: 'api_key', label: 'API Key' }], where: 'Costco 供应商后台（EDI/API）', portal: 'https://www.costco.com' },
+  'Best Buy': { name: 'Best Buy', fields: [{ key: 'api_key', label: 'Client ID' }, { key: 'api_secret', label: 'Secret' }], where: 'Best Buy Marketplace Developer', portal: 'https://developer.bestbuy.com' },
+  "Kohl's": { name: "Kohl's", fields: [{ key: 'api_key', label: 'API Key' }], where: "Kohl's 供应商平台", portal: 'https://www.kohls.com' },
+
+  // 欧洲
   'Coupang': { name: 'Coupang 酷澎', fields: [{ key: 'api_key', label: 'Access Key' }, { key: 'api_secret', label: 'Secret Key' }], where: 'Coupang 开放平台（WING 后台）', portal: 'https://developers.coupang.com' },
   'OZON': { name: 'OZON', fields: [{ key: 'api_key', label: 'Client-Id' }, { key: 'api_secret', label: 'Api-Key' }], where: 'OZON Seller Center → 设置 → API 密钥', portal: 'https://seller.ozon.ru' },
   'Wildberries': { name: 'Wildberries', fields: [{ key: 'api_key', label: 'API Token' }], where: 'WB 卖家后台 → 设置 → API 访问令牌', portal: 'https://seller.wildberries.ru' },
-  'Walmart': { name: 'Walmart', fields: [{ key: 'api_key', label: 'Client ID' }, { key: 'api_secret', label: 'Client Secret' }], where: 'Walmart Marketplace 开发者中心', portal: 'https://developer.walmart.com' },
   'Fruugo': { name: 'Fruugo', fields: [{ key: 'api_key', label: 'API Key' }], where: 'Fruugo 卖家后台（人工开通 API）', portal: 'https://seller.fruugo.com' },
   'Qoo10': { name: 'Qoo10', fields: [{ key: 'api_key', label: 'API Key' }], where: 'Qoo10 GMKT 卖家后台', portal: 'https://www.qoo10.com' },
   'Kaufland': { name: 'Kaufland', fields: [{ key: 'api_key', label: 'API Key' }, { key: 'api_secret', label: 'Secret Key' }], where: 'Kaufland 卖家后台 → API 设置', portal: 'https://seller.kaufland.com' },
   'OnBuy': { name: 'OnBuy', fields: [{ key: 'api_key', label: 'Consumer Key' }, { key: 'api_secret', label: 'Secret Key' }], where: 'OnBuy 卖家后台 → API 管理', portal: 'https://www.onbuy.com' },
+  'Zalando': { name: 'Zalando', fields: [{ key: 'api_key', label: 'API Key' }], where: 'Zalando Merchant Center → ZDirect API', portal: 'https://www.zalando.com' },
+  'Cdiscount': { name: 'Cdiscount', fields: [{ key: 'api_key', label: 'API Key' }], where: 'Cdiscount Seller → API Settings', portal: 'https://seller.cdiscount.com' },
+  'Fnac': { name: 'Fnac', fields: [{ key: 'api_key', label: 'Partner ID' }, { key: 'api_secret', label: 'Secret Key' }], where: 'Fnac Marketplace API', portal: 'https://marketplace.fnac.com' },
+  'Darty': { name: 'Darty', fields: [{ key: 'api_key', label: 'Partner ID' }, { key: 'api_secret', label: 'Secret Key' }], where: 'Darty Marketplace（沿用 Fnac 接口）', portal: 'https://www.darty.com' },
+  'ManoMano': { name: 'ManoMano', fields: [{ key: 'api_key', label: 'API Key' }], where: 'ManoMano Seller → API 申请', portal: 'https://www.manomano.com' },
+  'Back Market': { name: 'Back Market', fields: [{ key: 'api_key', label: 'API Token' }], where: 'Back Market Seller Dashboard → API', portal: 'https://www.backmarket.com' },
+  'Bol.com': { name: 'Bol.com', fields: [{ key: 'api_key', label: 'Client ID' }, { key: 'api_secret', label: 'Client Secret' }], where: 'Bol.com Retailer API', portal: 'https://developers.bol.com' },
+  'Coolblue': { name: 'Coolblue', fields: [{ key: 'api_key', label: 'API Key' }], where: 'Coolblue Seller 平台 → API Settings', portal: 'https://www.coolblue.nl' },
+  'MediaMarkt': { name: 'MediaMarkt', fields: [{ key: 'api_key', label: 'API Key' }], where: 'MediaMarktSaturn Marketplace API', portal: 'https://business.mediamarkt.de' },
+  'Saturn': { name: 'Saturn', fields: [{ key: 'api_key', label: 'API Key' }], where: 'MediaMarktSaturn Marketplace API', portal: 'https://business.saturn.de' },
+  'CDON': { name: 'CDON', fields: [{ key: 'api_key', label: 'API Key' }], where: 'CDON Marketplace → API Keys', portal: 'https://www.cdon.com' },
+  'Elgiganten': { name: 'Elgiganten', fields: [{ key: 'api_key', label: 'API Key' }], where: 'Elgiganten Business Portal → API', portal: 'https://www.elgiganten.se' },
+  'eMag': { name: 'eMag', fields: [{ key: 'api_key', label: 'User' }, { key: 'api_secret', label: 'Password (API Key)' }], where: 'eMag Marketplace API', portal: 'https://marketplace.emag.ro' },
+
+  // 东南亚/南亚/日韩
+  'Daraz': { name: 'Daraz', fields: [{ key: 'api_key', label: 'App Key' }, { key: 'api_secret', label: 'App Secret' }], where: 'Daraz Open Platform', portal: 'https://open.daraz.com' },
+  'Flipkart': { name: 'Flipkart', fields: [{ key: 'api_key', label: 'Client ID' }, { key: 'api_secret', label: 'Client Secret' }], where: 'Flipkart Seller API', portal: 'https://seller.flipkart.com' },
+  'Meesho': { name: 'Meesho', fields: [{ key: 'api_key', label: 'API Key' }], where: 'Meesho Supplier → API', portal: 'https://supplier.meesho.com' },
+  'Sendo': { name: 'Sendo', fields: [{ key: 'api_key', label: 'API Key' }], where: 'Sendo Seller → Open API', portal: 'https://www.sendo.vn' },
+  'Tiki': { name: 'Tiki', fields: [{ key: 'api_key', label: 'Seller Key' }, { key: 'api_secret', label: 'Seller Secret' }], where: 'Tiki Seller Center → API', portal: 'https://seller.tiki.vn' },
+  'JD.ID': { name: 'JD.ID', fields: [{ key: 'api_key', label: 'App Key' }, { key: 'api_secret', label: 'App Secret' }], where: 'JD.ID Open Platform', portal: 'https://seller.jd.id' },
+  'Rakuten': { name: 'Rakuten 乐天', fields: [{ key: 'api_key', label: 'Service Secret' }, { key: 'api_secret', label: 'License Key' }], where: 'Rakuten Merchant RMS → API', portal: 'https://rms.rakuten.co.jp' },
+  'Yahoo! Shopping': { name: 'Yahoo! Shopping', fields: [{ key: 'api_key', label: 'Client ID' }, { key: 'api_secret', label: 'Client Secret' }], where: 'Yahoo! Developer Network → Shopping API', portal: 'https://developer.yahoo.co.jp' },
+  'PayPay Mall': { name: 'PayPay Mall', fields: [{ key: 'api_key', label: 'API Key' }], where: 'PayPay Mall 商家后台 → API', portal: 'https://www.paypaymall.jp' },
+  'Gmarket': { name: 'Gmarket', fields: [{ key: 'api_key', label: 'App Key' }, { key: 'api_secret', label: 'App Secret' }], where: 'Gmarket/G9 Seller API', portal: 'https://www.gmarket.co.kr' },
+  '11st': { name: '11번가 11st', fields: [{ key: 'api_key', label: 'API Key' }, { key: 'api_secret', label: 'API Secret' }], where: '11st Seller Center → API', portal: 'https://seller.11st.co.kr' },
+
+  // 中东/非洲/拉美/澳新
+  'Noon': { name: 'Noon', fields: [{ key: 'api_key', label: 'App Id' }, { key: 'api_secret', label: 'App Secret' }], where: 'Noon Partner API', portal: 'https://partners.noon.com' },
+  'Namshi': { name: 'Namshi', fields: [{ key: 'api_key', label: 'API Key' }], where: 'Namshi Seller Portal → API', portal: 'https://www.namshi.com' },
+  'Souq': { name: 'Souq / Amazon.ae', fields: [{ key: 'api_key', label: 'API Key' }], where: 'Souq 卖家后台（已并入 Amazon UAE）', portal: 'https://www.amazon.ae' },
+  'Jumia': { name: 'Jumia', fields: [{ key: 'api_key', label: 'API Key' }, { key: 'api_secret', label: 'API Secret' }], where: 'Jumia Marketplace → API', portal: 'https://www.jumia.com.ng' },
+  'Kilimall': { name: 'Kilimall', fields: [{ key: 'api_key', label: 'API Key' }], where: 'Kilimall Seller Center → API', portal: 'https://www.kilimall.co.ke' },
+  'Magazine Luiza': { name: 'Magazine Luiza (Magalu)', fields: [{ key: 'api_key', label: 'API Key' }], where: 'Magalu Marketplace API', portal: 'https://sellers.magazineluiza.com.br' },
+  'B2W': { name: 'B2W (Americanas/Submarino/Shoptime)', fields: [{ key: 'api_key', label: 'App Token' }, { key: 'api_secret', label: 'App Secret' }], where: 'B2W Marketplace Developer API', portal: 'https://b2wdigital.com' },
+  'Dafiti': { name: 'Dafiti', fields: [{ key: 'api_key', label: 'API Key' }], where: 'Dafiti Seller API', portal: 'https://www.dafiti.com.br' },
+  'Linio': { name: 'Linio', fields: [{ key: 'api_key', label: 'Seller ID' }, { key: 'api_secret', label: 'API Secret' }], where: 'Linio Marketplace API', portal: 'https://www.linio.com' },
+  'Catch': { name: 'Catch 澳洲', fields: [{ key: 'api_key', label: 'API Key' }], where: 'Catch Sellers → API', portal: 'https://sellers.catch.com.au' },
+  'Kogan': { name: 'Kogan', fields: [{ key: 'api_key', label: 'API Key' }, { key: 'api_secret', label: 'API Secret' }], where: 'Kogan Marketplace Developer Portal', portal: 'https://marketplace.kogan.com' },
+  'MyDeal': { name: 'MyDeal', fields: [{ key: 'api_key', label: 'API Key' }], where: 'MyDeal Seller → API', portal: 'https://www.mydeal.com.au' },
+  'Trade Me': { name: 'Trade Me 新西兰', fields: [{ key: 'api_key', label: 'OAuth Key' }, { key: 'api_secret', label: 'OAuth Secret' }], where: 'Trade Me Developer → My Trade Me API', portal: 'https://developer.trademe.co.nz' },
+
+  // 独立站
+  '独立站': { name: '自建站 (通用 Woo/Shop/S2B)', fields: [{ key: 'api_key', label: '网站 API Key' }, { key: 'api_secret', label: 'Secret / 网址' }], where: '自行提供的 REST API 凭证（按站点对接）', portal: 'https://example.com/wp-json/wc/v3' }
 };
 
 // ===== OAuth 平台定义 =====
@@ -257,6 +311,127 @@ const OAUTH_PLATFORMS = {
   'Shoplazza': shopOAuth('Shoplazza 店匠'),
   'Shopline': shopOAuth('Shopline'),
 };
+
+// ===== 额外 OAuth/PKCE 平台补齐：按 stdOAuth 统一模式 (平台名 + 开发域名) =====
+// 以下为 14 个「占位级」OAuth 定义（跳转/回调能跑通，令牌交换字段用平台常见命名；后续真实对接时再替换细节）
+Object.assign(OAUTH_PLATFORMS, {
+  // 北美
+  'Newegg': stdOAuth('Newegg', {
+    authUrl: (app, state, cb) => `https://www.newegg.com/sellers/oauth/authorize?response_type=code&client_id=${encodeURIComponent(app.app_id)}&redirect_uri=${encodeURIComponent(cb)}&state=${state}`,
+    tokenUrl: () => 'https://api.newegg.com/oauth/token',
+    tokenParams: (app, code, cb) => ({ grant_type: 'authorization_code', client_id: app.app_id, client_secret: app.app_secret, code, redirect_uri: cb }),
+    refreshParams: (app, rt) => ({ grant_type: 'refresh_token', client_id: app.app_id, client_secret: app.app_secret, refresh_token: rt }),
+    parse: d => ({ accessToken: d.access_token, refreshToken: d.refresh_token, expiresIn: Number(d.expires_in) || 3600 }),
+    errMsg: d => d.error || d.message || 'Newegg 令牌交换失败'
+  }),
+  'Houzz': stdOAuth('Houzz', {
+    authUrl: (app, state, cb) => `https://www.houzz.com/oauth/authorize?response_type=code&client_id=${encodeURIComponent(app.app_id)}&redirect_uri=${encodeURIComponent(cb)}&state=${state}`,
+    tokenUrl: () => 'https://api.houzz.com/oauth/token',
+    tokenParams: (app, code, cb) => ({ grant_type: 'authorization_code', client_id: app.app_id, client_secret: app.app_secret, code, redirect_uri: cb }),
+    refreshParams: (app, rt) => ({ grant_type: 'refresh_token', client_id: app.app_id, client_secret: app.app_secret, refresh_token: rt }),
+    parse: d => ({ accessToken: d.access_token, refreshToken: d.refresh_token, expiresIn: Number(d.expires_in) || 3600 }),
+    errMsg: d => d.error || 'Houzz 令牌交换失败'
+  }),
+  'Target': stdOAuth('Target', {
+    authUrl: (app, state, cb) => `https://login.target.com/oauth/authorize?response_type=code&client_id=${encodeURIComponent(app.app_id)}&redirect_uri=${encodeURIComponent(cb)}&state=${state}`,
+    tokenUrl: () => 'https://login.target.com/oauth/token',
+    tokenParams: (app, code, cb) => ({ grant_type: 'authorization_code', client_id: app.app_id, client_secret: app.app_secret, code, redirect_uri: cb }),
+    refreshParams: (app, rt) => ({ grant_type: 'refresh_token', client_id: app.app_id, client_secret: app.app_secret, refresh_token: rt }),
+    parse: d => ({ accessToken: d.access_token, refreshToken: d.refresh_token, expiresIn: Number(d.expires_in) || 3600 }),
+    errMsg: d => d.error || 'Target 令牌交换失败'
+  }),
+  'Overstock': stdOAuth('Overstock', {
+    authUrl: (app, state, cb) => `https://supplier.overstock.com/oauth/authorize?response_type=code&client_id=${encodeURIComponent(app.app_id)}&redirect_uri=${encodeURIComponent(cb)}&state=${state}`,
+    tokenUrl: () => 'https://api.overstock.com/oauth/token',
+    tokenParams: (app, code, cb) => ({ grant_type: 'authorization_code', client_id: app.app_id, client_secret: app.app_secret, code, redirect_uri: cb }),
+    refreshParams: (app, rt) => ({ grant_type: 'refresh_token', client_id: app.app_id, client_secret: app.app_secret, refresh_token: rt }),
+    parse: d => ({ accessToken: d.access_token, refreshToken: d.refresh_token, expiresIn: Number(d.expires_in) || 3600 }),
+    errMsg: d => d.error || 'Overstock 令牌交换失败'
+  }),
+  // 欧洲
+  'Zalando': stdOAuth('Zalando', {
+    authUrl: (app, state, cb) => `https://accounts.merchants.zalando.com/oauth/authorize?response_type=code&client_id=${encodeURIComponent(app.app_id)}&redirect_uri=${encodeURIComponent(cb)}&state=${state}`,
+    tokenUrl: () => 'https://api.merchants.zalando.com/oauth/token',
+    tokenParams: (app, code, cb) => ({ grant_type: 'authorization_code', client_id: app.app_id, client_secret: app.app_secret, code, redirect_uri: cb }),
+    refreshParams: (app, rt) => ({ grant_type: 'refresh_token', client_id: app.app_id, client_secret: app.app_secret, refresh_token: rt }),
+    parse: d => ({ accessToken: d.access_token, refreshToken: d.refresh_token, expiresIn: Number(d.expires_in) || 3600 }),
+    errMsg: d => d.error || 'Zalando 令牌交换失败'
+  }),
+  'Cdiscount': stdOAuth('Cdiscount', {
+    authUrl: (app, state, cb) => `https://seller.cdiscount.com/oauth/authorize?response_type=code&client_id=${encodeURIComponent(app.app_id)}&redirect_uri=${encodeURIComponent(cb)}&state=${state}`,
+    tokenUrl: () => 'https://api.cdiscount.com/oauth/token',
+    tokenParams: (app, code, cb) => ({ grant_type: 'authorization_code', client_id: app.app_id, client_secret: app.app_secret, code, redirect_uri: cb }),
+    refreshParams: (app, rt) => ({ grant_type: 'refresh_token', client_id: app.app_id, client_secret: app.app_secret, refresh_token: rt }),
+    parse: d => ({ accessToken: d.access_token, refreshToken: d.refresh_token, expiresIn: Number(d.expires_in) || 3600 }),
+    errMsg: d => d.error || 'Cdiscount 令牌交换失败'
+  }),
+  'Bol.com': stdOAuth('Bol.com', {
+    authUrl: (app, state, cb) => `https://login.bol.com/authorize?response_type=code&client_id=${encodeURIComponent(app.app_id)}&redirect_uri=${encodeURIComponent(cb)}&state=${state}`,
+    tokenUrl: () => 'https://login.bol.com/token',
+    tokenParams: (app, code, cb) => ({ grant_type: 'authorization_code', code, redirect_uri: cb }),
+    refreshParams: (app, rt) => ({ grant_type: 'refresh_token', refresh_token: rt }),
+    parse: d => ({ accessToken: d.access_token, refreshToken: d.refresh_token, expiresIn: Number(d.expires_in) || 3600 }),
+    errMsg: d => d.error || 'Bol.com 令牌交换失败'
+  }),
+  // 南亚/东南亚
+  'Daraz': stdOAuth('Daraz', {
+    authUrl: (app, state, cb) => `https://auth.daraz.com/oauth2/authorize?response_type=code&client_id=${encodeURIComponent(app.app_id)}&redirect_uri=${encodeURIComponent(cb)}&state=${state}`,
+    tokenUrl: () => 'https://auth.daraz.com/oauth2/token',
+    tokenParams: (app, code, cb) => ({ grant_type: 'authorization_code', code, client_id: app.app_id, client_secret: app.app_secret, redirect_uri: cb }),
+    refreshParams: (app, rt) => ({ grant_type: 'refresh_token', refresh_token: rt, client_id: app.app_id, client_secret: app.app_secret }),
+    parse: d => ({ accessToken: d.access_token, refreshToken: d.refresh_token, expiresIn: Number(d.expires_in) || 3600 }),
+    errMsg: d => d.error || d.error_description || 'Daraz 令牌交换失败'
+  }),
+  'Flipkart': stdOAuth('Flipkart', {
+    authUrl: (app, state, cb) => `https://api.flipkart.net/oauth-service/oauth/authorize?response_type=code&client_id=${encodeURIComponent(app.app_id)}&redirect_uri=${encodeURIComponent(cb)}&state=${state}`,
+    tokenUrl: () => 'https://api.flipkart.net/oauth-service/oauth/token',
+    tokenParams: (app, code, cb) => ({ grant_type: 'authorization_code', client_id: app.app_id, client_secret: app.app_secret, code, redirect_uri: cb }),
+    refreshParams: (app, rt) => ({ grant_type: 'refresh_token', client_id: app.app_id, client_secret: app.app_secret, refresh_token: rt }),
+    parse: d => ({ accessToken: d.access_token, refreshToken: d.refresh_token, expiresIn: Number(d.expires_in) || 3600 }),
+    errMsg: d => d.error || 'Flipkart 令牌交换失败'
+  }),
+  'Rakuten': stdOAuth('Rakuten 乐天', {
+    authUrl: (app, state, cb) => `https://app.rakuten.co.jp/services/authorize?response_type=code&client_id=${encodeURIComponent(app.app_id)}&redirect_uri=${encodeURIComponent(cb)}&state=${state}&scope=rms%3Aorder`,
+    tokenUrl: () => 'https://app.rakuten.co.jp/services/token',
+    tokenParams: (app, code, cb) => ({ grant_type: 'authorization_code', client_id: app.app_id, client_secret: app.app_secret, code, redirect_uri: cb }),
+    refreshParams: (app, rt) => ({ grant_type: 'refresh_token', client_id: app.app_id, client_secret: app.app_secret, refresh_token: rt }),
+    parse: d => ({ accessToken: d.access_token, refreshToken: d.refresh_token, expiresIn: Number(d.expires_in) || 3600 }),
+    errMsg: d => d.error || 'Rakuten 令牌交换失败'
+  }),
+  // 中东/拉美/澳新
+  'Noon': stdOAuth('Noon', {
+    authUrl: (app, state, cb) => `https://accounts.noon.com/oauth/authorize?response_type=code&client_id=${encodeURIComponent(app.app_id)}&redirect_uri=${encodeURIComponent(cb)}&state=${state}`,
+    tokenUrl: () => 'https://oauth.noon.com/token',
+    tokenParams: (app, code, cb) => ({ grant_type: 'authorization_code', client_id: app.app_id, client_secret: app.app_secret, code, redirect_uri: cb }),
+    refreshParams: (app, rt) => ({ grant_type: 'refresh_token', client_id: app.app_id, client_secret: app.app_secret, refresh_token: rt }),
+    parse: d => ({ accessToken: d.access_token, refreshToken: d.refresh_token, expiresIn: Number(d.expires_in) || 3600 }),
+    errMsg: d => d.error || 'Noon 令牌交换失败'
+  }),
+  'Linio': stdOAuth('Linio', {
+    authUrl: (app, state, cb) => `https://sellercenter.linio.com/oauth/authorize?response_type=code&client_id=${encodeURIComponent(app.app_id)}&redirect_uri=${encodeURIComponent(cb)}&state=${state}`,
+    tokenUrl: () => 'https://sellercenter.linio.com/oauth/token',
+    tokenParams: (app, code, cb) => ({ grant_type: 'authorization_code', client_id: app.app_id, client_secret: app.app_secret, code, redirect_uri: cb }),
+    refreshParams: (app, rt) => ({ grant_type: 'refresh_token', client_id: app.app_id, client_secret: app.app_secret, refresh_token: rt }),
+    parse: d => ({ accessToken: d.access_token, refreshToken: d.refresh_token, expiresIn: Number(d.expires_in) || 3600 }),
+    errMsg: d => d.error || 'Linio 令牌交换失败'
+  }),
+  'Catch': stdOAuth('Catch 澳洲', {
+    authUrl: (app, state, cb) => `https://sso.catch.com.au/oauth/authorize?response_type=code&client_id=${encodeURIComponent(app.app_id)}&redirect_uri=${encodeURIComponent(cb)}&state=${state}`,
+    tokenUrl: () => 'https://sso.catch.com.au/oauth/token',
+    tokenParams: (app, code, cb) => ({ grant_type: 'authorization_code', client_id: app.app_id, client_secret: app.app_secret, code, redirect_uri: cb }),
+    refreshParams: (app, rt) => ({ grant_type: 'refresh_token', client_id: app.app_id, client_secret: app.app_secret, refresh_token: rt }),
+    parse: d => ({ accessToken: d.access_token, refreshToken: d.refresh_token, expiresIn: Number(d.expires_in) || 3600 }),
+    errMsg: d => d.error || 'Catch 令牌交换失败'
+  }),
+  'Kogan': stdOAuth('Kogan', {
+    authUrl: (app, state, cb) => `https://sso.kogan.com/oauth/authorize?response_type=code&client_id=${encodeURIComponent(app.app_id)}&redirect_uri=${encodeURIComponent(cb)}&state=${state}`,
+    tokenUrl: () => 'https://api.kogan.com/oauth/token',
+    tokenParams: (app, code, cb) => ({ grant_type: 'authorization_code', client_id: app.app_id, client_secret: app.app_secret, code, redirect_uri: cb }),
+    refreshParams: (app, rt) => ({ grant_type: 'refresh_token', client_id: app.app_id, client_secret: app.app_secret, refresh_token: rt }),
+    parse: d => ({ accessToken: d.access_token, refreshToken: d.refresh_token, expiresIn: Number(d.expires_in) || 3600 }),
+    errMsg: d => d.error || 'Kogan 令牌交换失败'
+  }),
+});
 
 // 域名型 OAuth 工厂（Shopify 系：myshopify/店匠/Shopline 同协议）
 function shopOAuth(name) {

@@ -299,7 +299,19 @@ let productsCache = [], shopsCache = [];
 
 const STATUS_LABEL = { PENDING:'待付款', PAID:'已付款', SHIPPED:'已发货', COMPLETED:'已完成', CANCELLED:'已取消' };
 const STATUS_CLASS = { PENDING:'amber', PAID:'blue', SHIPPED:'blue', COMPLETED:'green', CANCELLED:'red' };
-const PLATFORMS = ['Amazon','Shopee','TikTok Shop','Lazada','AliExpress','eBay','Mercado Libre','Coupang','OZON','Wildberries','Temu','SHEIN','Walmart','Fruugo','Qoo10','Kaufland','OnBuy','Allegro','独立站'];
+// 共 68 个平台（覆盖北美/欧洲/东南亚/南亚/日韩/中东/非/拉美/澳新/国内独立站）
+const PLATFORMS = [
+  'Amazon','Newegg','Etsy','Wish','Houzz','Overstock','Target','Home Depot','Costco','Best Buy',"Kohl's",'Walmart','eBay',
+  'Allegro','Zalando','Cdiscount','Fnac','Darty','ManoMano','Back Market','Bol.com','Coolblue','MediaMarkt','Saturn','CDON','Elgiganten','eMag','Fruugo','OnBuy','Kaufland','OZON','Wildberries',
+  'Shopee','Lazada','TikTok Shop','AliExpress','Temu','SHEIN','Coupang','Qoo10','Daraz','Sendo','Tiki','JD.ID',
+  'Flipkart','Meesho',
+  'Rakuten','Yahoo! Shopping','PayPay Mall','Gmarket','11st',
+  'Noon','Namshi','Souq',
+  'Jumia','Kilimall',
+  'Mercado Libre','Magazine Luiza','B2W','Dafiti','Linio',
+  'Catch','Kogan','MyDeal','Trade Me',
+  'Douyin','Shopify','Shoplazza','Shopline','独立站'
+];
 // 常用币种（店铺结算币种，订单按此折算 CNY）
 const CURRENCIES = ['CNY','USD','EUR','GBP','JPY','KRW','SGD','MYR','THB','VND','IDR','PHP','TWD','BRL','MXN','RUB','PLN','AUD','CAD','HKD','TRY','AED','SAR','INR'];
 const VIEW_TITLES = { dashboard:'概览', shops:'店铺授权', platforms:'平台接入', products:'商品管理', inventory:'库存管理', 'inventory-ledger':'库存流水', orders:'订单管理', shipments:'发货记录', purchases:'采购单', suppliers:'供应商', carriers:'物流商', finance:'订单利润', 'finance-report':'月度报表', 'audit-logs':'审计日志', settings:'账户设置' };

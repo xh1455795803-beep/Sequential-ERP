@@ -8,13 +8,37 @@ const { query } = require('./db');
 const { shopeeSign } = require('./util-crypto');
 const adapters = require('./platforms');
 
-// 平台默认结算币种（授权建店时写入 shops.currency）
+// 平台默认结算币种（授权建店时写入 shops.currency）——共 48 个平台
 const PLATFORM_CURRENCY = {
-  'Amazon': 'USD', 'Shopee': 'SGD', 'TikTok Shop': 'USD', 'Lazada': 'SGD', 'AliExpress': 'USD',
-  'eBay': 'USD', 'Mercado Libre': 'USD', 'Wish': 'USD', 'Etsy': 'USD', 'Allegro': 'PLN',
-  'Douyin': 'CNY', 'Shopify': 'USD', 'Shoplazza': 'USD', 'Shopline': 'USD',
-  'Temu': 'USD', 'SHEIN': 'USD', 'Coupang': 'KRW', 'OZON': 'RUB', 'Wildberries': 'RUB',
-  'Walmart': 'USD', 'Fruugo': 'GBP', 'Qoo10': 'JPY', 'Kaufland': 'EUR', 'OnBuy': 'GBP'
+  // 北美 13
+  'Amazon': 'USD', 'Newegg': 'USD', 'Etsy': 'USD', 'Wish': 'USD', 'Houzz': 'USD',
+  'Overstock': 'USD', 'Target': 'USD', 'Home Depot': 'USD', 'Costco': 'USD',
+  'Best Buy': 'USD', "Kohl's": 'USD', 'Walmart': 'USD', 'eBay': 'USD',
+  // 欧洲 15
+  'Allegro': 'PLN', 'Fruugo': 'GBP', 'OnBuy': 'GBP', 'Kaufland': 'EUR',
+  'Zalando': 'EUR', 'Cdiscount': 'EUR', 'Fnac': 'EUR', 'Darty': 'EUR',
+  'ManoMano': 'EUR', 'Back Market': 'EUR', 'Bol.com': 'EUR', 'Coolblue': 'EUR',
+  'MediaMarkt': 'EUR', 'Saturn': 'EUR', 'CDON': 'SEK', 'Elgiganten': 'SEK',
+  'eMag': 'RON', 'OZON': 'RUB', 'Wildberries': 'RUB',
+  // 东南亚 12
+  'Shopee': 'SGD', 'Lazada': 'SGD', 'TikTok Shop': 'USD', 'AliExpress': 'USD',
+  'Temu': 'USD', 'SHEIN': 'USD', 'Coupang': 'KRW', 'Daraz': 'PKR',
+  'Sendo': 'VND', 'Tiki': 'VND', 'JD.ID': 'IDR', 'Qoo10': 'JPY',
+  // 南亚 3
+  'Flipkart': 'INR', 'Meesho': 'INR', 'Mercado Libre': 'USD',
+  // 日韩 4
+  'Rakuten': 'JPY', 'Yahoo! Shopping': 'JPY', 'PayPay Mall': 'JPY',
+  'Gmarket': 'KRW', '11st': 'KRW',
+  // 中东 5
+  'Noon': 'AED', 'Namshi': 'AED', 'Souq': 'SAR',
+  // 非洲 2
+  'Jumia': 'NGN', 'Kilimall': 'KES',
+  // 拉美 4
+  'Magazine Luiza': 'BRL', 'B2W': 'BRL', 'Dafiti': 'BRL', 'Linio': 'MXN',
+  // 澳新 4
+  'Catch': 'AUD', 'Kogan': 'AUD', 'MyDeal': 'AUD', 'Trade Me': 'NZD',
+  // 国内/独立站 5
+  'Douyin': 'CNY', 'Shopify': 'USD', 'Shoplazza': 'USD', 'Shopline': 'USD', '独立站': 'USD'
 };
 
 /** 当前汇率（币种→CNY），未知币种按 1 */
