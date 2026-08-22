@@ -830,8 +830,8 @@ async function loadShops() {
             <td>${s.last_sync_at ? fmtDate(s.last_sync_at) : '-'}</td>
             <td>${s.order_count}</td>
             <td style="white-space:nowrap">
-              ${s.has_token ? `<button class="btn-sm neutral" onclick="syncShop(${s.id})">同步订单</button>
-              <button class="btn-sm neutral" onclick="refreshToken(${s.id})">刷新令牌</button>` : ''}
+              ${(s.has_token || s.has_apikey) ? `<button class="btn-sm neutral" onclick="syncShop(${s.id})">同步订单</button>` : ''}
+              ${s.has_token ? `<button class="btn-sm neutral" onclick="refreshToken(${s.id})">刷新令牌</button>` : ''}
               ${(s.has_token || s.has_apikey) ? `<button class="btn-sm danger" onclick="unlinkShop(${s.id})">解除授权</button>` : ''}
               <button class="btn-sm neutral" onclick="toggleShop(${s.id}, '${s.status}')">${s.status === 'active' ? '停用' : '启用'}</button>
               <button class="btn-sm danger" onclick="delShop(${s.id}, '${esc(s.name)}')">删除</button>

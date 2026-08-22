@@ -233,5 +233,289 @@ const OAUTH_PLATFORMS = {
 
   // ===== Allegro =====
   'Allegro': stdOAuth('Allegro', {
-    authUrl: (app, state, cb) => `https://allegro.
+    authUrl: (app, state, cb) => `https://allegro.pl/auth/oauth/authorize?response_type=code&client_id=${encodeURIComponent(app.app_id)}&redirect_uri=${encodeURIComponent(cb)}&state=${state}`,
+    tokenUrl: () => 'https://allegro.pl/auth/oauth/token',
+    basicAuth: true,
+    tokenParams: (app, code, cb) => ({ grant_type: 'authorization_code', code, redirect_uri: cb }),
+    refreshParams: () => ({ grant_type: 'refresh_token' }),
+    parse: d => ({ accessToken: d.access_token, refreshToken: d.refresh_token, expiresIn: Number(d.expires_in) || 43200 }),
+    errMsg: d => d.error_description || d.error || 'Allegro 令牌交换失败',
+  }),
+
+  // ===== 抖音小店 =====
+  'Douyin': stdOAuth('抖音小店', {
+    authUrl: (app, state, cb) => `https://open.douyin.com/oauth/authorize?client_key=${encodeURIComponent(app.app_id)}&response_type=code&scope=${encodeURIComponent('order.list.read,product.list.read')}&redirect_uri=${encodeURIComponent(cb)}&state=${state}`,
+    tokenUrl: () => 'https://open.douyin.com/oauth/access_token/',
+    tokenParams: (app, code) => ({ appid: app.app_id, secret: decrypt(app.app_secret_enc), code, grant_type: 'authorization_code' }),
+    refreshParams: (app, rt) => ({ appid: app.app_id, secret: decrypt(app.app_secret_enc), refresh_token: rt, grant_type: 'refresh_token' }),
+    parse: d => { const t = d.data || {}; return { accessToken: t.access_token, refreshToken: t.refresh_token, expiresIn: Number(t.expires_in) || 604800, extShopId: t.open_id || null }; },
+    errMsg: d => (d.data && d.data.description) || d.message || '抖音令牌交换失败',
+  }),
+
+  // ===== 独立站（域名型 OAuth）=====
+  'Shopify': shopOAuth('Shopify 独立站'),
+  'Shoplazza': shopOAuth('Shoplazza 店匠'),
+  'Shopline': shopOAuth('Shopline'),
+};
+
+// 域名型 OAuth 工厂（Shopify 系：myshopify/店匠/Shopline 同协议）
+function shopOAuth(name) {
+  return {
+    name,
+    needShop: true,
+    authorize(app, state, cb, q) {
+      const shop = String(q.shop || '').replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+      return `https://${shop}/admin/oauth/authorize?client_id=${encodeURIComponent(app.app_id)}&scope=${encodeURIComponent('read_orders,read_products,read_fulfillments')}&redirect_uri=${encodeURIComponent(cb)}&state=${state}`;
+    },
+    pickCode(q) { return q.code; },
+    async exchange(app, code, cb, q) {
+      const shop = String(q.shop || '').replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+      if (!shop) throw new Error('缺少店铺域名');
+      const r = await fetch(`https://${shop}/admin/oauth/access_token`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ client_id: app.app_id, client_secret: decrypt(app.app_secret_enc), code }),
+      });
+      const data = await r.json();
+      if (!data.access_token) throw new Error('独立站令牌交换失败');
+      return { accessToken: data.access_token, refreshToken: null, expiresIn: 365 * 86400, extShopId: shop, extShopName: shop };
+    },
+    async refresh() { throw new Error('独立站令牌长期有效，无需刷新'); },
+  };
+}
+
+// PKCE challenge：base64url(sha256(verifier))
+function challenge(verifier) {
+  return crypto.createHash('sha256').update(verifier).digest('base64')
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function callbackBase() {
+  return (process.env.PUBLIC_BASE_URL || 'https://qianniu-erp.cc') + '/api/v1/oauth';
+}
+
+function frontUrl(params) {
+  return (process.env.PUBLIC_BASE_URL || 'https://qianniu-erp.cc') + '/app/#/shops' + (params || '');
+}
+
+async function getPlatformApp(platform) {
+  const rows = await query("SELECT * FROM platform_apps WHERE platform = ? AND status = 'active'", [platform]);
+  return rows[0] || null;
+}
+
+/** 各平台可授权状态（租户端展示，不含密钥） */
+router.get('/status', auth, async (req, res, next) => {
+  try {
+    const rows = await query("SELECT platform FROM platform_apps WHERE status = 'active'");
+    const configured = new Set(rows.map(r => r.platform));
+    const oauth = Object.entries(OAUTH_PLATFORMS).map(([platform, def]) => ({
+      platform, name: def.name, mode: def.needShop ? 'shop-oauth' : 'oauth',
+      needShop: !!def.needShop,
+      configured: configured.has(platform),
+      authorizeUrl: '/api/v1/oauth/authorize/' + encodeURIComponent(platform),
+    }));
+    const apiKey = Object.entries(KEY_PLATFORMS).map(([platform, def]) => ({
+      platform, name: def.name, mode: 'apikey',
+      fields: def.fields, where: def.where, portal: def.portal,
+      configured: configured.has(platform),
+    }));
+    res.json({ items: [...oauth, ...apiKey] });
+  } catch (err) { next(err); }
+});
+
+/** 发起授权：返回平台官方授权页 URL（前端 fetch 携带令牌调用后跳转，避免浏览器直跳丢鉴权） */
+router.get('/authorize-url/:platform', auth, async (req, res, next) => {
+  try {
+    const platform = req.params.platform;
+    const def = OAUTH_PLATFORMS[platform];
+    if (!def) return res.status(400).json({ error: '该平台暂不支持在线授权，请手动录入' });
+    if (def.needShop && !req.query.shop) return res.status(400).json({ error: '请先填写店铺域名再发起授权' });
+
+    const app = await getPlatformApp(platform);
+    if (!app) return res.status(400).json({ error: `「${def.name}」开发者应用尚未配置，请联系运营商配置后再授权` });
+
+    // 记录 state（10 分钟有效；Etsy 顺带存 PKCE verifier）
+    const state = newState();
+    const verifier = platform === 'Etsy' ? crypto.randomBytes(48).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '') : null;
+    await query(
+      'INSERT INTO oauth_states (state, platform, tenant_id, user_id, expires_at, code_verifier) VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 10 MINUTE), ?)',
+      [state, platform, req.user.tenantId, req.user.uid, verifier]
+    );
+    await query('DELETE FROM oauth_states WHERE expires_at < NOW()');
+
+    const url = def.authorize(app, state, callbackBase() + '/callback/' + encodeURIComponent(platform), req.query, { code_verifier: verifier });
+    res.json({ url });
+  } catch (err) { next(err); }
+});
+
+/** 密钥型平台：录入 API 密钥（加密存储） */
+router.post('/apikey/:platform', auth, async (req, res, next) => {
+  try {
+    const platform = req.params.platform;
+    const def = KEY_PLATFORMS[platform];
+    if (!def) return res.status(400).json({ error: '该平台不支持密钥录入' });
+
+    const { shop_name, api_key, api_secret } = req.body || {};
+    const keyEnc = encrypt(api_key);
+    const secretEnc = encrypt(api_secret);
+    if (!keyEnc) return res.status(400).json({ error: `请填写 ${def.fields[0].label}` });
+    if (def.fields.length > 1 && !secretEnc) return res.status(400).json({ error: `请填写 ${def.fields[1].label}` });
+
+    // 套餐店铺数限制
+    const { PLANS } = require('../util');
+    const tenants = await query('SELECT * FROM tenants WHERE id = ?', [req.user.tenantId]);
+    const plan = PLANS[tenants[0].plan] || PLANS.trial;
+    const cnt = await query('SELECT COUNT(*) AS c FROM shops WHERE tenant_id = ?', [req.user.tenantId]);
+    if (cnt[0].c >= plan.shops) return res.status(400).json({ error: `当前套餐（${plan.name}）最多接入 ${plan.shops} 个店铺，请升级套餐` });
+
+    const name = (shop_name || '').trim() || def.name;
+    const { PLATFORM_CURRENCY } = require('../sync-service');
+    const currency = PLATFORM_CURRENCY[platform] || 'USD';
+    const r = await query(
+      `INSERT INTO shops (tenant_id, name, platform, auth_status, api_key_enc, api_secret_enc, authorized_at, currency)
+       VALUES (?, ?, ?, 'authorized', ?, ?, NOW(), ?)`,
+      [req.user.tenantId, name, platform, keyEnc, secretEnc, currency]
+    );
+    await query("INSERT INTO sync_logs (tenant_id, shop_id, platform, job_type, status, message, finished_at) VALUES (?, ?, ?, 'auth', 'ok', 'API 密钥已录入（加密存储）', NOW())", [req.user.tenantId, r.insertId, platform]);
+    res.json({ ok: true, id: r.insertId });
+  } catch (err) { next(err); }
+});
+
+/** 平台回调：校验 state → 换令牌 → 加密落库 → 跳回控制台 */
+router.get('/callback/:platform', async (req, res, next) => {
+  const fail = (msg) => res.redirect(frontUrl('?auth=failed&msg=' + encodeURIComponent(msg)));
+  try {
+    const platform = req.params.platform;
+    const def = OAUTH_PLATFORMS[platform];
+    if (!def) return fail('不支持的平台回调');
+
+    const state = req.query.state || '';
+    const code = def.pickCode(req.query);
+    if (!code) return fail('平台未返回授权码');
+
+    // 校验 state（Lazada 个别场景可能不回传 state，放行最近 10 分钟内的该平台记录）
+    let stRow = null;
+    if (state) {
+      const rows = await query('SELECT * FROM oauth_states WHERE state = ? AND expires_at > NOW()', [state]);
+      stRow = rows[0] || null;
+      if (!stRow) return fail('授权状态已过期，请重新发起授权');
+    } else {
+      const rows = await query("SELECT * FROM oauth_states WHERE platform = ? AND expires_at > NOW() ORDER BY id DESC LIMIT 1", [platform]);
+      stRow = rows[0] || null;
+      if (!stRow) return fail('授权状态已过期，请重新发起授权');
+    }
+
+    const app = await getPlatformApp(platform);
+    if (!app) return fail('开发者应用配置缺失');
+
+    // 真实令牌交换
+    const t = await def.exchange(app, code, callbackBase() + '/callback/' + encodeURIComponent(platform), req.query, stRow);
+    const extShopId = t.extShopId || (req.query.selling_partner_id ? String(req.query.selling_partner_id) : null);
+
+    // 套餐店铺数限制
+    const { PLANS } = require('../util');
+    const tenants = await query('SELECT * FROM tenants WHERE id = ?', [stRow.tenant_id]);
+    const plan = PLANS[tenants[0].plan] || PLANS.trial;
+    const cnt = await query('SELECT COUNT(*) AS c FROM shops WHERE tenant_id = ?', [stRow.tenant_id]);
+    if (cnt[0].c >= plan.shops) return fail(`当前套餐（${plan.name}）最多接入 ${plan.shops} 个店铺，请升级套餐`);
+
+    // 已有同平台外部店铺则覆盖令牌，否则新建
+    let shop;
+    if (extShopId) {
+      const exist = await query('SELECT * FROM shops WHERE tenant_id = ? AND platform = ? AND ext_shop_id = ?', [stRow.tenant_id, platform, extShopId]);
+      shop = exist[0] || null;
+    }
+    const expiresAt = new Date(Date.now() + t.expiresIn * 1000);
+    if (shop) {
+      await query(
+        `UPDATE shops SET auth_status='authorized', access_token_enc=?, refresh_token_enc=?, token_expires_at=?, authorized_at=NOW(),
+         ext_shop_id=COALESCE(?, ext_shop_id), ext_shop_name=COALESCE(?, ext_shop_name) WHERE id=?`,
+        [encrypt(t.accessToken), encrypt(t.refreshToken), expiresAt, extShopId, t.extShopName, shop.id]
+      );
+    } else {
+      const name = t.extShopName || `${platform} 店铺` + (extShopId ? ` (${extShopId})` : '');
+      const { PLATFORM_CURRENCY } = require('../sync-service');
+      const currency = PLATFORM_CURRENCY[platform] || 'USD';
+      const r = await query(
+        `INSERT INTO shops (tenant_id, name, platform, auth_status, ext_shop_id, ext_shop_name, access_token_enc, refresh_token_enc, token_expires_at, authorized_at, currency)
+         VALUES (?, ?, ?, 'authorized', ?, ?, ?, ?, ?, NOW(), ?)`,
+        [stRow.tenant_id, name, platform, extShopId, t.extShopName, encrypt(t.accessToken), encrypt(t.refreshToken), expiresAt, currency]
+      );
+      shop = { id: r.insertId };
+    }
+    await query('DELETE FROM oauth_states WHERE state = ?', [stRow.state]);
+    await query("INSERT INTO sync_logs (tenant_id, shop_id, platform, job_type, status, message, finished_at) VALUES (?, ?, ?, 'auth', 'ok', 'OAuth 授权成功', NOW())", [stRow.tenant_id, shop.id, platform]);
+
+    res.redirect(frontUrl('?auth=success&shop=' + shop.id));
+  } catch (err) {
+    console.error('[oauth callback]', err.message);
+    fail('授权失败：' + err.message);
+  }
+});
+
+/** 刷新令牌 */
+router.post('/refresh/:shopId', auth, async (req, res, next) => {
+  try {
+    const shops = await query('SELECT * FROM shops WHERE tenant_id = ? AND id = ?', [req.user.tenantId, req.params.shopId]);
+    const shop = shops[0];
+    if (!shop) return res.status(404).json({ error: '店铺不存在' });
+    const def = OAUTH_PLATFORMS[shop.platform];
+    if (!def || !shop.refresh_token_enc) return res.status(400).json({ error: '该店铺无在线授权令牌' });
+
+    const app = await getPlatformApp(shop.platform);
+    if (!app) return res.status(400).json({ error: '平台应用配置缺失' });
+
+    const t = await def.refresh(app, decrypt(shop.refresh_token_enc));
+    const expiresAt = new Date(Date.now() + t.expiresIn * 1000);
+    await query("UPDATE shops SET access_token_enc=?, token_expires_at=?, auth_status='authorized' WHERE id=?", [encrypt(t.accessToken), expiresAt, shop.id]);
+    res.json({ ok: true, token_expires_at: expiresAt });
+  } catch (err) { next(err); }
+});
+
+/** 解除授权（保留店铺与业务数据，仅清除令牌/密钥） */
+router.post('/unlink/:shopId', auth, async (req, res, next) => {
+  try {
+    const r = await query(
+      `UPDATE shops SET auth_status='manual', access_token_enc=NULL, refresh_token_enc=NULL, token_expires_at=NULL, authorized_at=NULL, api_key_enc=NULL, api_secret_enc=NULL WHERE tenant_id=? AND id=?`,
+      [req.user.tenantId, req.params.shopId]
+    );
+    if (!r.affectedRows) return res.status(404).json({ error: '店铺不存在' });
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+});
+
+/** 同步订单：Shopee / TikTok 真实拉单（复用同步服务），其余平台需运营商开通对应 API 套件 */
+router.post('/sync/:shopId', auth, async (req, res, next) => {
+  try {
+    const shops = await query('SELECT * FROM shops WHERE tenant_id = ? AND id = ?', [req.user.tenantId, req.params.shopId]);
+    const shop = shops[0];
+    if (!shop) return res.status(404).json({ error: '店铺不存在' });
+    const { checkSyncable, syncOrders } = require('../sync-service');
+    checkSyncable(shop);
+    const app = await getPlatformApp(shop.platform);
+    const { imported, skipped } = await syncOrders(shop, app);
+    await query('UPDATE shops SET last_sync_at = NOW() WHERE id = ?', [shop.id]);
+    await query("INSERT INTO sync_logs (tenant_id, shop_id, platform, job_type, imported, skipped, status, message, finished_at) VALUES (?, ?, ?, 'orders', ?, ?, 'success', ?, NOW())",
+      [req.user.tenantId, shop.id, shop.platform, imported, skipped, `新导入 ${imported} 单，跳过已存在 ${skipped} 单`]);
+    res.json({ ok: true, imported, skipped, last_sync_at: new Date() });
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ error: err.message });
+    next(err);
+  }
+});
+
+/** 最近同步日志（手动 + 定时） */
+router.get('/logs', auth, async (req, res, next) => {
+  try {
+    const rows = await query(
+      `SELECT l.id, l.job_type AS type, l.status, l.message, l.imported, l.skipped, l.finished_at, l.created_at, s.name AS shop_name, s.platform
+       FROM sync_logs l LEFT JOIN shops s ON s.tenant_id = l.tenant_id AND s.id = l.shop_id
+       WHERE l.tenant_id = ? ORDER BY l.id DESC LIMIT 30`,
+      [req.user.tenantId]
+    );
+    res.json({ items: rows });
+  } catch (err) { next(err); }
+});
+
+module.exports = router;
+
 [EXIT_CODE=0]

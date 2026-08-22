@@ -30,21 +30,21 @@ async function record(conn, opts) {
  * 批量查租户流水（带分页/过滤）
  */
 async function list(tenantId, { productId, changeType, refType, refId, page = 1, size = 50 } = {}) {
-  const where = ['tenant_id = ?'];
+  const where = ['t.tenant_id = ?'];
   const params = [tenantId];
-  if (productId) { where.push('product_id = ?'); params.push(productId); }
-  if (changeType) { where.push('change_type = ?'); params.push(changeType); }
-  if (refType) { where.push('ref_type = ?'); params.push(refType); }
-  if (refId) { where.push('ref_id = ?'); params.push(refId); }
+  if (productId) { where.push('t.product_id = ?'); params.push(productId); }
+  if (changeType) { where.push('t.change_type = ?'); params.push(changeType); }
+  if (refType) { where.push('t.ref_type = ?'); params.push(refType); }
+  if (refId) { where.push('t.ref_id = ?'); params.push(refId); }
   const offset = (Math.max(1, page) - 1) * size;
   const rows = await query(
-    `SELECT t.*, p.sku, p.name FROM inventory_transactions t
+    `SELECT t.*, p.sku, p.name AS product_name FROM inventory_transactions t
      LEFT JOIN products p ON p.tenant_id = t.tenant_id AND p.id = t.product_id
      WHERE ${where.join(' AND ')} ORDER BY t.id DESC LIMIT ? OFFSET ?`,
     [...params, size, offset]
   );
   const [{ c }] = await query(
-    `SELECT COUNT(*) AS c FROM inventory_transactions WHERE ${where.join(' AND ')}`,
+    `SELECT COUNT(*) AS c FROM inventory_transactions WHERE tenant_id = ?${productId?' AND product_id = ?':''}${changeType?' AND change_type = ?':''}${refType?' AND ref_type = ?':''}${refId?' AND ref_id = ?':''}`,
     params
   );
   return { items: rows, total: c, page, size };
