@@ -41,24 +41,43 @@ label{display:block;font-size:13px;font-weight:600;color:var(--text-2);margin-bo
 .login-back a:hover{color:var(--primary)}
 .login-trial-note{margin-top:16px;padding:10px;background:var(--primary-light);border-radius:8px;font-size:12px;color:var(--primary);text-align:center;line-height:1.6}
 
-/* ===== 主布局 ===== */
-#app-view{display:none;min-height:100vh}
-.layout{display:flex;min-height:100vh}
-.sidebar{width:216px;background:#fff;border-right:1px solid var(--border);padding:16px 12px;position:fixed;top:0;bottom:0;left:0;z-index:10;display:flex;flex-direction:column}
-.sidebar .brand{display:flex;align-items:center;gap:9px;padding:6px 8px 18px}
-.sidebar .brand .mark{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
-.sidebar .brand .name{font-weight:800;font-size:16px}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;color:var(--text-2);font-weight:600;margin-bottom:2px;transition:all .15s;text-decoration:none;font-size:14px}
+/* ===== 主布局：顶部横向导航 ===== */
+:root{--topnav-h:60px;--subnav-h:48px}
+#app-view{display:none;min-height:100vh;display:none;flex-direction:column}
+.layout{display:flex;flex-direction:column;min-height:100vh}
+/* 顶栏上半：品牌 + 导航分组下拉 + 用户区 */
+.topnav{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--border);height:var(--topnav-h);display:flex;align-items:center;padding:0 24px;gap:32px}
+.topnav .brand{display:flex;align-items:center;gap:9px;flex:none}
+.topnav .brand .mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px}
+.topnav .brand .name{font-weight:800;font-size:17px;letter-spacing:.3px}
+.topnav-groups{display:flex;align-items:center;gap:4px;flex:1;overflow-x:auto;min-width:0}
+.nav-group{position:relative}
+.nav-group-title{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;font-size:13.5px;font-weight:600;color:var(--text-2);cursor:pointer;white-space:nowrap;transition:all .12s}
+.nav-group-title:hover{background:var(--primary-light);color:var(--primary)}
+.nav-group-title svg{width:16px;height:16px;flex:none;opacity:.9}
+.nav-group-title::after{content:'▾';font-size:10px;margin-left:2px;opacity:.6}
+.nav-group-title.on{background:var(--primary-light);color:var(--primary)}
+/* 下拉子菜单浮层 */
+.nav-group-menu{position:absolute;left:0;top:calc(100% + 6px);min-width:230px;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 18px 48px rgba(15,23,42,.14);z-index:9999;padding:10px;display:none;flex-direction:column;animation:avatarFadeIn .12s ease-out}
+.nav-group.open .nav-group-menu{display:flex}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:var(--text-2);font-weight:500;text-decoration:none;font-size:13.5px;transition:all .1s;white-space:nowrap;line-height:1.3}
 .nav-item:hover{background:var(--primary-light);color:var(--primary)}
-.nav-item.on{background:var(--primary-light);color:var(--primary)}
-.nav-item svg{width:18px;height:18px;flex:none}
-/* 分组子菜单 */
-.nav-group{margin-bottom:6px}
-.nav-group-title{display:flex;align-items:center;gap:8px;padding:12px 12px 4px;font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:.08em;text-transform:uppercase}
-.nav-group-title svg{width:14px;height:14px;flex:none;opacity:.7}
-.nav-item.sub{padding:8px 12px 8px 34px;font-weight:500;font-size:13.5px;position:relative}
-.nav-item.sub::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;opacity:.4;position:absolute;margin-left:-14px}
-.sidebar{overflow-y:auto}
+.nav-item.on{background:var(--primary-light);color:var(--primary);font-weight:600}
+.nav-item svg{width:16px;height:16px;flex:none;color:var(--text-2)}
+.nav-item:hover svg{color:var(--primary)}
+.nav-item.on svg{color:var(--primary)}
+.nav-item.badge-new{display:flex;align-items:center;justify-content:space-between;padding-right:12px}
+.nav-item.badge-new em{font-style:normal;font-size:10px;font-weight:800;background:linear-gradient(135deg,#f97316,#ef4444);color:#fff;padding:2px 6px;border-radius:999px;letter-spacing:.3px;line-height:1.2;margin-left:8px}
+.topnav-right{display:flex;align-items:center;gap:12px;margin-left:auto}
+.plan-mini{display:inline-flex;flex-direction:column;padding:4px 12px;border-left:1px solid var(--border);gap:1px;line-height:1.3}
+.plan-mini .p-name{font-weight:700;color:var(--primary);font-size:12.5px}
+.plan-mini .p-exp{font-size:11.5px;color:var(--text-2)}
+.plan-mini .p-exp.warn{color:var(--amber)}
+/* 顶栏下半：页面标题 */
+.subnav{background:#fff;border-bottom:1px solid var(--border);height:var(--subnav-h);display:flex;align-items:center;padding:0 24px}
+.subnav .page-title{font-size:17px;font-weight:700;margin-right:auto}
+/* 旧 sidebar plan-box 替换：删掉 */
+.sidebar{display:none!important}
 /* 平台授权卡片 */
 .plat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
 .plat-card{border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:6px;background:#fff}
@@ -75,17 +94,10 @@ label{display:block;font-size:13px;font-weight:600;color:var(--text-2);margin-bo
 .banner.ok{background:#ecfdf5;color:#047857;border:1px solid #a7f3d0}
 .banner.err{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
 .banner.warn{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
-.sidebar .plan-box{margin-top:auto;background:var(--primary-light);border-radius:10px;padding:12px}
-.plan-box .p-name{font-weight:700;color:var(--primary);font-size:13px;margin-bottom:4px}
-.plan-box .p-exp{font-size:12px;color:var(--text-2);line-height:1.5}
-.plan-box .p-exp.warn{color:var(--amber)}
-.nav-item.badge-new{position:static;display:flex;align-items:center;justify-content:space-between;padding-right:12px}
-.nav-item.badge-new em{font-style:normal;font-size:10px;font-weight:800;background:linear-gradient(135deg,#f97316,#ef4444);color:#fff;padding:2px 6px;border-radius:999px;letter-spacing:.3px;line-height:1.2}
-.main{flex:1;margin-left:216px;display:flex;flex-direction:column}
-.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
-.topbar .page-title{font-size:17px;font-weight:700}
-.topbar .user-box{display:flex;align-items:center;gap:12px}
-.topbar .user-name{color:var(--text-2);font-size:13px}
+.main{flex:1;display:flex;flex-direction:column}
+.subnav .user-box{display:flex;align-items:center;gap:12px}
+.subnav .user-name{color:var(--text-2);font-size:13px}
+.content{padding:24px;flex:1;max-width:1280px;width:100%;margin:0 auto}
 .btn-ghost{padding:7px 14px;border-radius:8px;border:1px solid var(--border);color:var(--text-2);font-weight:600;font-size:13px;background:#fff}
 .btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
 .btn-sm{padding:5px 10px;border-radius:6px;font-size:12px;font-weight:600}
@@ -284,65 +296,128 @@ tr:hover td{background:#fafbff}
 <!-- ===== 主应用 ===== -->
 <div id="app-view">
   <div class="layout">
-    <aside class="sidebar">
+    <!-- 顶部导航：品牌 + 分组菜单 + 用户区 -->
+    <div class="topnav">
       <div class="brand"><div class="mark">序</div><div class="name">数序ERP</div></div>
-      <a class="nav-item" data-view="dashboard" href="#/dashboard" onclick="go('dashboard')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>概览</a>
-
-      <div class="nav-group">
-        <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5"/><path d="M4 9v11a1 1 0 001 1h14a1 1 0 001-1V9"/><path d="M9 21v-6h6v6"/></svg>店铺中心</div>
-        <a class="nav-item sub" data-view="shops" href="#/shops" onclick="go('shops')">店铺授权</a>
-        <a class="nav-item sub" data-view="platforms" href="#/platforms" onclick="go('platforms')">平台接入</a>
+      <div class="topnav-groups" id="topnav-groups">
+        <!-- 概览：单按钮无下拉 -->
+        <div class="nav-group" data-group="dashboard">
+          <a class="nav-group-title" data-view="dashboard" href="#/dashboard" onclick="go('dashboard')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>概览
+          </a>
+        </div>
+        <div class="nav-group" data-group="shops" onclick="event.stopPropagation()">
+          <div class="nav-group-title" onclick="toggleNavGroup(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5"/><path d="M4 9v11a1 1 0 001 1h14a1 1 0 001-1V9"/><path d="M9 21v-6h6v6"/></svg>店铺中心
+          </div>
+          <div class="nav-group-menu">
+            <a class="nav-item" data-view="shops" href="#/shops" onclick="go('shops');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5"/><path d="M4 9v11a1 1 0 001 1h14a1 1 0 001-1V9"/></svg>店铺授权
+            </a>
+            <a class="nav-item" data-view="platforms" href="#/platforms" onclick="go('platforms');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>平台接入
+            </a>
+          </div>
+        </div>
+        <div class="nav-group" data-group="products" onclick="event.stopPropagation()">
+          <div class="nav-group-title" onclick="toggleNavGroup(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>商品中心
+          </div>
+          <div class="nav-group-menu">
+            <a class="nav-item" data-view="products" href="#/products" onclick="go('products');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7L12 3 4 7l8 4 8-4z"/><path d="M4 7v10l8 4 8-4V7"/><line x1="12" y1="11" x2="12" y2="21"/></svg>商品管理
+            </a>
+            <a class="nav-item badge-new" data-view="products-v2" href="#/products-v2" onclick="go('products-v2');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="18" x2="13" y2="18"/></svg>商品·V2完整版<em>NEW</em>
+            </a>
+            <a class="nav-item" data-view="inventory" href="#/inventory" onclick="go('inventory');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4z"/><path d="M3.27 6.96L12 12.01l8.73-5.05"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>库存管理
+            </a>
+            <a class="nav-item" data-view="inventory-ledger" href="#/inventory-ledger" onclick="go('inventory-ledger');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>库存流水
+            </a>
+          </div>
+        </div>
+        <div class="nav-group" data-group="orders" onclick="event.stopPropagation()">
+          <div class="nav-group-title" onclick="toggleNavGroup(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>订单中心
+          </div>
+          <div class="nav-group-menu">
+            <a class="nav-item" data-view="orders" href="#/orders" onclick="go('orders');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>订单管理
+            </a>
+            <a class="nav-item badge-new" data-view="auto-audit" href="#/auto-audit" onclick="go('auto-audit');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c1.93 0 3.68.61 5.12 1.65"/><path d="M21 3v6h-6"/></svg>自动审单规则<em>NEW</em>
+            </a>
+            <a class="nav-item badge-new" data-view="aftersales" href="#/aftersales" onclick="go('aftersales');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/><path d="M12 15v5"/><path d="M9 18h6"/></svg>售后逆向中心<em>NEW</em>
+            </a>
+            <a class="nav-item" data-view="shipments" href="#/shipments" onclick="go('shipments');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="15" height="13" rx="1"/><path d="M16 8h4l3 4v7h-7V8z"/><circle cx="5.5" cy="19" r="1.5"/><circle cx="18.5" cy="19" r="1.5"/></svg>发货记录
+            </a>
+          </div>
+        </div>
+        <div class="nav-group" data-group="supply" onclick="event.stopPropagation()">
+          <div class="nav-group-title" onclick="toggleNavGroup(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="15" height="13" rx="1"/><path d="M16 8h4l3 4v7h-7V8z"/><circle cx="5.5" cy="19" r="1.5"/><circle cx="18.5" cy="19" r="1.5"/></svg>供应链
+          </div>
+          <div class="nav-group-menu">
+            <a class="nav-item" data-view="purchases" href="#/purchases" onclick="go('purchases');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>采购单
+            </a>
+            <a class="nav-item" data-view="suppliers" href="#/suppliers" onclick="go('suppliers');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/><path d="M17 3h3v3"/><path d="M7 3H4v3"/></svg>供应商
+            </a>
+            <a class="nav-item" data-view="carriers" href="#/carriers" onclick="go('carriers');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 4v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>物流商
+            </a>
+          </div>
+        </div>
+        <div class="nav-group" id="nav-finance" data-group="finance" onclick="event.stopPropagation()">
+          <div class="nav-group-title" onclick="toggleNavGroup(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>财务中心
+          </div>
+          <div class="nav-group-menu">
+            <a class="nav-item" data-view="finance" href="#/finance" onclick="go('finance');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>订单利润
+            </a>
+            <a class="nav-item badge-new" data-view="finance-v2" href="#/finance-v2" onclick="go('finance-v2');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>利润看板·V2<em>NEW</em>
+            </a>
+            <a class="nav-item badge-new" data-view="exchange-rates" href="#/exchange-rates" onclick="go('exchange-rates');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>多币种汇率<em>NEW</em>
+            </a>
+            <a class="nav-item" data-view="finance-report" href="#/finance-report" onclick="go('finance-report');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>经营报表
+            </a>
+          </div>
+        </div>
+        <div class="nav-group" id="nav-saas-group" data-group="saas" onclick="event.stopPropagation()" style="display:none">
+          <div class="nav-group-title" onclick="toggleNavGroup(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z"/><path d="M9 9h6v6H9z"/></svg>运营
+          </div>
+          <div class="nav-group-menu">
+            <a class="nav-item badge-new" id="nav-saas-admin" data-view="saas-admin" href="#/saas-admin" onclick="go('saas-admin');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>SaaS运营后台<em>NEW</em>
+            </a>
+          </div>
+        </div>
+        <div class="nav-group" data-group="settings" onclick="event.stopPropagation()">
+          <div class="nav-group-title" onclick="toggleNavGroup(this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>系统设置
+          </div>
+          <div class="nav-group-menu">
+            <a class="nav-item" data-view="audit-logs" href="#/audit-logs" onclick="go('audit-logs');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="16" y2="13"/><line x1="9" y1="17" x2="16" y2="17"/></svg>审计日志
+            </a>
+            <a class="nav-item" data-view="settings" href="#/settings" onclick="go('settings');closeNavGroups()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>账户设置
+            </a>
+          </div>
+        </div>
       </div>
-
-      <div class="nav-group">
-        <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>商品中心</div>
-        <a class="nav-item sub" data-view="products" href="#/products" onclick="go('products')">商品管理</a>
-        <a class="nav-item sub badge-new" data-view="products-v2" href="#/products-v2" onclick="go('products-v2')">商品·V2完整版<em>NEW</em></a>
-        <a class="nav-item sub" data-view="inventory" href="#/inventory" onclick="go('inventory')">库存管理</a>
-        <a class="nav-item sub" data-view="inventory-ledger" href="#/inventory-ledger" onclick="go('inventory-ledger')">库存流水</a>
-      </div>
-
-      <div class="nav-group">
-        <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>订单中心</div>
-        <a class="nav-item sub" data-view="orders" href="#/orders" onclick="go('orders')">订单管理</a>
-        <a class="nav-item sub badge-new" data-view="auto-audit" href="#/auto-audit" onclick="go('auto-audit')">自动审单规则<em>NEW</em></a>
-        <a class="nav-item sub badge-new" data-view="aftersales" href="#/aftersales" onclick="go('aftersales')">售后逆向中心<em>NEW</em></a>
-        <a class="nav-item sub" data-view="shipments" href="#/shipments" onclick="go('shipments')">发货记录</a>
-      </div>
-
-      <div class="nav-group">
-        <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="15" height="13" rx="1"/><path d="M16 8h4l3 4v7h-7V8z"/><circle cx="5.5" cy="19" r="1.5"/><circle cx="18.5" cy="19" r="1.5"/></svg>供应链</div>
-        <a class="nav-item sub" data-view="purchases" href="#/purchases" onclick="go('purchases')">采购单</a>
-        <a class="nav-item sub" data-view="suppliers" href="#/suppliers" onclick="go('suppliers')">供应商</a>
-        <a class="nav-item sub" data-view="carriers" href="#/carriers" onclick="go('carriers')">物流商</a>
-      </div>
-
-      <div class="nav-group" id="nav-finance">
-        <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>财务中心</div>
-        <a class="nav-item sub" data-view="finance" href="#/finance" onclick="go('finance')">订单利润</a>
-        <a class="nav-item sub badge-new" data-view="finance-v2" href="#/finance-v2" onclick="go('finance-v2')">利润看板·V2<em>NEW</em></a>
-        <a class="nav-item sub badge-new" data-view="exchange-rates" href="#/exchange-rates" onclick="go('exchange-rates')">多币种汇率<em>NEW</em></a>
-        <a class="nav-item sub" data-view="finance-report" href="#/finance-report" onclick="go('finance-report')">经营报表</a>
-      </div>
-
-      <div class="nav-group">
-        <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>自动化中心·V2</div>
-        <a class="nav-item sub badge-new" data-view="scheduler" href="#/scheduler" onclick="go('scheduler')">任务监控调度<em>NEW</em></a>
-                <a class="nav-item sub badge-new" id="nav-saas-admin" data-view="saas-admin" href="#/saas-admin" onclick="go('saas-admin')">SaaS运营后台<em>NEW</em></a>
-      </div>
-
-      <div class="nav-group">
-        <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>系统设置</div>
-        <a class="nav-item sub" data-view="audit-logs" href="#/audit-logs" onclick="go('audit-logs')">审计日志</a>
-        <a class="nav-item sub" data-view="settings" href="#/settings" onclick="go('settings')">账户设置</a>
-      </div>
-
-      <div class="plan-box" id="plan-box"></div>
-    </aside>
-    <div class="main">
-      <div class="topbar">
-        <div class="page-title" id="page-title">概览</div>
+      <div class="topnav-right">
+        <div class="plan-mini" id="plan-box"></div>
         <div class="user-box">
           <div class="notif-btn" id="notif-btn" onclick="toggleNotif()" title="通知公告">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
@@ -391,6 +466,12 @@ tr:hover td{background:#fafbff}
           </div>
         </div>
       </div>
+    </div>
+    <!-- 子导航栏：页面标题 -->
+    <div class="subnav">
+      <div class="page-title" id="page-title">概览</div>
+    </div>
+    <div class="main">
       <div class="content" id="content"></div>
     </div>
   </div>
@@ -428,7 +509,7 @@ const PLATFORMS = [
 ];
 // 常用币种（店铺结算币种，订单按此折算 CNY）
 const CURRENCIES = ['CNY','USD','EUR','GBP','JPY','KRW','SGD','MYR','THB','VND','IDR','PHP','TWD','BRL','MXN','RUB','PLN','AUD','CAD','HKD','TRY','AED','SAR','INR'];
-const VIEW_TITLES = { dashboard:'概览', shops:'店铺授权', platforms:'平台接入', products:'商品管理', 'products-v2':'商品中心·V2完整版', inventory:'库存管理', 'inventory-ledger':'库存流水', orders:'订单管理', 'auto-audit':'自动审单配置', aftersales:'售后逆向中心', shipments:'发货记录', purchases:'采购单', suppliers:'供应商', carriers:'物流商', finance:'订单利润', 'finance-v2':'利润看板·V2', 'finance-report':'月度报表', 'exchange-rates':'多币种汇率看板', scheduler:'任务监控·调度中心', 'saas-admin':'SaaS运营后台', 'audit-logs':'审计日志', settings:'账户设置', billing:'套餐订阅' };
+const VIEW_TITLES = { dashboard:'概览', shops:'店铺授权', platforms:'平台接入', products:'商品管理', 'product/new':'新增商品', 'product/edit':'编辑商品', 'products-v2':'商品中心·V2完整版', inventory:'库存管理', 'inventory-ledger':'库存流水', orders:'订单管理', 'auto-audit':'自动审单配置', aftersales:'售后逆向中心', shipments:'发货记录', purchases:'采购单', suppliers:'供应商', carriers:'物流商', finance:'订单利润', 'finance-v2':'利润看板·V2', 'finance-report':'月度报表', 'exchange-rates':'多币种汇率看板', scheduler:'任务监控·调度中心', 'saas-admin':'SaaS运营后台', 'audit-logs':'审计日志', settings:'账户设置', billing:'套餐订阅' };
 
 function toast(msg, type) {
   const el = document.createElement('div');
@@ -541,12 +622,16 @@ async function enterApp() {
   // 子账号（staff/viewer）、超级管理员（super_admin）的租户视图均隐藏套餐订阅
   const billingMenu = document.getElementById('menu-billing');
   if (billingMenu) billingMenu.style.display = (me && me.role === 'owner') ? '' : 'none';
-  // 侧边栏菜单权限：SaaS运营后台 仅 super_admin（超级管理员）可见，其他角色完全隐藏
+  // 顶部导航菜单权限：SaaS运营后台 仅 super_admin（超级管理员）可见，其他角色完全隐藏
+  const saasGroup = document.getElementById('nav-saas-group');
+  if (saasGroup) saasGroup.style.display = (me && me.role === 'super_admin') ? '' : 'none';
   const saasNav = document.getElementById('nav-saas-admin');
-  if (saasNav) saasNav.style.display = (me && me.role === 'super_admin') ? '' : 'none';
-  // 角色权限：非 owner（staff/viewer）隐藏财务中心，viewer 再隐藏写操作入口
+  if (saasNav) saasNav.style.display = '';
+  // 角色权限：非 owner（staff/viewer）隐藏财务中心分组，viewer 再隐藏写操作入口
   const finNav = document.getElementById('nav-finance');
   if (finNav) finNav.style.display = (me && me.role !== 'owner') ? 'none' : '';
+  // 顶栏分组高亮：根据当前 view 找到对应所属分组
+  highlightNavGroup();
   renderPlanBox();
   // 套餐到期检测：到期弹窗引导续费
   if (tenant && tenant.expired) {
@@ -573,32 +658,54 @@ function renderPlanBox() {
   const expired = tenant.expired;
   document.getElementById('plan-box').innerHTML = `
     <div class="p-name">${esc(tenant.planName)}</div>
-    <div class="p-exp ${expired ? 'warn' : ''}">${expired ? '已到期，续费后恢复使用' : '有效期至 ' + fmtDate(tenant.expire_at)}</div>`;
+    <div class="p-exp ${expired ? 'warn' : ''}">${expired ? '已到期' : '至 ' + String(tenant.expire_at||'').slice(5,10)}</div>`;
 }
 
 /* ================= 路由 ================= */
 function go(view) {
-  view = String(view || '').split('?')[0];
-  if (!VIEW_TITLES[view]) view = 'dashboard';
+  const rawView = String(view || '').split('?')[0];
+  // ===== 动态路由解析（先解析，再判断已知视图） =====
+  let titleKey = rawView, routeArgs = {}, loaderKey = rawView;
+  if (rawView.startsWith('product/edit/')) {
+    titleKey = 'product/edit';
+    routeArgs = { action: 'edit', id: rawView.replace('product/edit/', '') };
+    loaderKey = 'product-edit';
+  } else if (rawView === 'product/new') {
+    titleKey = 'product/new';
+    routeArgs = { action: 'new' };
+    loaderKey = 'product-edit';
+  }
+  // ===== 校验路由是否合法：VIEW_TITLES 精确 或 合法动态路由 =====
+  const knownRoutes = Object.keys(VIEW_TITLES);
+  const isValid = knownRoutes.includes(rawView) || knownRoutes.includes(titleKey) || loaderKey !== rawView;
+  view = isValid ? rawView : 'dashboard';
+  if (!isValid) { titleKey = 'dashboard'; loaderKey = 'dashboard'; routeArgs = {}; }
   // ===== 路由级前端权限拦截（403）：与后端双重保护 =====
-  // SaaS运营后台：仅超级管理员（super_admin）可访问，其他角色一律403拦截并跳回概览
-  if (view === 'saas-admin' && !(me && me.role === 'super_admin')) {
+  if ((loaderKey === 'saas-admin' || view === 'saas-admin') && !(me && me.role === 'super_admin')) {
     toast('403 无权限访问SaaS运营后台', 'err');
-    view = 'dashboard';
+    loaderKey = 'dashboard'; titleKey = 'dashboard'; view = 'dashboard'; routeArgs = {};
   }
-  // 套餐订阅页：仅主账号 owner 可见，子账号/超级管理员（租户界面）无权限访问
-  if (view === 'billing' && !(me && me.role === 'owner')) {
+  if ((loaderKey === 'billing' || view === 'billing') && !(me && me.role === 'owner')) {
     toast('403 仅主账号可查看套餐订阅', 'warn');
-    view = 'dashboard';
+    loaderKey = 'dashboard'; titleKey = 'dashboard'; view = 'dashboard'; routeArgs = {};
   }
-  // 仅当停留在同一视图时保留 URL 查询参数（OAuth 回跳提示用）
+  // ===== 写入 URL hash（动态路由保留原始路径含 /:id，不回写为 product/edit） =====
   const cur = String(location.hash.replace('#/', '')).split('?')[0];
   const q = (cur === view && location.hash.includes('?')) ? '?' + location.hash.split('?')[1] : '';
-  location.hash = '#/' + view + q;
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('on', n.dataset.view === view));
-  document.getElementById('page-title').textContent = VIEW_TITLES[view];
-  const loaders = { dashboard: loadDashboard, orders: loadOrders, products: loadProducts, 'products-v2': loadProductsV2, inventory: loadInventory, 'inventory-ledger': loadInventoryLedger, shops: loadShops, platforms: loadPlatforms, 'auto-audit': loadAutoAudit, aftersales: loadAftersales, shipments: loadShipments, purchases: loadPurchases, suppliers: loadSuppliers, carriers: loadCarriers, finance: loadFinance, 'finance-v2': loadFinanceV2, 'finance-report': loadFinanceReport, 'exchange-rates': loadExchangeRates, scheduler: loadScheduler, 'saas-admin': loadSaasAdmin, 'audit-logs': loadAuditLogs, settings: loadSettings, billing: loadBilling };
-  loaders[view]();
+  const hashTarget = view; // 动态路由 view 就是 rawView（含 /:id），不要改成 titleKey
+  if (String(location.hash.replace('#/', '')).split('?')[0] !== hashTarget) {
+    location.hash = '#/' + hashTarget + q;
+  }
+  document.getElementById('page-title').textContent = VIEW_TITLES[titleKey] || '';
+  // 顶部导航高亮：商品编辑时高亮「商品中心 → 商品管理」
+  document.querySelectorAll('.nav-item').forEach(n => {
+    const v = n.dataset.view;
+    n.classList.toggle('on', v === 'products' && (loaderKey === 'product-edit' || loaderKey === 'products') ? true : (v === loaderKey));
+  });
+  highlightNavGroup();
+  const loaders = { dashboard: loadDashboard, orders: loadOrders, products: loadProducts, 'product-edit': () => loadProductEdit(routeArgs), 'products-v2': loadProductsV2, inventory: loadInventory, 'inventory-ledger': loadInventoryLedger, shops: loadShops, platforms: loadPlatforms, 'auto-audit': loadAutoAudit, aftersales: loadAftersales, shipments: loadShipments, purchases: loadPurchases, suppliers: loadSuppliers, carriers: loadCarriers, finance: loadFinance, 'finance-v2': loadFinanceV2, 'finance-report': loadFinanceReport, 'exchange-rates': loadExchangeRates, scheduler: loadScheduler, 'saas-admin': loadSaasAdmin, 'audit-logs': loadAuditLogs, settings: loadSettings, billing: loadBilling };
+  if (loaders[loaderKey]) loaders[loaderKey]();
+  else { go('dashboard'); }
 }
 window.addEventListener('hashchange', () => {
   const v = String(location.hash.replace('#/', '')).split('?')[0];
@@ -607,7 +714,15 @@ window.addEventListener('hashchange', () => {
     location.replace(location.pathname + '#/');
     return;
   }
-  if (token && VIEW_TITLES[v]) go(v);
+  if (!token) return;
+  // 动态路由匹配：product/edit/:id / product/new
+  let routed = v;
+  if (v.startsWith('product/edit/') || v === 'product/new' || VIEW_TITLES[v]) {
+    go(routed);
+  } else {
+    // 未匹配，跳回概览
+    go('dashboard');
+  }
 });
 
 /* ================= 概览 ================= */
@@ -640,7 +755,7 @@ async function loadProducts() {
       <div class="card-head"><h3>商品列表（${r.items.length}）</h3>
         <div style="display:flex;gap:8px">
           <button class="btn-ghost btn-sm" onclick="syncProductsForm()">⟳ 从平台同步 Listing</button>
-          <button class="btn-primary btn-sm" onclick="productForm()">+ 新增商品</button>
+          <button class="btn-primary btn-sm" onclick="go('product/new')">+ 新增商品</button>
         </div></div>
       <div class="table-wrap"><table>
         <thead><tr><th>SKU</th><th>商品名称</th><th>类目</th><th>售价</th><th>成本</th><th>在库</th><th>占用</th><th>可用</th><th>操作</th></tr></thead>
@@ -650,7 +765,7 @@ async function loadProducts() {
             <td>${fmtMoney(p.price)}</td><td>${fmtMoney(p.cost)}</td>
             <td>${p.qty_on_hand || 0}</td><td>${p.qty_reserved || 0}</td><td><b>${p.qty_available || 0}</b></td>
             <td style="white-space:nowrap">
-              <button class="btn-sm primary" onclick="productForm(${p.id})">编辑</button>
+              <button class="btn-sm primary" onclick="go('product/edit/' + ${p.id})">编辑</button>
               <button class="btn-sm danger" onclick="delProduct(${p.id}, '${esc(p.sku)}')">删除</button>
             </td>
           </tr>`).join('') : `<tr><td colspan="9"><div class="empty">暂无商品，点击右上角「新增商品」开始</div></td></tr>`}
@@ -659,19 +774,118 @@ async function loadProducts() {
 }
 
 function productForm(id) {
-  const p = id ? productsCache.find(x => x.id === id) : null;
-  openModal(p ? '编辑商品' : '新增商品', `
-    <div class="form-grid">
-      <div class="form-row"><label>SKU *</label><input id="pf-sku" value="${esc(p ? p.sku : '')}" placeholder="唯一编码"></div>
-      <div class="form-row"><label>类目</label><input id="pf-cat" value="${esc(p ? p.category : '')}" placeholder="如：Home & Kitchen"></div>
+  // 兼容调用（从弹窗改为独立页面路由）
+  if (id) go('product/edit/' + id);
+  else go('product/new');
+}
+
+/** 独立完整页面：新增 / 编辑商品 */
+async function loadProductEdit(args) {
+  const action = (args && args.action) || 'new';
+  const id = (args && args.id) || null;
+  let p = null;
+  if (action === 'edit' && id) {
+    try {
+      // 优先从缓存取，否则单独 GET
+      const fromCache = productsCache && productsCache.find(x => String(x.id) === String(id));
+      p = fromCache || (await api('/products/' + id));
+    } catch (e) {
+      toast('商品不存在或已删除', 'err');
+      go('products');
+      return;
+    }
+  }
+  const pageTitle = action === 'edit' ? '编辑商品' : '新增商品';
+  document.getElementById('content').innerHTML = `
+    <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px">
+      <button class="btn-ghost btn-sm" onclick="go('products')">← 返回商品列表</button>
+      <div style="flex:1">
+        <h2 style="margin:0;font-size:18px;color:var(--text-1)">${pageTitle}</h2>
+        <p style="margin:4px 0 0;font-size:13px;color:var(--text-3)">${action === 'edit' ? '修改商品基础信息、价格与成本。保存后立即生效。' : '填写商品基础信息、价格与成本，创建后可继续管理库存与刊登。'}</p>
+      </div>
+      ${action === 'edit' ? `<button class="btn-danger btn-sm" onclick="delProduct(${p.id}, '${esc(p && p.sku || '')}', true)">删除商品</button>` : ''}
     </div>
-    <div class="form-row"><label>商品名称 *</label><input id="pf-name" value="${esc(p ? p.name : '')}" placeholder="商品标题"></div>
-    <div class="form-grid">
-      <div class="form-row"><label>售价（¥）</label><input id="pf-price" type="number" step="0.01" min="0" value="${p ? p.price : ''}"></div>
-      <div class="form-row"><label>成本（¥）</label><input id="pf-cost" type="number" step="0.01" min="0" value="${p ? p.cost : ''}"></div>
-    </div>`,
-    `<button class="btn-ghost" onclick="closeModal()">取消</button>
-     <button class="btn-primary" onclick="saveProduct(${id || 0})">保存</button>`);
+
+    <div class="card" style="padding:28px">
+      <div style="max-width:780px;margin:0 auto">
+
+        <div class="section-block">
+          <div class="section-title">基础信息</div>
+          <div class="form-grid">
+            <div class="form-row">
+              <label>SKU 编码 <span class="req">*</span></label>
+              <input id="pf-sku" value="${esc(p ? p.sku : '')}" placeholder="唯一识别编码，如 SKU-0001" style="width:100%">
+              <p class="field-hint">建议使用稳定且唯一的编码，创建后建议不要频繁修改。</p>
+            </div>
+            <div class="form-row">
+              <label>所属类目</label>
+              <input id="pf-cat" value="${esc(p ? p.category : '')}" placeholder="如：Home & Kitchen / 电子产品 / 服饰" style="width:100%">
+            </div>
+          </div>
+          <div class="form-row">
+            <label>商品名称 <span class="req">*</span></label>
+            <input id="pf-name" value="${esc(p ? p.name : '')}" placeholder="商品标题，建议包含核心关键词" style="width:100%">
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-title">价格与成本</div>
+          <div class="form-grid">
+            <div class="form-row">
+              <label>售价（¥）</label>
+              <input id="pf-price" type="number" step="0.01" min="0" value="${p ? p.price : ''}" placeholder="商品销售价" style="width:100%">
+              <p class="field-hint">订单金额将以此单价为基础计算。</p>
+            </div>
+            <div class="form-row">
+              <label>成本（¥）</label>
+              <input id="pf-cost" type="number" step="0.01" min="0" value="${p ? p.cost : ''}" placeholder="商品采购/生产成本" style="width:100%">
+              <p class="field-hint">用于利润看板统计毛利率，建议准确填写。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-title">当前状态 <span style="font-weight:400;font-size:12px;color:var(--text-3);margin-left:8px">（仅编辑模式可见）</span></div>
+          ${action === 'edit' ? `
+          <div class="form-grid">
+            <div class="stat-mini"><div class="s-label">在库数量</div><div class="s-value">${p && p.qty_on_hand != null ? p.qty_on_hand : 0}</div></div>
+            <div class="stat-mini"><div class="s-label">订单占用</div><div class="s-value">${p && p.qty_reserved != null ? p.qty_reserved : 0}</div></div>
+            <div class="stat-mini"><div class="s-label">可用库存</div><div class="s-value"><b>${p && p.qty_available != null ? p.qty_available : 0}</b></div></div>
+            <div class="stat-mini"><div class="s-label">最近更新</div><div class="s-value" style="font-size:13px">${p && p.updated_at ? fmtDate(p.updated_at) : '-'}</div></div>
+          </div>` : `
+          <div class="hint-box">新建后可在「库存管理」中对该商品进行入库 / 出库操作。</div>
+          `}
+        </div>
+
+        <div style="margin-top:28px;display:flex;justify-content:flex-end;gap:10px">
+          <button class="btn-ghost" onclick="go('products')">取消并返回</button>
+          <button id="pf-save-btn" class="btn-primary" onclick="saveProduct(${action === 'edit' && id ? id : 0})">${action === 'edit' ? '保存修改' : '创建商品'}</button>
+        </div>
+
+      </div>
+    </div>
+
+    <style>
+    .section-block{margin-bottom:28px;padding-bottom:20px;border-bottom:1px dashed var(--border)}
+    .section-block:last-of-type{border-bottom:none;margin-bottom:0;padding-bottom:0}
+    .section-title{font-size:14px;font-weight:600;color:var(--text-1);margin-bottom:14px;padding-left:10px;border-left:3px solid var(--primary)}
+    .field-hint{font-size:12px;color:var(--text-3);margin:6px 2px 0}
+    .req{color:#ef4444}
+    .stat-mini{padding:14px 16px;border-radius:12px;background:linear-gradient(180deg, #f8fafc, #f1f5f9);border:1px solid var(--border)}
+    .stat-mini .s-label{font-size:12px;color:var(--text-3);margin-bottom:4px}
+    .stat-mini .s-value{font-size:18px;font-weight:600;color:var(--text-1)}
+    .hint-box{padding:14px 16px;background:#eff6ff;border-radius:10px;color:#1d4ed8;font-size:13px;border:1px solid #bfdbfe}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    @media (max-width:640px){.form-grid{grid-template-columns:1fr}}
+    .form-row label{display:block;font-size:13px;color:var(--text-2);margin-bottom:6px;font-weight:500}
+    .form-row input,.form-row select,.form-row textarea{padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;background:#fff;transition:all .15s}
+    .form-row input:focus,.form-row select:focus,.form-row textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+    </style>`;
+  // 编辑模式自动聚焦 SKU 字段
+  setTimeout(() => {
+    const f = document.getElementById('pf-sku');
+    if (f && action === 'new') f.focus();
+  }, 50);
 }
 
 async function saveProduct(id) {
@@ -684,16 +898,27 @@ async function saveProduct(id) {
       cost: Number(document.getElementById('pf-cost').value) || 0
     };
     if (!body.sku || !body.name) return toast('SKU 与名称必填', 'err');
+    const btn = document.getElementById('pf-save-btn');
+    if (btn) { btn.disabled = true; btn.textContent = id ? '保存中…' : '创建中…'; }
     await api('/products' + (id ? '/' + id : ''), id ? 'PATCH' : 'POST', body);
-    closeModal(); toast(id ? '商品已更新' : '商品已创建', 'ok');
-    loadProducts();
-  } catch (e) { toast(e.message, 'err'); }
+    toast(id ? '商品已更新' : '商品已创建', 'ok');
+    // 独立页面保存后返回商品列表
+    go('products');
+  } catch (e) {
+    const btn = document.getElementById('pf-save-btn');
+    if (btn) { btn.disabled = false; btn.textContent = id ? '保存修改' : '创建商品'; }
+    toast(e.message, 'err');
+  }
 }
 
-async function delProduct(id, sku) {
+async function delProduct(id, sku, fromEditPage) {
   if (!confirm(`确定删除商品「${sku}」？仅可删除无库存商品。`)) return;
-  try { await api('/products/' + id, 'DELETE'); toast('已删除', 'ok'); loadProducts(); }
-  catch (e) { toast(e.message, 'err'); }
+  try {
+    await api('/products/' + id, 'DELETE');
+    toast('已删除', 'ok');
+    if (fromEditPage) go('products');
+    else loadProducts();
+  } catch (e) { toast(e.message, 'err'); }
 }
 
 /** 从平台同步商品 Listing：选择已授权店铺 */
@@ -2279,32 +2504,41 @@ function renderFinanceV2(d) { // 复用上面渲染逻辑
 }
 
 /* --- 5. 多币种汇率看板 --- */
-async function loadExchangeRates() {
-  let data = null;
-  try { data = await api('/exchange-rates/board'); }
-  catch(e) { data = { error: e.message }; }
-  document.getElementById('content').innerHTML = `
+let __fxTimer = null;
+async function loadExchangeRates(noToast) {
+  clearInterval(__fxTimer);
+  const lastContent = document.getElementById('content').innerHTML;
+  const data = await (async function fetchData() {
+    try { return await api('/exchange-rates/board'); }
+    catch(e) { return { error: e.message, lastContent: lastContent }; }
+  })();
+  function render(d) {
+    document.getElementById('content').innerHTML = `
     <div class="banner ok"><strong>💱 多币种汇率可视化·V2</strong>
-      <span style="margin-left:12px;color:var(--text-2)">覆盖 6 大跨境区域 · 32 种活跃币种 · 实时中间价 + 今日涨跌 + 30 天趋势（调度器 fx/refresh 每 6 小时同步央行中间价）</span>
+      <span style="margin-left:12px;color:var(--text-2)">覆盖 6 大跨境区域 · 32 种活跃币种 · 实时中间价 + 今日涨跌 + 30 天趋势（系统后台每小时自动同步央行中间价，页面每 60s 自动刷新）</span>
     </div>
     <div style="display:flex;gap:8px;margin:14px 0;flex-wrap:wrap">
+      <span style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;background:var(--green-bg);color:var(--green);font-size:12.5px;font-weight:700">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 1.6s infinite"></span>
+        自动同步中
+      </span>
       区域筛选：
       ${[['ALL','全部'],['NA','北美'],['EU','欧洲'],['SEA','东南亚'],['SA','南亚'],['JPKR','日韩'],['ME','中东'],['LA','拉美'],['OCE','大洋洲']].map(([k,n])=>`
         <button class="btn-sm neutral" onclick="toast('区域筛选 WIP，当前显示全部','ok')">${n}</button>`).join('')}
-      <span style="margin-left:auto;font-size:13px;color:var(--text-2)">更新于：${String((data||{}).updatedAt||'-').slice(0,16)}</span>
+      <span style="margin-left:auto;font-size:13px;color:var(--text-2)">更新于：${String((d||{}).updatedAt||'-').slice(0,16)}</span>
     </div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
-      <div class="tile"><div class="tile-v">${((data||{}).summary||{}).totalCurrencies||'—'}</div><div class="tile-k">覆盖币种数</div></div>
-      <div class="tile"><div class="tile-v" style="color:var(--green)">${((data||{}).summary||{}).up||0}</div><div class="tile-k">今日上涨</div></div>
-      <div class="tile"><div class="tile-v" style="color:var(--red)">${((data||{}).summary||{}).down||0}</div><div class="tile-k">今日下跌</div></div>
-      <div class="tile"><div class="tile-v" style="color:var(--text-2)">${((data||{}).summary||{}).flat||0}</div><div class="tile-k">今日持平</div></div>
+      <div class="tile"><div class="tile-v">${((d||{}).summary||{}).totalCurrencies||'—'}</div><div class="tile-k">覆盖币种数</div></div>
+      <div class="tile"><div class="tile-v" style="color:var(--green)">${((d||{}).summary||{}).up||0}</div><div class="tile-k">今日上涨</div></div>
+      <div class="tile"><div class="tile-v" style="color:var(--red)">${((d||{}).summary||{}).down||0}</div><div class="tile-k">今日下跌</div></div>
+      <div class="tile"><div class="tile-v" style="color:var(--text-2)">${((d||{}).summary||{}).flat||0}</div><div class="tile-k">今日持平</div></div>
     </div>
     <table class="data-table">
       <thead><tr><th>区域</th><th>国家</th><th>币种</th><th>代码</th><th>对人民币中间价</th><th>今日涨跌</th><th>30天趋势</th></tr></thead>
       <tbody>
         ${(function(){
-          const items = (data||{}).items || [];
-          if (!items.length && data.error) return `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--red)">后端：${data.error.slice(0,80)}</td></tr>`;
+          const items = (d||{}).items || [];
+          if (!items.length && d.error) return `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--red)">后端：${d.error.slice(0,80)}</td></tr>`;
           const rows = [];
           for (const region of Object.keys(items)) {
             const r = items[region];
@@ -2316,17 +2550,28 @@ async function loadExchangeRates() {
                 <td><span style="display:inline-block;padding:3px 8px;background:${r.color||'var(--primary-light)'};color:#fff;border-radius:6px;font-size:12px;font-weight:700">${r.label||region}</span></td>
                 <td>${c.flag||''} ${c.name}</td>
                 <td>${c.currencyName||''}</td>
-                <td><code>${c.currency||''}</code></td>
+                <td>${c.currency||''}</td>
                 <td><strong>${rate}</strong> CNY</td>
                 <td style="color:${change>=0?'var(--green)':'var(--red)'}">${change>=0?'▲':'▼'} ${Math.abs(change).toFixed(2)}%</td>
                 <td style="font-size:11px;color:var(--text-2);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${hist}">${hist?'📈 趋势数据就绪':'—'}</td>
               </tr>`);
             }
           }
-          return rows.join('') || `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-2)">${data.error?'请刷新重试':'暂无数据，请等待调度任务 fx/refresh 首轮执行'}</td></tr>`;
+          return rows.join('') || `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-2)">${d.error?'请刷新重试':'暂无数据，汇率同步任务将在后台自动执行（约 1 分钟内完成首轮同步）'}</td></tr>`;
         })()}
       </tbody>
     </table>`;
+  }
+  render(data);
+  // 页面内每 60 秒自动轮询刷新汇率
+  __fxTimer = setInterval(async function() {
+    const hash = String(location.hash || '').replace('#/', '').split('?')[0];
+    if (hash !== 'exchange-rates') { clearInterval(__fxTimer); return; }
+    try {
+      const d = await api('/exchange-rates/board');
+      render(d);
+    } catch {}
+  }, 60 * 1000);
 }
 
 /* --- 6. 任务监控·调度中心 --- */
@@ -2805,6 +3050,39 @@ async function renderSaasApps() {
 async function updateAppStatus(id, st) {
   try{ await __saasApi('/admin/landing/applications/'+id,'PUT',{ status:st }); toast('已更新状态','ok'); }catch(e){ toast(e.message,'err'); }
 }
+
+/* ===== 顶部导航分组下拉逻辑 ===== */
+function toggleNavGroup(el) {
+  event && event.stopPropagation && event.stopPropagation();
+  var groups = document.querySelectorAll('.topnav-groups .nav-group');
+  var thisGroup = el ? el.closest('.nav-group') : null;
+  groups.forEach(function(g) { if (g !== thisGroup) g.classList.remove('open'); });
+  if (thisGroup) thisGroup.classList.toggle('open');
+}
+function closeNavGroups() {
+  document.querySelectorAll('.topnav-groups .nav-group').forEach(function(g){ g.classList.remove('open'); });
+}
+function highlightNavGroup() {
+  var cur = String(location.hash || '').replace('#/','').split('?')[0] || 'dashboard';
+  var items = document.querySelectorAll('.topnav-groups .nav-item, .topnav-groups [data-view]');
+  var matchGroup = null;
+  items.forEach(function(el) {
+    var v = el.getAttribute && el.getAttribute('data-view');
+    var on = (v === cur);
+    el.classList.toggle('on', !!on);
+    if (on) {
+      var g = el.closest && el.closest('.nav-group');
+      if (g) matchGroup = g;
+    }
+  });
+  // 对所属分组title加on
+  document.querySelectorAll('.topnav-groups .nav-group').forEach(function(g) {
+    var t = g.querySelector('.nav-group-title');
+    if (t) t.classList.toggle('on', g === matchGroup);
+  });
+}
+// 点击空白关闭所有顶部分组下拉
+document.addEventListener('click', function(){ closeNavGroups(); });
 
 /* ===== 头像下拉菜单逻辑 ===== */
 function toggleAvatarMenu(ev) {

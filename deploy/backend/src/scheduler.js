@@ -148,7 +148,7 @@ function computeNextRun(task, status) {
     if (String(task.task_type || '').startsWith('sync')) return new Date(Date.now() + 30 * 60 * 1000);
     if (task.task_type === 'stock_warn') return new Date(Date.now() + 6 * 3600 * 1000);
     if (task.task_type === 'auto_audit') return new Date(Date.now() + 5 * 60 * 1000);
-    if (task.task_type === 'fx')         return new Date(Date.now() + 6 * 3600 * 1000);
+    if (task.task_type === 'fx')         return new Date(Date.now() + 1 * 3600 * 1000);
     if (task.task_type === 'finance')    return new Date(Date.now() + 3600 * 1000);
     return new Date(Date.now() + 30 * 60 * 1000);
   }
@@ -578,7 +578,7 @@ async function tick() {
 async function ensureDefaultTasks() {
   // 全局任务（tenant_id NULL = 自动遍历所有活跃租户）
   const defaults = [
-    { tenant_id: null, task_type: 'fx',              task_subtype: 'refresh',       cron_expr: '6h',      priority: 8,  next_offset_ms: 60 * 1000 },
+    { tenant_id: null, task_type: 'fx',              task_subtype: 'refresh',       cron_expr: '1h',      priority: 8,  next_offset_ms: 45 * 1000 },
     { tenant_id: null, task_type: 'finance_settle',  task_subtype: 'monthly',       cron_expr: 'monthly', priority: 10, max_retry: 5 },
     { tenant_id: null, task_type: 'sync',            task_subtype: 'orders',        cron_expr: '30min',   priority: 9,  next_offset_ms: 90 * 1000 },
     { tenant_id: null, task_type: 'auto_audit',      task_subtype: 'run',           cron_expr: '30min',   priority: 7,  next_offset_ms: 120 * 1000 },
