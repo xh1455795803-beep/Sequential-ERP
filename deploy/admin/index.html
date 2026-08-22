@@ -515,7 +515,7 @@ const PLATFORMS = [
 ];
 // 常用币种（店铺结算币种，订单按此折算 CNY）
 const CURRENCIES = ['CNY','USD','EUR','GBP','JPY','KRW','SGD','MYR','THB','VND','IDR','PHP','TWD','BRL','MXN','RUB','PLN','AUD','CAD','HKD','TRY','AED','SAR','INR'];
-const VIEW_TITLES = { dashboard:'概览', shops:'店铺授权', platforms:'平台接入', products:'商品管理', 'product/new':'新增商品', 'product/edit':'编辑商品', 'products-v2':'商品中心·V2完整版', inventory:'库存管理', 'inventory-ledger':'库存流水', orders:'订单管理', 'auto-audit':'自动审单配置', aftersales:'售后逆向中心', shipments:'发货记录', purchases:'采购单', suppliers:'供应商', carriers:'物流商', finance:'订单利润', 'finance-v2':'利润看板·V2', 'finance-report':'月度报表', 'exchange-rates':'多币种汇率看板', scheduler:'任务监控·调度中心', 'saas-admin':'SaaS运营后台', 'audit-logs':'审计日志', settings:'账户设置', billing:'套餐订阅' };
+const VIEW_TITLES = { dashboard:'概览', shops:'店铺授权', platforms:'平台接入', products:'商品管理', 'product/new':'新增商品', 'product/edit':'编辑商品', 'products-v2':'商品中心·V2完整版', inventory:'库存管理', 'inventory-ledger':'库存流水', orders:'订单管理', 'auto-audit':'自动审单配置', aftersales:'售后逆向中心', shipments:'发货记录', purchases:'采购单', suppliers:'供应商', carriers:'物流商', finance:'订单利润', 'finance-v2':'利润看板·V2', 'finance-report':'月度报表', 'exchange-rates':'多币种汇率看板', 'saas-admin':'SaaS运营后台', 'audit-logs':'审计日志', settings:'账户设置', billing:'套餐订阅' };
 
 
 /* 妙手风格：分组 → 平铺二级菜单（数量少，干净） */
@@ -766,7 +766,7 @@ function go(view) {
     n.classList.toggle('on', v === 'products' && (loaderKey === 'product-edit' || loaderKey === 'products') ? true : (v === loaderKey));
   });
   refreshTabsAndHighlight();
-  const loaders = { dashboard: loadDashboard, orders: loadOrders, products: loadProducts, 'product-edit': () => loadProductEdit(routeArgs), 'products-v2': loadProductsV2, inventory: loadInventory, 'inventory-ledger': loadInventoryLedger, shops: loadShops, platforms: loadPlatforms, 'auto-audit': loadAutoAudit, aftersales: loadAftersales, shipments: loadShipments, purchases: loadPurchases, suppliers: loadSuppliers, carriers: loadCarriers, finance: loadFinance, 'finance-v2': loadFinanceV2, 'finance-report': loadFinanceReport, 'exchange-rates': loadExchangeRates, scheduler: loadScheduler, 'saas-admin': loadSaasAdmin, 'audit-logs': loadAuditLogs, settings: loadSettings, billing: loadBilling };
+  const loaders = { dashboard: loadDashboard, orders: loadOrders, products: loadProducts, 'product-edit': () => loadProductEdit(routeArgs), 'products-v2': loadProductsV2, inventory: loadInventory, 'inventory-ledger': loadInventoryLedger, shops: loadShops, platforms: loadPlatforms, 'auto-audit': loadAutoAudit, aftersales: loadAftersales, shipments: loadShipments, purchases: loadPurchases, suppliers: loadSuppliers, carriers: loadCarriers, finance: loadFinance, 'finance-v2': loadFinanceV2, 'finance-report': loadFinanceReport, 'exchange-rates': loadExchangeRates, 'saas-admin': loadSaasAdmin, 'audit-logs': loadAuditLogs, settings: loadSettings, billing: loadBilling };
   if (loaders[loaderKey]) loaders[loaderKey]();
   else { go('dashboard'); }
 }
@@ -2440,7 +2440,7 @@ async function loadAutoAudit() {
           <div class="tile"><div class="tile-v" id="aa-run-c">—</div><div class="tile-k">累计扫描单</div></div>
           <div class="tile"><div class="tile-v" id="aa-err-c">—</div><div class="tile-k">异常/拦截</div></div>
         </div>
-        <div class="hint" style="margin-top:16px">调度系统每5分钟自动执行一轮，运行记录可在「任务监控·调度中心」查看 <span class="qtip" title="自动审单流程：1) 拉取所有待审新订单 2) 逐条匹配规则 3) 命中通过/人工 4) 写入审计日志。点击任务监控查看每次扫描的命中数量和异常。">?</span></div>
+        <div class="hint" style="margin-top:16px">系统每 5 分钟自动执行一轮，命中自动通过 / 人工的订单都将写入审计日志 <span class="qtip" title="自动审单流程：1) 拉取所有待审新订单 2) 逐条匹配规则 3) 命中通过/人工 4) 写入审计日志。">?</span></div>
       </div>
     </div>`;
 }
@@ -2626,10 +2626,11 @@ async function loadExchangeRates(noToast) {
     </table>`;
   }
   render(data);
-  // 页面内每 60 秒自动轮询刷新汇率
-  __fxTimer = setInterval(async function() {
+  // 页面内每 60 秒自动轮询刷新汇率（离开页面自动停；每次进入页面时先清旧 interval 避免重复）
+  if (window.__fxTimer) { try { clearInterval(window.__fxTimer); } catch {} window.__fxTimer = null; }
+  window.__fxTimer = setInterval(async function() {
     const hash = String(location.hash || '').replace('#/', '').split('?')[0];
-    if (hash !== 'exchange-rates') { clearInterval(__fxTimer); return; }
+    if (hash !== 'exchange-rates') { try { clearInterval(window.__fxTimer); } catch {} window.__fxTimer = null; return; }
     try {
       const d = await api('/exchange-rates/board');
       render(d);
@@ -3136,7 +3137,8 @@ function pickGroup(groupKey, opts) {
 function refreshTabsAndHighlight() {
   var raw = String(location.hash || '').replace('#/', '').split('?')[0];
   var view = raw;
-  if (raw.startsWith('product/edit/') || raw === 'product/new') view = 'product/edit';
+  var isDynamicProduct = false;
+  if (raw.startsWith('product/edit/') || raw === 'product/new') { view = 'product/edit'; isDynamicProduct = true; }
   var groupKey = VIEW_TO_GROUP[view] || VIEW_TO_GROUP[raw] || 'dashboard';
   if (!VIEW_TO_GROUP[view] && ERP_GROUPS.find(function(g){ return g.key === view; })) groupKey = view;
   document.querySelectorAll('.topnav-groups .nav-group-title').forEach(function(btn){
@@ -3149,7 +3151,7 @@ function refreshTabsAndHighlight() {
     else {
       tabs.style.display = '';
       tabs.innerHTML = g.items.map(function(it){
-        var on = (it.view === raw);
+        var on = (it.view === raw) || (isDynamicProduct && it.view === 'products');
         var badge = it.badge ? '<em>'+it.badge+'</em>' : '';
         return '<a class="nav-item'+(on?' on':'')+'" data-view="'+it.view+'" href="#/'+it.view+'" onclick="event.preventDefault();go(\''+it.view+'\')">'+(it.svg||'')+it.label+badge+'</a>';
       }).join('');
@@ -3214,7 +3216,7 @@ function showExpiredModal() {
 const PLAN_DEFS = {
   basic:    { name:'基础版',  price:{ month:199,  quarter:539,  year:1999  }, shops:5,   monthlyOrders:3000,  products:500,   ai:500,    storage:5,    features:['订单管理','商品管理','库存管理','基础财务报表','5个店铺接入'] },
   standard: { name:'标准版',  price:{ month:599,  quarter:1599, year:5999  }, shops:20,  monthlyOrders:15000, products:3000,  ai:3000,   storage:50,   features:['基础版全部功能','自动审单规则','售后逆向流程','多币种汇率','API接口对接'] },
-  pro:      { name:'专业版',  price:{ month:1599, quarter:4299, year:15999 }, shops:100, monthlyOrders:80000, products:20000, ai:20000,  storage:500,  features:['标准版全部功能','AI智能服务（销量预测/风险检测）','高级财务利润中心','任务调度中心','专属客户经理'] },
+  pro:      { name:'专业版',  price:{ month:1599, quarter:4299, year:15999 }, shops:100, monthlyOrders:80000, products:20000, ai:20000,  storage:500,  features:['标准版全部功能','AI智能服务（销量预测/风险检测）','高级财务利润中心','专属客户经理'] },
   enterprise:{name:'企业版',  price:{ month:4999, quarter:13499,year:49999 }, shops:999, monthlyOrders:9999999,products:999999,ai:999999, storage:5000, features:['专业版全部功能','私有化部署定制','独立数据库','7x24专属技术支持','二开功能定制','SLA服务保障'] }
 };
 const EXPAND_PACKS = [
