@@ -80,7 +80,7 @@ async function finishTask(task, { status, result = null, error = null, durationM
     const startedAtStr = durationMs
       ? `FROM_UNIXTIME(UNIX_TIMESTAMP(NOW()) - ${Math.min(durationMs, 86400000)}/1000)`
       : 'NOW()';
-    const [r] = await query(
+    const qr = await query(
       `INSERT INTO task_runs (task_id, tenant_id, status, started_at, finished_at, duration_ms, result_summary, error_stack, detail_json)
        VALUES (?,?,?, ${startedAtStr}, NOW(), ?, ?, ?, ?)`,
       [task.id, task.tenant_id, status,

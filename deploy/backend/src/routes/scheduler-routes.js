@@ -27,7 +27,8 @@ router.get('/tasks', async (req, res, next) => {
        ORDER BY priority DESC, next_run_at ASC LIMIT ? OFFSET ?`,
       [...params, s, (p - 1) * s]
     );
-    const total = (count && count[0] && count[0].c) ? Number(count[0].c) : 0;
+    const countRow = (count && count[0]) ? count[0] : null;
+    const total = Number(countRow && countRow.c ? countRow.c : 0);
     res.json({ total, page: p, size: s, items: rows });
   } catch (e) { next(e); }
 });

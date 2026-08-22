@@ -1,4 +1,5 @@
-// 配置加载：环境变量由 systemd EnvironmentFile 或 shell 注入
+// 配置加载：优先 dotenv 加载 .env（开发环境），兼容 systemd EnvironmentFile 注入
+try { require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') }); } catch (_) {}
 module.exports = {
   port: parseInt(process.env.PORT || '8090', 10),
   db: {
