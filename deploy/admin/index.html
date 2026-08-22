@@ -74,6 +74,7 @@ label{display:block;font-size:13px;font-weight:600;color:var(--text-2);margin-bo
 .banner{border-radius:8px;padding:12px 16px;margin-bottom:14px;font-size:13.5px;font-weight:500}
 .banner.ok{background:#ecfdf5;color:#047857;border:1px solid #a7f3d0}
 .banner.err{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
+.banner.warn{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
 .sidebar .plan-box{margin-top:auto;background:var(--primary-light);border-radius:10px;padding:12px}
 .plan-box .p-name{font-weight:700;color:var(--primary);font-size:13px;margin-bottom:4px}
 .plan-box .p-exp{font-size:12px;color:var(--text-2);line-height:1.5}
@@ -810,9 +811,13 @@ async function loadShops() {
       </div>
 
       <div id="auth-manual" style="${authTab === 'manual' ? '' : 'display:none'}">
-        <div class="card-head" style="margin-bottom:10px"><h3>手动录入店铺</h3></div>
+        <div class="banner warn" style="margin-bottom:14px">
+          <b>注意：</b>「手动录入」只用于<b>登记店铺归属</b>（方便后续订单导入、利润核算），<b>不提供自动同步订单/商品能力</b>。<br>
+          如需自动拉取平台订单，请切换到上方「自动授权」卡片：OAuth 平台点「去官方授权」，密钥平台点「录入 API 密钥」接入。
+        </div>
+        <div class="card-head" style="margin-bottom:10px"><h3>手动录入店铺（仅登记，不同步）</h3></div>
         <div class="form-grid">
-          <div class="form-row"><label>店铺名称 *</label><input id="mf-name" placeholder="如：US-旗舰店"></div>
+          <div class="form-row"><label>店铺名称 *</label><input id="mf-name" placeholder="如：US-旗舰店（至少 2 个字，同平台不可重名）"></div>
           <div class="form-row"><label>平台 *</label>
             <select id="mf-platform">${PLATFORMS.map(p => `<option>${p}</option>`).join('')}</select></div>
           <div class="form-row"><label>结算币种</label>
@@ -823,8 +828,8 @@ async function loadShops() {
             <p style="font-size:12px;color:var(--text-3);margin-top:6px">用于订单利润核算</p></div>
         </div>
         <div style="display:flex;align-items:center;gap:12px;margin-top:6px">
-          <button class="btn-primary" onclick="saveManualShop()">保存店铺</button>
-          <span style="font-size:12px;color:var(--text-3)">手动录入仅登记店铺信息用于订单归属与利润核算，不支持自动同步</span>
+          <button class="btn-primary" id="mf-save" onclick="saveManualShop(this)">保存店铺（仅登记）</button>
+          <span style="font-size:12px;color:var(--text-3)">如需要自动订单同步，请走「自动授权」</span>
         </div>
       </div>
     </div>
@@ -891,17 +896,30 @@ async function goOauth(platform) {
   } catch (e) { toast(e.message, 'err'); }
 }
 
-/** 手动录入：保存店铺 */
-async function saveManualShop() {
+/** 手动录入：保存店铺（增加 loading + 空值/短值拦截 + 重复校验） */
+async function saveManualShop(btn) {
   try {
     const name = document.getElementById('mf-name').value.trim();
+    const platform = document.getElementById('mf-platform').value;
     if (!name) return toast('请填写店铺名称', 'err');
+    if (name.length < 2) return toast('店铺名称至少 2 个字', 'err');
+    if (!platform) return toast('请选择平台', 'err');
+    if (!PLATFORMS.includes(platform)) return toast(`「${platform}」不在平台列表，请联系运营商开通`, 'err');
+    // 防重复：本地先扫 shopsCache，避免浪费请求
+    if (shopsCache.some(s => s.platform === platform && (s.name || '').trim() === name)) {
+      return toast('该平台下已存在同名店铺，请勿重复录入', 'err');
+    }
     const rate = Number(document.getElementById('mf-rate').value) || 0;
     const currency = document.getElementById('mf-currency').value;
-    await api('/shops', 'POST', { name, platform: document.getElementById('mf-platform').value, commission_rate: rate / 100, currency });
-    toast('店铺已录入', 'ok');
+    if (btn) { btn.disabled = true; btn.textContent = '保存中…'; }
+    await api('/shops', 'POST', { name, platform, commission_rate: rate / 100, currency });
+    toast('店铺已录入（仅登记，不可自动同步）', 'ok');
     loadShops();
-  } catch (e) { toast(e.message, 'err'); }
+  } catch (e) {
+    toast(e.message, 'err');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '保存店铺（仅登记）'; }
+  }
 }
 
 function authBadge(st) {
@@ -910,38 +928,54 @@ function authBadge(st) {
   return '<span class="badge gray">手动录入</span>';
 }
 
-/** 密钥型平台：录入 API 密钥弹窗 */
+/** 密钥型平台：录入 API 密钥弹窗（必填 + 最小长度 + 提交后探活失败不 closeModal） */
 function apikeyForm(platform) {
   const p = oauthPlatforms.find(x => x.platform === platform);
   if (!p || !p.fields) return;
   const fields = p.fields.map(f => `
-    <div class="form-row"><label>${esc(f.label)} *</label>
-      <input id="akf-${f.key}" autocomplete="off" placeholder="从 ${esc(p.where || '平台后台')} 获取"></div>`).join('');
+    <div class="form-row"><label>${esc(f.label)} *（不能为空，至少 4 位）</label>
+      <input id="akf-${f.key}" autocomplete="off" placeholder="从 ${esc(p.where || '平台后台')} 获取后复制粘贴，不要手输" style="font-family:ui-monospace,Consolas,monospace"></div>`).join('');
   openModal(`接入 ${esc(p.name || platform)}（API 密钥）`, `
-    <div class="form-row"><label>店铺备注名</label><input id="akf-name" placeholder="如：${esc(platform)} 主店（可选）"></div>
+    <div class="banner warn" style="margin-bottom:12px;font-size:12px">
+      <b>凭证请务必真实：</b>系统保存前会调用该平台接口做一次探活校验，假值/占位符/手输乱码会直接被拒绝。
+    </div>
+    <div class="form-row"><label>店铺备注名（可选）</label><input id="akf-name" placeholder="如：${esc(platform)} 主店"></div>
     ${fields}
     <p style="font-size:12px;color:var(--text-3);margin-top:10px">密钥获取路径：${esc(p.where || '')}
       ${p.portal ? `（<a href="${esc(p.portal)}" target="_blank" rel="noopener">${esc(p.portal.replace('https://', ''))} ↗</a>）` : ''}<br>
-      密钥将以 AES-256 加密存储，数据库与页面均不显示明文。</p>`,
+      密钥将以 AES-256 加密存储，数据库与页面均不显示明文。探活通过后才会写入店铺。</p>`,
     `<button class="btn-ghost" onclick="closeModal()">取消</button>
-     <button class="btn-primary" onclick="saveApikey('${esc(platform)}')">保存密钥</button>`);
+     <button class="btn-primary" id="akf-save" onclick="saveApikey(this, '${esc(platform)}')">校验并保存密钥</button>`);
 }
 
-async function saveApikey(platform) {
+async function saveApikey(btn, platform) {
   try {
     const p = oauthPlatforms.find(x => x.platform === platform);
     const body = { shop_name: document.getElementById('akf-name').value.trim() };
-    let missing = null;
+    let missing = null, tooShort = null;
     for (const f of p.fields) {
-      const v = document.getElementById('akf-' + f.key).value.trim();
+      const el = document.getElementById('akf-' + f.key);
+      if (!el) continue;
+      const v = el.value.trim();
       if (!v && !missing) missing = f.label;
+      if (v && v.length < 4 && !tooShort) tooShort = f.label;
       body[f.key] = v;
     }
     if (missing) return toast(`请填写 ${missing}`, 'err');
+    if (tooShort) return toast(`${tooShort} 长度不足（至少 4 位），请确认复制完整`, 'err');
+    if (btn) { btn.disabled = true; btn.textContent = '校验凭证并保存中…'; }
     await api('/oauth/apikey/' + encodeURIComponent(platform), 'POST', body);
-    closeModal(); toast('密钥已加密保存，店铺已接入', 'ok');
+    // 成功才关弹窗
+    closeModal();
+    toast('密钥探活通过，已加密保存，店铺已接入', 'ok');
     loadShops();
-  } catch (e) { toast(e.message, 'err'); }
+  } catch (e) {
+    toast(e.message, 'err');
+    // 失败不关弹窗，允许用户修改重新提交
+  } finally {
+    const el = document.getElementById('akf-save');
+    if (el) { el.disabled = false; el.textContent = '校验并保存密钥'; }
+  }
 }
 
 /** 域名型平台（Shopify 系）：先输入店铺域名 */

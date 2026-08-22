@@ -522,36 +522,96 @@ router.get('/authorize-url/:platform', auth, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-/** 密钥型平台：录入 API 密钥（加密存储） */
+/** 密钥型平台：录入 API 密钥（加密存储，支持任意字段 + 保存前探活校验） */
 router.post('/apikey/:platform', auth, async (req, res, next) => {
   try {
     const platform = req.params.platform;
     const def = KEY_PLATFORMS[platform];
     if (!def) return res.status(400).json({ error: '该平台不支持密钥录入' });
 
-    const { shop_name, api_key, api_secret } = req.body || {};
-    const keyEnc = encrypt(api_key);
-    const secretEnc = encrypt(api_secret);
-    if (!keyEnc) return res.status(400).json({ error: `请填写 ${def.fields[0].label}` });
-    if (def.fields.length > 1 && !secretEnc) return res.status(400).json({ error: `请填写 ${def.fields[1].label}` });
+    const body = req.body || {};
+    const shop_name = String(body.shop_name || '').trim();
 
-    // 套餐店铺数限制
+    // —— 1) 按 KEY_PLATFORMS.fields 逐一提取必填，不再只硬认 api_key / api_secret ——
+    const values = {};
+    for (const f of def.fields) {
+      const raw = body[f.key];
+      const v = typeof raw === 'string' ? raw.trim() : (raw == null ? '' : String(raw));
+      if (!v) return res.status(400).json({ error: `请填写 ${f.label}` });
+      // 最小长度兜底：拒绝 1~3 位的"随便输一个"的假凭证
+      if (v.length < 4) return res.status(400).json({ error: `${f.label} 长度不足，疑似无效凭证` });
+      values[f.key] = v;
+    }
+
+    // —— 2) 探活：先调用适配器 probeCredentials / syncOrders（dry mode）验证凭证是否真实可用 ——
+    const adapters = require('../platforms');
+    const adapter = adapters.lookup(platform);
+    let probeMsg = null;
+    if (adapter && typeof adapter.probeCredentials === 'function') {
+      try {
+        await adapter.probeCredentials(values, platform);
+      } catch (e) {
+        probeMsg = e.message || '凭证无效';
+        return res.status(400).json({ error: `凭证校验失败：${probeMsg}（请确认从「${def.where || '平台后台'}」正确复制）` });
+      }
+    } else if (adapter && typeof adapter.syncOrders === 'function') {
+      // stub 适配器：至少能走通流程不会抛 notImplemented（即使 imported = 0）
+      try {
+        const fakeShop = {
+          tenant_id: req.user.tenantId,
+          platform,
+          id: 0,
+          name: shop_name || def.name,
+          // 传进未加密字段：用一个短期假行让 buildContext 读取到 raw keys（探活不落库）
+          api_key_enc: 'raw:' + (values.api_key || values[Object.keys(values)[0]] || ''),
+          api_secret_enc: 'raw:' + (values.api_secret || values[Object.keys(values)[1]] || ''),
+          ext_fields_enc: 'raw:' + Buffer.from(JSON.stringify(values)).toString('base64')
+        };
+        const resProbe = await adapter.syncOrders(fakeShop, null);
+        if (!resProbe || typeof resProbe !== 'object') {
+          return res.status(400).json({ error: '平台响应异常，无法确认凭证有效性' });
+        }
+      } catch (e) {
+        if (/not implemented|NOT_IMPLEMENTED|UNSUPPORTED/i.test(e.message)) {
+          // 未实现的：至少字段校验过了，允许保存
+        } else {
+          return res.status(400).json({ error: `凭证校验失败：${e.message || '未知错误'}` });
+        }
+      }
+    }
+
+    // —— 3) 套餐店铺数限制 ——
     const { PLANS } = require('../util');
     const tenants = await query('SELECT * FROM tenants WHERE id = ?', [req.user.tenantId]);
     const plan = PLANS[tenants[0].plan] || PLANS.trial;
     const cnt = await query('SELECT COUNT(*) AS c FROM shops WHERE tenant_id = ?', [req.user.tenantId]);
     if (cnt[0].c >= plan.shops) return res.status(400).json({ error: `当前套餐（${plan.name}）最多接入 ${plan.shops} 个店铺，请升级套餐` });
 
-    const name = (shop_name || '').trim() || def.name;
+    // —— 4) 写库：第一个字段 => api_key_enc；第二个字段 => api_secret_enc；第 3+ 字段 => ext_fields_enc JSON ——
+    const orderedKeys = def.fields.map(f => f.key);
+    const keyEnc = encrypt(values[orderedKeys[0]]);
+    const secretEnc = orderedKeys.length >= 2 ? encrypt(values[orderedKeys[1]]) : null;
+    let extEnc = null;
+    if (orderedKeys.length > 2) {
+      const ext = {};
+      for (let i = 2; i < orderedKeys.length; i++) ext[orderedKeys[i]] = values[orderedKeys[i]];
+      extEnc = encrypt(JSON.stringify(ext));
+    }
+
+    const name = shop_name || def.name;
     const { PLATFORM_CURRENCY } = require('../sync-service');
     const currency = PLATFORM_CURRENCY[platform] || 'USD';
     const r = await query(
-      `INSERT INTO shops (tenant_id, name, platform, auth_status, api_key_enc, api_secret_enc, authorized_at, currency)
-       VALUES (?, ?, ?, 'authorized', ?, ?, NOW(), ?)`,
-      [req.user.tenantId, name, platform, keyEnc, secretEnc, currency]
+      `INSERT INTO shops (tenant_id, name, platform, auth_status, api_key_enc, api_secret_enc, ext_fields_enc, authorized_at, currency)
+       VALUES (?, ?, ?, 'authorized', ?, ?, ?, NOW(), ?)`,
+      [req.user.tenantId, name, platform, keyEnc, secretEnc, extEnc, currency]
     );
-    await query("INSERT INTO sync_logs (tenant_id, shop_id, platform, job_type, status, message, finished_at) VALUES (?, ?, ?, 'auth', 'ok', 'API 密钥已录入（加密存储）', NOW())", [req.user.tenantId, r.insertId, platform]);
-    res.json({ ok: true, id: r.insertId });
+    await query(
+      "INSERT INTO sync_logs (tenant_id, shop_id, platform, job_type, status, message, finished_at) VALUES (?, ?, ?, 'auth', 'ok', ?, NOW())",
+      [req.user.tenantId, r.insertId, platform,
+        `API 密钥已录入（加密存储，字段 ${orderedKeys.join('+')}${probeMsg ? '，探活通过' : '，平台适配器 stub 级校验通过'}`]
+    );
+    res.json({ ok: true, id: r.insertId, probed: !!probeMsg });
   } catch (err) { next(err); }
 });
 

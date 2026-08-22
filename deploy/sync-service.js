@@ -190,18 +190,20 @@ async function syncProductsLegacy(shop, app) {
   return { created, updated, total: items.length };
 }
 
-/** 校验店铺可同步（令牌存在且未过期） */
+/** 校验店铺可同步（令牌存在且未过期）—— 对 70+ 平台统一判断，不再硬编码列表 */
 function checkSyncable(shop) {
-  // 密钥型平台（无 access_token_enc）放宽：只要 api_key_enc 有值即可
-  const isKeyPlatform = ['OZON', 'Wildberries', 'Coupang', 'Temu', 'SHEIN', 'Walmart', 'Fruugo', 'Qoo10', 'Kaufland', 'OnBuy'].includes(shop.platform);
-  if (isKeyPlatform) {
-    if (!shop.api_key_enc) throw Object.assign(new Error('该密钥型店铺缺少 API Key，请先完成 API 凭证配置'), { status: 400 });
+  // 有 API Key（密钥型平台，覆盖 KEY_PLATFORMS 所有 54+ 平台）：只要 api_key_enc 非空即可
+  if (shop.api_key_enc) {
     return;
   }
-  if (!shop.access_token_enc) throw Object.assign(new Error('该店铺无授权令牌（手动录入或密钥型店铺），暂不支持自动同步'), { status: 400 });
-  if (shop.token_expires_at && new Date(shop.token_expires_at) < new Date()) {
-    throw Object.assign(new Error('令牌已过期，请先刷新令牌'), { status: 400 });
+  // 有 access_token（OAuth 跳转型 / 域名型 OAuth）：还得未过期
+  if (shop.access_token_enc) {
+    if (shop.token_expires_at && new Date(shop.token_expires_at) < new Date()) {
+      throw Object.assign(new Error('令牌已过期，请先刷新令牌'), { status: 400 });
+    }
+    return;
   }
+  throw Object.assign(new Error('该店铺尚未接入凭证（手动录入仅用于订单归属登记，如需自动同步请走「自动授权」卡片 OAuth 跳转或录入 API 密钥）'), { status: 400 });
 }
 
 module.exports = { syncOrders, syncProducts, checkSyncable, getRate, refreshToken, PLATFORM_CURRENCY };

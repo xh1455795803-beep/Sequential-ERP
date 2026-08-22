@@ -30,9 +30,19 @@ router.post('/', async (req, res, next) => {
     const { name, platform, commission_rate, currency } = req.body || {};
     if (!name || !String(name).trim()) return res.status(400).json({ error: '请填写店铺名称' });
     if (!platform) return res.status(400).json({ error: '请选择平台' });
+    if (String(name).trim().length < 2) return res.status(400).json({ error: '店铺名称至少 2 个字' });
+
+    // —— 平台白名单校验：必须在 OAUTH_PLATFORMS / KEY_PLATFORMS / PLATFORM_CURRENCY 中存在其一 ——
+    const oa = require('./oauth');
+    const cur = require('../sync-service').PLATFORM_CURRENCY;
+    const allowed = new Set([...Object.keys(oa.OAUTH_PLATFORMS || {}), ...Object.keys(oa.KEY_PLATFORMS || {}), ...Object.keys(cur)]);
+    if (!allowed.has(platform)) {
+      return res.status(400).json({ error: `「${platform}」不在已接入平台列表，请在「自动授权」的卡片里接入` });
+    }
+
     const rate = commission_rate === undefined || commission_rate === null || commission_rate === '' ? 0 : Number(commission_rate);
     if (isNaN(rate) || rate < 0 || rate > 0.5) return res.status(400).json({ error: '佣金率需在 0% - 50% 之间' });
-    const cur = /^[A-Z]{3}$/.test(currency || '') ? currency : 'CNY';
+    const cur2 = /^[A-Z]{3}$/.test(currency || '') ? currency : 'CNY';
 
     const tenants = await query('SELECT * FROM tenants WHERE id = ?', [req.user.tenantId]);
     const plan = PLANS[tenants[0].plan] || PLANS.trial;
@@ -41,13 +51,23 @@ router.post('/', async (req, res, next) => {
       return res.status(403).json({ error: `当前套餐（${plan.name}）最多接入 ${plan.shops} 个店铺，请升级套餐` });
     }
 
+    // —— 防重复：同租户下同平台 + 同店铺名，不允许重复登记 ——
+    const dup = await query(
+      'SELECT id FROM shops WHERE tenant_id = ? AND platform = ? AND name = ? LIMIT 1',
+      [req.user.tenantId, platform, String(name).trim()]
+    );
+    if (dup.length) return res.status(409).json({ error: '该平台下已存在同名店铺，请勿重复录入' });
+
     const r = await query(
-      'INSERT INTO shops (tenant_id, name, platform, commission_rate, currency) VALUES (?, ?, ?, ?, ?)',
-      [req.user.tenantId, String(name).trim(), platform, rate, cur]
+      'INSERT INTO shops (tenant_id, name, platform, commission_rate, currency, auth_status) VALUES (?, ?, ?, ?, ?, ?)',
+      [req.user.tenantId, String(name).trim(), platform, rate, cur2, 'manual']
     );
     const rows = await query('SELECT * FROM shops WHERE id = ?', [r.insertId]);
     res.json({ item: rows[0] });
-  } catch (err) { next(err); }
+  } catch (err) {
+    if (err && err.code === 'ER_DUP_ENTRY') return res.status(409).json({ error: '该平台下已存在同名店铺，请勿重复录入' });
+    next(err);
+  }
 });
 
 router.patch('/:id', async (req, res, next) => {
