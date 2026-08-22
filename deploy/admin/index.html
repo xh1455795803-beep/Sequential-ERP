@@ -42,58 +42,46 @@ label{display:block;font-size:13px;font-weight:600;color:var(--text-2);margin-bo
 .login-trial-note{margin-top:16px;padding:10px;background:var(--primary-light);border-radius:8px;font-size:12px;color:var(--primary);text-align:center;line-height:1.6}
 
 /* ===== 主布局：顶部横向导航 ===== */
-:root{--topnav-h:60px;--sidebar-w:252px;--subnav-h:48px}
-#app-view{display:none;min-height:100vh;flex-direction:column}
+:root{--topnav-h:54px;--tabs-h:44px;--subnav-h:46px}
+#app-view{display:none;min-height:100vh;flex-direction:column;background:var(--bg)}
 .layout{display:flex;flex-direction:column;min-height:100vh}
 /* 顶栏上半：品牌 + 导航分组下拉 + 用户区 */
-.topnav{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--border);height:var(--topnav-h);display:flex;align-items:center;padding:0 18px;gap:18px;flex:none}
-.topnav .brand{display:flex;align-items:center;gap:8px;flex:none}
-.topnav .brand .mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
-.topnav .brand .name{font-weight:800;font-size:15.5px;letter-spacing:.3px;color:var(--text-1)}
-.topnav-groups{display:flex;align-items:center;gap:2px;flex:1;overflow-x:auto;min-width:0;scrollbar-width:none}
-.topnav-groups::-webkit-scrollbar{display:none}
-.nav-group{position:relative}
-.nav-group-title{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;font-size:13.5px;font-weight:600;color:var(--text-2);cursor:pointer;white-space:nowrap;transition:all .12s}
-.nav-group-title:hover{background:var(--primary-light);color:var(--primary)}
-.nav-group-title svg{width:16px;height:16px;flex:none;opacity:.9}
-.nav-group-title::after{content:'▾';font-size:10px;margin-left:2px;opacity:.6}
-.nav-group-title.on{background:var(--primary-light);color:var(--primary)}
-/* 顶部 Tab：无下拉箭头、不显示浮层菜单（菜单改放左侧 Sidebar 展开） */
+.topnav{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--border);height:var(--topnav-h);display:flex;align-items:center;padding:0 18px;gap:14px;flex:none}
+.topnav .brand{display:flex;align-items:center;gap:8px;flex:none;padding-right:12px;border-right:1px solid var(--border)}
+.topnav .brand .mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.topnav .brand .name{font-weight:800;font-size:15px;letter-spacing:.3px;color:var(--text-1)}
+.topnav-groups{display:flex;align-items:center;gap:4px;flex:1;overflow:hidden;min-width:0}
+.nav-group{position:static}
+.nav-group-title{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:7px;font-size:13px;font-weight:600;color:var(--text-2);cursor:pointer;white-space:nowrap;transition:all .12s;border:1px solid transparent}
+.nav-group-title:hover{background:#f1f5f9;color:var(--text-1)}
+.nav-group-title svg{width:14px;height:14px;flex:none}
+.nav-group-title::after{content:''}
+.topnav-groups .nav-group-title.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+.topnav-groups .nav-group-title.on svg{color:#fff}
+/* 顶部 Tab：纯分组胶囊；无下拉；二级菜单平铺在 subnav-tabs 行 */
 .topnav-groups .nav-group-title::after{content:''!important}
 .topnav-groups .nav-group-menu{display:none!important}
-/* 左侧 Sidebar：分组菜单始终展开（手风琴常显），无浮层 */
-.sidebar .nav-group{margin-bottom:4px}
-.sidebar .nav-group-title{padding:7px 10px;font-size:12px;color:var(--text-3);font-weight:700;cursor:default;letter-spacing:.2px}
-.sidebar .nav-group-title::after{content:''}
-.sidebar .nav-group-title svg{width:14px;height:14px;color:var(--primary)}
-.sidebar .nav-group-menu{display:flex!important;position:static!important;flex-direction:column;min-width:0!important;background:transparent!important;border:none!important;box-shadow:none!important;padding:2px 0 6px 0!important;margin:0!important;gap:1px;animation:none!important}
-.sidebar .nav-group-menu .nav-item{padding:7px 10px 7px 34px;border-radius:7px;font-size:13px;color:var(--text-2)}
-.sidebar .nav-group-menu .nav-item svg{width:14px;height:14px}
-.sidebar .nav-group-menu .nav-item.on{background:var(--primary-light);color:var(--primary);font-weight:600}
-.sidebar .nav-group-menu .nav-item.badge-new em{margin-left:6px}
-/* 下拉子菜单浮层（保留供其他区域使用，sidebar 覆盖） */
-.nav-group-menu{position:absolute;left:0;top:calc(100% + 6px);min-width:230px;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 18px 48px rgba(15,23,42,.14);z-index:9999;padding:10px;display:none;flex-direction:column;animation:avatarFadeIn .12s ease-out}
-.nav-group.open .nav-group-menu{display:flex}
-.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:9px;color:var(--text-2);font-weight:500;text-decoration:none;font-size:13.5px;transition:all .1s;white-space:nowrap;line-height:1.3}
-.nav-item:hover{background:var(--primary-light);color:var(--primary)}
-.nav-item.on{background:var(--primary-light);color:var(--primary);font-weight:600}
-.nav-item svg{width:16px;height:16px;flex:none;color:var(--text-2)}
-.nav-item:hover svg{color:var(--primary)}
-.nav-item.on svg{color:var(--primary)}
-.nav-item.badge-new{display:flex;align-items:center;justify-content:space-between;padding-right:12px}
-.nav-item.badge-new em{font-style:normal;font-size:10px;font-weight:800;background:linear-gradient(135deg,#f97316,#ef4444);color:#fff;padding:2px 6px;border-radius:999px;letter-spacing:.3px;line-height:1.2;margin-left:8px}
-.topnav-right{display:flex;align-items:center;gap:12px;margin-left:auto}
-.plan-mini{display:inline-flex;flex-direction:column;padding:3px 10px;border-left:1px solid var(--border);gap:0;line-height:1.25;flex:none}
-.plan-mini .p-name{font-weight:700;color:var(--primary);font-size:12px}
-.plan-mini .p-exp{font-size:11px;color:var(--text-2)}
+.nav-group-menu{display:none!important}
+.nav-group-menu{display:none!important}
+.nav-item{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:6px;color:var(--text-2);font-weight:500;text-decoration:none;font-size:13px;transition:all .1s;white-space:nowrap;line-height:1.3;border:1px solid transparent}
+.nav-item:hover{background:#f1f5f9;color:var(--text-1)}
+.nav-item.on{background:#fff;color:var(--primary);font-weight:600;border-color:#e0e7ff}
+.nav-item svg{width:14px;height:14px;flex:none;color:inherit;opacity:.9}
+.nav-item.badge-new{display:inline-flex;align-items:center;gap:6px;padding-right:12px}
+.nav-item.badge-new em{font-style:normal;font-size:9.5px;font-weight:800;background:linear-gradient(135deg,#f97316,#ef4444);color:#fff;padding:1.5px 6px;border-radius:999px;letter-spacing:.3px;line-height:1.2}
+.topnav-right{display:flex;align-items:center;gap:10px;margin-left:auto;flex:none}
+.plan-mini{display:inline-flex;flex-direction:column;padding:3px 10px;border-left:1px solid var(--border);gap:0;line-height:1.2;flex:none}
+.plan-mini .p-name{font-weight:700;color:var(--primary);font-size:11.5px}
+.plan-mini .p-exp{font-size:10.5px;color:var(--text-2)}
 .plan-mini .p-exp.warn{color:var(--amber)}
 /* 子导航：页面标题面包屑条 */
-.subnav{background:#fff;border-bottom:1px solid var(--border);height:var(--subnav-h);display:flex;align-items:center;padding:0 20px;flex:none}
-.subnav .page-title{font-size:16.5px;font-weight:700;margin-right:auto;color:var(--text-1)}
-/* 左侧完整 Sidebar + app-body 双栏布局（ERP 经典，菜单永不消失） */
-.sidebar{display:flex!important;flex-direction:column;width:var(--sidebar-w);flex:0 0 var(--sidebar-w);background:#fff;border-right:1px solid var(--border);padding:14px 10px;gap:2px;overflow-y:auto;min-height:calc(100vh - var(--topnav-h));max-height:calc(100vh - var(--topnav-h));position:sticky;top:var(--topnav-h)}
-.app-body{display:flex;flex:1;min-height:0}
-.app-main-col{display:flex;flex-direction:column;flex:1;min-width:0}
+.subnav-tabs{background:#fff;border-bottom:1px solid var(--border);height:var(--tabs-h);display:flex;align-items:center;padding:0 18px;gap:2px;overflow-x:auto;scrollbar-width:none;flex:none}
+.subnav-tabs::-webkit-scrollbar{display:none}
+.subnav{background:transparent;border:none;height:var(--subnav-h);display:flex;align-items:center;padding:0 22px;flex:none}
+.subnav .page-title{font-size:15.5px;font-weight:700;margin-right:auto;color:var(--text-1)}
+/* 旧双栏：彻底隐藏不留占位 */
+.sidebar, .app-body, .app-main-col{display:none!important}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;padding:0 0 40px 0}
 /* 平台授权卡片 */
 .plat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
 .plat-card{border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:6px;background:#fff}
@@ -111,9 +99,9 @@ label{display:block;font-size:13px;font-weight:600;color:var(--text-2);margin-bo
 .banner.err{background:#fef2f2;color:#b91c1c;border:1px solid #fecaca}
 .banner.warn{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
 .main{flex:1;display:flex;flex-direction:column;min-width:0}
-.subnav .user-box{display:flex;align-items:center;gap:12px}
-.subnav .user-name{color:var(--text-2);font-size:13px}
-.content{padding:22px;flex:1;width:100%;box-sizing:border-box}
+.subnav .user-box{display:flex;align-items:center;gap:10px}
+.subnav .user-name{color:var(--text-2);font-size:12.5px}
+.content{padding:0 22px 0 22px;flex:1;width:100%;box-sizing:border-box;max-width:1600px;margin:0 auto}
 .btn-ghost{padding:7px 14px;border-radius:8px;border:1px solid var(--border);color:var(--text-2);font-weight:600;font-size:13px;background:#fff}
 .btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
 .btn-sm{padding:5px 10px;border-radius:6px;font-size:12px;font-weight:600}
@@ -483,79 +471,14 @@ tr:hover td{background:#fafbff}
         </div>
       </div>
     </div>
-    <div class="app-body">
-      <aside class="sidebar" id="sidebar">
-        <div class="nav-group" data-group="dashboard">
-          <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>概览</div>
-          <div class="nav-group-menu">
-            <a class="nav-item" data-view="dashboard" href="#/dashboard" onclick="go('dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/></svg>总览概览</a>
-          </div>
-        </div>
-        <div class="nav-group" data-group="shops">
-          <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5"/><path d="M4 9v11a1 1 0 001 1h14a1 1 0 001-1V9"/></svg>店铺中心</div>
-          <div class="nav-group-menu">
-            <a class="nav-item" data-view="shops" href="#/shops" onclick="go('shops')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5"/></svg>店铺授权</a>
-            <a class="nav-item" data-view="platforms" href="#/platforms" onclick="go('platforms')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/></svg>平台接入</a>
-          </div>
-        </div>
-        <div class="nav-group" data-group="products">
-          <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>商品中心</div>
-          <div class="nav-group-menu">
-            <a class="nav-item" data-view="products" href="#/products" onclick="go('products')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7L12 3 4 7l8 4 8-4z"/></svg>商品管理</a>
-            <a class="nav-item badge-new" data-view="products-v2" href="#/products-v2" onclick="go('products-v2')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/></svg>商品·V2完整版<em>NEW</em></a>
-            <a class="nav-item" data-view="inventory" href="#/inventory" onclick="go('inventory')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4"/></svg>库存管理</a>
-            <a class="nav-item" data-view="inventory-ledger" href="#/inventory-ledger" onclick="go('inventory-ledger')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>库存流水</a>
-          </div>
-        </div>
-        <div class="nav-group" data-group="orders">
-          <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>订单中心</div>
-          <div class="nav-group-menu">
-            <a class="nav-item" data-view="orders" href="#/orders" onclick="go('orders')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/></svg>订单管理</a>
-            <a class="nav-item badge-new" data-view="auto-audit" href="#/auto-audit" onclick="go('auto-audit')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/></svg>自动审单规则<em>NEW</em></a>
-            <a class="nav-item badge-new" data-view="aftersales" href="#/aftersales" onclick="go('aftersales')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/></svg>售后逆向中心<em>NEW</em></a>
-            <a class="nav-item" data-view="shipments" href="#/shipments" onclick="go('shipments')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="15" height="13" rx="1"/></svg>发货记录</a>
-          </div>
-        </div>
-        <div class="nav-group" data-group="supply">
-          <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7l-8-4-8 4v10l8 4 8-4V7z"/></svg>供应链</div>
-          <div class="nav-group-menu">
-            <a class="nav-item" data-view="purchases" href="#/purchases" onclick="go('purchases')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/></svg>采购单</a>
-            <a class="nav-item" data-view="suppliers" href="#/suppliers" onclick="go('suppliers')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>供应商</a>
-            <a class="nav-item" data-view="carriers" href="#/carriers" onclick="go('carriers')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1z"/></svg>物流商</a>
-          </div>
-        </div>
-        <div class="nav-group" id="nav-finance-sidebar" data-group="finance">
-          <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/></svg>财务中心</div>
-          <div class="nav-group-menu">
-            <a class="nav-item" data-view="finance" href="#/finance" onclick="go('finance')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/></svg>订单利润</a>
-            <a class="nav-item badge-new" data-view="finance-v2" href="#/finance-v2" onclick="go('finance-v2')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/></svg>利润看板·V2<em>NEW</em></a>
-            <a class="nav-item badge-new" data-view="exchange-rates" href="#/exchange-rates" onclick="go('exchange-rates')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>多币种汇率<em>NEW</em></a>
-            <a class="nav-item" data-view="finance-report" href="#/finance-report" onclick="go('finance-report')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>经营报表</a>
-          </div>
-        </div>
-        <div class="nav-group" id="nav-saas-sidebar" data-group="saas" style="display:none">
-          <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg>运营后台</div>
-          <div class="nav-group-menu">
-            <a class="nav-item badge-new" id="nav-saas-admin-sidebar" data-view="saas-admin" href="#/saas-admin" onclick="go('saas-admin')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>SaaS运营后台<em>NEW</em></a>
-          </div>
-        </div>
-        <div class="nav-group" data-group="settings">
-          <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/></svg>系统设置</div>
-          <div class="nav-group-menu">
-            <a class="nav-item" data-view="audit-logs" href="#/audit-logs" onclick="go('audit-logs')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>审计日志</a>
-            <a class="nav-item" data-view="settings" href="#/settings" onclick="go('settings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>账户设置</a>
-          </div>
-        </div>
-      </aside>
-      <div class="app-main-col">
-        <!-- 子导航栏：页面标题 -->
-        <div class="subnav">
-          <div class="page-title" id="page-title">概览</div>
-        </div>
-        <div class="main">
-          <div class="content" id="content"></div>
-        </div>
-      </div>
+    <!-- 第二行：当前分组二级菜单 Tab（全部平铺，无浮层下拉） -->
+    <div class="subnav-tabs" id="subnav-tabs"></div>
+    <!-- 第三行：页面标题条 -->
+    <div class="subnav">
+      <div class="page-title" id="page-title">概览</div>
+    </div>
+    <div class="main">
+      <div class="content" id="content"></div>
     </div>
   </div>
 </div>
@@ -593,6 +516,48 @@ const PLATFORMS = [
 // 常用币种（店铺结算币种，订单按此折算 CNY）
 const CURRENCIES = ['CNY','USD','EUR','GBP','JPY','KRW','SGD','MYR','THB','VND','IDR','PHP','TWD','BRL','MXN','RUB','PLN','AUD','CAD','HKD','TRY','AED','SAR','INR'];
 const VIEW_TITLES = { dashboard:'概览', shops:'店铺授权', platforms:'平台接入', products:'商品管理', 'product/new':'新增商品', 'product/edit':'编辑商品', 'products-v2':'商品中心·V2完整版', inventory:'库存管理', 'inventory-ledger':'库存流水', orders:'订单管理', 'auto-audit':'自动审单配置', aftersales:'售后逆向中心', shipments:'发货记录', purchases:'采购单', suppliers:'供应商', carriers:'物流商', finance:'订单利润', 'finance-v2':'利润看板·V2', 'finance-report':'月度报表', 'exchange-rates':'多币种汇率看板', scheduler:'任务监控·调度中心', 'saas-admin':'SaaS运营后台', 'audit-logs':'审计日志', settings:'账户设置', billing:'套餐订阅' };
+
+
+/* 妙手风格：分组 → 平铺二级菜单（数量少，干净） */
+const ERP_GROUPS = [
+  { key:'dashboard', label:'概览',   iconSvg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/></svg>',
+    items:[ {view:'dashboard',     label:'总览概览', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/></svg>'} ] },
+  { key:'shops',    label:'店铺',   iconSvg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5"/></svg>',
+    items:[ {view:'shops',     label:'店铺授权', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5"/></svg>'},
+            {view:'platforms', label:'平台接入', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>'} ] },
+  { key:'products', label:'商品',   iconSvg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4"/></svg>',
+    items:[ {view:'products',         label:'商品管理',     svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7L12 3 4 7l8 4 8-4z"/></svg>'},
+            {view:'products-v2',      label:'商品V2',       svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2"/></svg>', badge:'NEW'},
+            {view:'inventory',        label:'库存管理',     svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4"/></svg>'},
+            {view:'inventory-ledger', label:'库存流水',     svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>'} ] },
+  { key:'orders',   label:'订单',   iconSvg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>',
+    items:[ {view:'orders',       label:'订单管理',     svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/></svg>'},
+            {view:'auto-audit',   label:'自动审单',     svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/></svg>', badge:'NEW'},
+            {view:'aftersales',   label:'售后',         svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/></svg>', badge:'NEW'},
+            {view:'shipments',    label:'发货',          svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="15" height="13" rx="1"/></svg>'} ] },
+  { key:'supply',   label:'供应链', iconSvg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7l-8-4-8 4v10l8 4 8-4V7z"/></svg>',
+    items:[ {view:'purchases',  label:'采购单', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/></svg>'},
+            {view:'suppliers',  label:'供应商',  svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'},
+            {view:'carriers',   label:'物流商',  svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 3h15v13H1z"/></svg>'} ] },
+  { key:'finance',  label:'财务',   iconSvg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/></svg>',
+    items:[ {view:'finance',        label:'订单利润',   svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/></svg>'},
+            {view:'finance-v2',     label:'利润看板',   svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/></svg>', badge:'NEW'},
+            {view:'exchange-rates', label:'多币种汇率', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>', badge:'NEW'},
+            {view:'finance-report', label:'经营报表',   svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>'} ] },
+  { key:'settings', label:'设置',   iconSvg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/></svg>',
+    items:[ {view:'audit-logs', label:'审计日志', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>'},
+            {view:'settings',   label:'账户设置', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'} ] },
+  { key:'saas',     label:'运营',   iconSvg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/></svg>',
+    items:[ {view:'saas-admin', label:'SaaS运营后台', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>', badge:'NEW'} ],
+    hidden: true }
+];
+const VIEW_TO_GROUP = (function(){
+  var m = {};
+  ERP_GROUPS.forEach(function(g){ g.items.forEach(function(it){ m[it.view] = g.key; }); });
+  m['product/new']  = 'products';
+  m['product/edit'] = 'products';
+  return m;
+})();
 
 function toast(msg, type) {
   const el = document.createElement('div');
@@ -713,8 +678,23 @@ async function enterApp() {
   // 角色权限：非 owner（staff/viewer）隐藏财务中心分组，viewer 再隐藏写操作入口
   const finNav = document.getElementById('nav-finance');
   if (finNav) finNav.style.display = (me && me.role !== 'owner') ? 'none' : '';
-  // 顶栏分组高亮：根据当前 view 找到对应所属分组
-  highlightNavGroup();
+  // 渲染顶栏分组（妙手风格）：按权限过滤
+  var groupsWrap = document.getElementById('topnav-groups');
+  if (groupsWrap) {
+    var visibleGroups = ERP_GROUPS.filter(function(g){
+      if (g.key === 'saas') return !!(me && me.role === 'super_admin');
+      return !g.hidden;
+    });
+    groupsWrap.innerHTML = visibleGroups.map(function(g){
+      return '<div class="nav-group" data-group="'+g.key+'"><div class="nav-group-title" data-groupkey="'+g.key+'" onclick="pickGroup(\''+g.key+'\')">'+g.iconSvg+g.label+'</div></div>';
+    }).join('');
+  }
+  // 角色视图：非 owner 隐藏财务中心（顶栏分组里），viewer 额外隐藏写操作入口（由 view 层控制）
+  if (!(me && me.role === 'owner')) {
+    var finBtns = document.querySelectorAll('.topnav-groups .nav-group-title[data-groupkey="finance"]');
+    finBtns.forEach(function(b){ if (b && b.parentNode) b.parentNode.style.display = 'none'; });
+  }
+  refreshTabsAndHighlight();
   renderPlanBox();
   // 套餐到期检测：到期弹窗引导续费
   if (tenant && tenant.expired) {
@@ -785,7 +765,7 @@ function go(view) {
     const v = n.dataset.view;
     n.classList.toggle('on', v === 'products' && (loaderKey === 'product-edit' || loaderKey === 'products') ? true : (v === loaderKey));
   });
-  highlightNavGroup();
+  refreshTabsAndHighlight();
   const loaders = { dashboard: loadDashboard, orders: loadOrders, products: loadProducts, 'product-edit': () => loadProductEdit(routeArgs), 'products-v2': loadProductsV2, inventory: loadInventory, 'inventory-ledger': loadInventoryLedger, shops: loadShops, platforms: loadPlatforms, 'auto-audit': loadAutoAudit, aftersales: loadAftersales, shipments: loadShipments, purchases: loadPurchases, suppliers: loadSuppliers, carriers: loadCarriers, finance: loadFinance, 'finance-v2': loadFinanceV2, 'finance-report': loadFinanceReport, 'exchange-rates': loadExchangeRates, scheduler: loadScheduler, 'saas-admin': loadSaasAdmin, 'audit-logs': loadAuditLogs, settings: loadSettings, billing: loadBilling };
   if (loaders[loaderKey]) loaders[loaderKey]();
   else { go('dashboard'); }
@@ -3145,45 +3125,37 @@ function toggleNavGroup(el) {
 function closeNavGroups() {
   document.querySelectorAll('.topnav-groups .nav-group').forEach(function(g){ g.classList.remove('open'); });
 }
-function highlightNavGroup() {
-  var cur = String(location.hash || '').replace('#/', '').split('?')[0];
-  var mapView = cur;
-  if (cur.startsWith('product/edit') || cur === 'product/new') mapView = 'products';
-  // 高亮所有相同 data-view 的 nav-item（topnav + sidebar 一起）
-  document.querySelectorAll('#sidebar .nav-item, .topnav-groups .nav-item').forEach(function(n){
-    n.classList.toggle('on', n.dataset.view === mapView);
+/* ===== 妙手风格：顶部双行导航逻辑 ===== */
+function pickGroup(groupKey, opts) {
+  var g = ERP_GROUPS.find(function(x){ return x.key === groupKey; });
+  if (!g) return;
+  if (g.key === 'saas' && !(me && me.role === 'super_admin')) return;
+  var first = g.items[0];
+  if (first && (!opts || !opts.stay)) go(first.view);
+}
+function refreshTabsAndHighlight() {
+  var raw = String(location.hash || '').replace('#/', '').split('?')[0];
+  var view = raw;
+  if (raw.startsWith('product/edit/') || raw === 'product/new') view = 'product/edit';
+  var groupKey = VIEW_TO_GROUP[view] || VIEW_TO_GROUP[raw] || 'dashboard';
+  if (!VIEW_TO_GROUP[view] && ERP_GROUPS.find(function(g){ return g.key === view; })) groupKey = view;
+  document.querySelectorAll('.topnav-groups .nav-group-title').forEach(function(btn){
+    btn.classList.toggle('on', btn.getAttribute('data-groupkey') === groupKey);
   });
-  // 顶部分组快速 Tab：根据所属分组高亮
-  var groupMap = { dashboard:'dashboard', shops:'shops', platforms:'shops', products:'products', 'products-v2':'products', inventory:'products', 'inventory-ledger':'products', orders:'orders', 'auto-audit':'orders', aftersales:'orders', shipments:'orders', purchases:'supply', suppliers:'supply', carriers:'supply', finance:'finance', 'finance-v2':'finance', 'exchange-rates':'finance', 'finance-report':'finance', 'saas-admin':'saas', 'audit-logs':'settings', settings:'settings' };
-  var gk = groupMap[mapView];
-  document.querySelectorAll('.topnav-groups .nav-group').forEach(function(g){ g.classList.remove('on'); });
-  if (gk) {
-    var tg = document.querySelector('.topnav-groups .nav-group[data-group="'+gk+'"]');
-    if (tg) tg.classList.add('on');
-  }
-  // 顶部分组下拉始终关闭（菜单改放 Sidebar）
-  document.querySelectorAll('.topnav-groups .nav-group').forEach(function(g){ g.classList.remove('open'); });
-}
-// 顶部分组快速 Tab：点击跳转到该分组第一个菜单项
-function navGroupGo(groupKey) {
-  var first = { dashboard:'dashboard', shops:'shops', products:'products', orders:'orders', supply:'purchases', finance:'finance', saas:'saas-admin', settings:'audit-logs' };
-  if (first[groupKey]) go(first[groupKey]);
-}
-document.addEventListener('click', function(e) {
-  document.querySelectorAll('.topnav-groups .nav-group').forEach(function(g){ g.classList.remove('open'); });
-});
-// 绑定顶部分组 title 的 onclick：如果是 toggleNavGroup(this)，改为 navGroupGo
-(function bindTopnavGroups() {
-  var binds = { 'shops':'shops', 'products':'products', 'orders':'orders', 'supply':'supply', 'finance':'finance', 'saas':'saas', 'settings':'settings' };
-  document.querySelectorAll('.topnav-groups .nav-group').forEach(function(g) {
-    var key = binds[g.getAttribute('data-group')];
-    if (key) {
-      var title = g.querySelector('.nav-group-title');
-      if (title) title.setAttribute('onclick', 'navGroupGo(\''+key+'\')');
+  var tabs = document.getElementById('subnav-tabs');
+  var g = ERP_GROUPS.find(function(x){ return x.key === groupKey; });
+  if (tabs) {
+    if (!g || !g.items || !g.items.length) { tabs.innerHTML = ''; tabs.style.display='none'; }
+    else {
+      tabs.style.display = '';
+      tabs.innerHTML = g.items.map(function(it){
+        var on = (it.view === raw);
+        var badge = it.badge ? '<em>'+it.badge+'</em>' : '';
+        return '<a class="nav-item'+(on?' on':'')+'" data-view="'+it.view+'" href="#/'+it.view+'" onclick="event.preventDefault();go(\''+it.view+'\')">'+(it.svg||'')+it.label+badge+'</a>';
+      }).join('');
     }
-  });
-  // 概览分组：<a class="nav-group-title" data-view="dashboard"> → 保持 go 跳转
-})();
+  }
+}
 
 /* ===== 头像下拉菜单逻辑 ===== */
 function toggleAvatarMenu(ev) {
