@@ -2067,7 +2067,7 @@ async function readAllNotif() {
 }
 
 /* ================================================================
- * V2.0 页面加载器（飞书文档 商用完整版 V2 架构）
+ * V2.0 页面加载器（商用完整版 V2 架构）
  * 每个 loader 都是异步骨架，渲染占位 + 调用 V2 API，展示完整面板。
  * ================================================================ */
 
@@ -2077,7 +2077,7 @@ async function loadProductsV2() {
   try { list = await api('/products-v2?page=1&size=20'); }
   catch (e) { list.error = e.message; }
   document.getElementById('content').innerHTML = `
-    <div class="banner ok"><strong>🚀 商品中心 V2 · 飞书文档商用版已上线</strong> <span class="qtip" title="10大字段模块完整管理商品全生命周期，兼容旧版商品数据。">?</span></div>
+    <div class="banner ok"><strong>🚀 商品中心 V2 · 完整版已上线</strong> <span class="qtip" title="10大字段模块完整管理商品全生命周期，兼容旧版商品数据。">?</span></div>
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin:18px 0 22px">
       ${['基础信息','规格变体','多平台刊登','库存仓储','定价成本','物流重量','跨境合规','AI智能配置','预售/赠品','审核与发布'].map((t,i) => `
         <div style="padding:14px;border:1px solid var(--border);border-radius:12px;background:#fff">
@@ -2284,7 +2284,7 @@ async function loadExchangeRates() {
   try { data = await api('/exchange-rates/board'); }
   catch(e) { data = { error: e.message }; }
   document.getElementById('content').innerHTML = `
-    <div class="banner ok"><strong>💱 多币种汇率可视化·V2（飞书文档 旗舰功能）</strong>
+    <div class="banner ok"><strong>💱 多币种汇率可视化·V2</strong>
       <span style="margin-left:12px;color:var(--text-2)">覆盖 6 大跨境区域 · 32 种活跃币种 · 实时中间价 + 今日涨跌 + 30 天趋势（调度器 fx/refresh 每 6 小时同步央行中间价）</span>
     </div>
     <div style="display:flex;gap:8px;margin:14px 0;flex-wrap:wrap">
@@ -2336,7 +2336,7 @@ async function loadScheduler() {
   try { list = await api('/scheduler/tasks?page=1&size=50'); } catch(e) { list = { items: [], error: e.message }; }
   const snap = (status||{}).snapshot || {};
   document.getElementById('content').innerHTML = `
-    <div class="banner ok"><strong>⚙️ 全自动调度中心·V2（飞书文档 2.6）</strong>
+    <div class="banner ok"><strong>⚙️ 全自动调度中心·V2</strong>
       <span style="margin-left:12px;color:var(--text-2)">任务表驱动 · 单飞 SKIP LOCKED · 指数退避重试 · 7 种任务类型 · 每 ${(snap.tickMs||15000)/1000}s 扫描一轮</span>
     </div>
     <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:14px 0">
@@ -2392,7 +2392,7 @@ async function loadQuota() {
   const defs = (q||{}).defs || {};
   const LABELS = { shop:'店铺数', order:'本月订单量', product:'商品SKU数', ai:'AI调用量', storage:'存储空间(MB)' };
   document.getElementById('content').innerHTML = `
-    <div class="banner ok"><strong>🎟️ 套餐配额面板·V2（飞书文档 5.2 租户套餐服务）</strong>
+    <div class="banner ok"><strong>🎟️ 套餐配额面板·V2</strong>
       <span style="margin-left:12px;color:var(--text-2)">按套餐控制 5 大资源用量；每月 1 日 03:05 自动重置月度额度（finance_settle/monthly 调度任务）</span>
     </div>
     <div style="max-width:820px;margin:18px 0">
