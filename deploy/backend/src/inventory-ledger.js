@@ -18,7 +18,7 @@ async function record(conn, opts) {
     [
       o.tenantId, o.productId, o.warehouse || 'MAIN',
       o.changeType, o.qtyChange,
-      o.qtyBefore ?? 0, o.qtyAfter ?? 0,
+      o.qtyBefore != null ? o.qtyBefore : 0, o.qtyAfter != null ? o.qtyAfter : 0,
       o.balanceField || 'on_hand',
       o.refType || null, o.refId || null,
       o.operator || 'system', o.remark || null

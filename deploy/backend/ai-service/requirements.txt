@@ -1,0 +1,5 @@
+fastapi>=0.109,<0.116
+uvicorn>=0.27,<0.31
+pydantic>=2.5,<3.0
+# 可选：直连ERP MySQL 数据库（不装也能用，完全靠 params 传数据）
+PyMySQL>=1.1,<1.2

@@ -17,9 +17,9 @@ function getClientUa(req) {
 function extractTarget(req) {
   const p = req.params || {};
   const idKey = Object.keys(p).find(k => /id$/i.test(k));
-  let targetType = req.baseUrl.split('/').pop() || req.route?.path;
+  let targetType = req.baseUrl.split('/').pop() || (req.route && req.route.path);
   // 路由路径推断 target_type
-  const seg = (req.baseUrl + (req.route?.path || '')).split('/').filter(Boolean);
+  const seg = (req.baseUrl + ((req.route && req.route.path) || '')).split('/').filter(Boolean);
   targetType = seg[seg.length - 1] || req.baseUrl;
   return { targetType, targetId: idKey ? p[idKey] : null };
 }
@@ -46,7 +46,7 @@ module.exports = function audit(module) {
             [
               req.user.tenantId, req.user.uid, req.user.username,
               `${module || 'op'}.${req.method.toLowerCase()}`,
-              req.method, (req.baseUrl + (req.route?.path || '')),
+              req.method, (req.baseUrl + ((req.route && req.route.path) || '')),
               targetType, targetId, res.statusCode,
               detail, getClientIp(req), getClientUa(req), Date.now() - start
             ]

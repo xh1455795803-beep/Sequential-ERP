@@ -79,6 +79,8 @@ label{display:block;font-size:13px;font-weight:600;color:var(--text-2);margin-bo
 .plan-box .p-name{font-weight:700;color:var(--primary);font-size:13px;margin-bottom:4px}
 .plan-box .p-exp{font-size:12px;color:var(--text-2);line-height:1.5}
 .plan-box .p-exp.warn{color:var(--amber)}
+.nav-item.badge-new{position:static;display:flex;align-items:center;justify-content:space-between;padding-right:12px}
+.nav-item.badge-new em{font-style:normal;font-size:10px;font-weight:800;background:linear-gradient(135deg,#f97316,#ef4444);color:#fff;padding:2px 6px;border-radius:999px;letter-spacing:.3px;line-height:1.2}
 .main{flex:1;margin-left:216px;display:flex;flex-direction:column}
 .topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
 .topbar .page-title{font-size:17px;font-weight:700}
@@ -231,6 +233,7 @@ tr:hover td{background:#fafbff}
       <div class="nav-group">
         <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>商品中心</div>
         <a class="nav-item sub" data-view="products" href="#/products" onclick="go('products')">商品管理</a>
+        <a class="nav-item sub badge-new" data-view="products-v2" href="#/products-v2" onclick="go('products-v2')">商品·V2完整版<em>NEW</em></a>
         <a class="nav-item sub" data-view="inventory" href="#/inventory" onclick="go('inventory')">库存管理</a>
         <a class="nav-item sub" data-view="inventory-ledger" href="#/inventory-ledger" onclick="go('inventory-ledger')">库存流水</a>
       </div>
@@ -238,6 +241,8 @@ tr:hover td{background:#fafbff}
       <div class="nav-group">
         <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>订单中心</div>
         <a class="nav-item sub" data-view="orders" href="#/orders" onclick="go('orders')">订单管理</a>
+        <a class="nav-item sub badge-new" data-view="auto-audit" href="#/auto-audit" onclick="go('auto-audit')">自动审单规则<em>NEW</em></a>
+        <a class="nav-item sub badge-new" data-view="aftersales" href="#/aftersales" onclick="go('aftersales')">售后逆向中心<em>NEW</em></a>
         <a class="nav-item sub" data-view="shipments" href="#/shipments" onclick="go('shipments')">发货记录</a>
       </div>
 
@@ -251,7 +256,16 @@ tr:hover td{background:#fafbff}
       <div class="nav-group" id="nav-finance">
         <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>财务中心</div>
         <a class="nav-item sub" data-view="finance" href="#/finance" onclick="go('finance')">订单利润</a>
+        <a class="nav-item sub badge-new" data-view="finance-v2" href="#/finance-v2" onclick="go('finance-v2')">利润看板·V2<em>NEW</em></a>
+        <a class="nav-item sub badge-new" data-view="exchange-rates" href="#/exchange-rates" onclick="go('exchange-rates')">多币种汇率<em>NEW</em></a>
         <a class="nav-item sub" data-view="finance-report" href="#/finance-report" onclick="go('finance-report')">经营报表</a>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>自动化中心·V2</div>
+        <a class="nav-item sub badge-new" data-view="scheduler" href="#/scheduler" onclick="go('scheduler')">任务监控调度<em>NEW</em></a>
+        <a class="nav-item sub badge-new" data-view="quota" href="#/quota" onclick="go('quota')">套餐配额<em>NEW</em></a>
+        <a class="nav-item sub badge-new" data-view="saas-admin" href="#/saas-admin" onclick="go('saas-admin')">SaaS运营后台<em>NEW</em></a>
       </div>
 
       <div class="nav-group">
@@ -315,7 +329,7 @@ const PLATFORMS = [
 ];
 // 常用币种（店铺结算币种，订单按此折算 CNY）
 const CURRENCIES = ['CNY','USD','EUR','GBP','JPY','KRW','SGD','MYR','THB','VND','IDR','PHP','TWD','BRL','MXN','RUB','PLN','AUD','CAD','HKD','TRY','AED','SAR','INR'];
-const VIEW_TITLES = { dashboard:'概览', shops:'店铺授权', platforms:'平台接入', products:'商品管理', inventory:'库存管理', 'inventory-ledger':'库存流水', orders:'订单管理', shipments:'发货记录', purchases:'采购单', suppliers:'供应商', carriers:'物流商', finance:'订单利润', 'finance-report':'月度报表', 'audit-logs':'审计日志', settings:'账户设置' };
+const VIEW_TITLES = { dashboard:'概览', shops:'店铺授权', platforms:'平台接入', products:'商品管理', 'products-v2':'商品中心·V2完整版', inventory:'库存管理', 'inventory-ledger':'库存流水', orders:'订单管理', 'auto-audit':'自动审单配置', aftersales:'售后逆向中心', shipments:'发货记录', purchases:'采购单', suppliers:'供应商', carriers:'物流商', finance:'订单利润', 'finance-v2':'利润看板·V2', 'finance-report':'月度报表', 'exchange-rates':'多币种汇率看板', scheduler:'任务监控·调度中心', quota:'套餐配额', 'saas-admin':'SaaS运营后台', 'audit-logs':'审计日志', settings:'账户设置' };
 
 function toast(msg, type) {
   const el = document.createElement('div');
@@ -447,7 +461,7 @@ function go(view) {
   location.hash = '#/' + view + q;
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('on', n.dataset.view === view));
   document.getElementById('page-title').textContent = VIEW_TITLES[view];
-  const loaders = { dashboard: loadDashboard, orders: loadOrders, products: loadProducts, inventory: loadInventory, 'inventory-ledger': loadInventoryLedger, shops: loadShops, platforms: loadPlatforms, shipments: loadShipments, purchases: loadPurchases, suppliers: loadSuppliers, carriers: loadCarriers, finance: loadFinance, 'finance-report': loadFinanceReport, 'audit-logs': loadAuditLogs, settings: loadSettings };
+  const loaders = { dashboard: loadDashboard, orders: loadOrders, products: loadProducts, 'products-v2': loadProductsV2, inventory: loadInventory, 'inventory-ledger': loadInventoryLedger, shops: loadShops, platforms: loadPlatforms, 'auto-audit': loadAutoAudit, aftersales: loadAftersales, shipments: loadShipments, purchases: loadPurchases, suppliers: loadSuppliers, carriers: loadCarriers, finance: loadFinance, 'finance-v2': loadFinanceV2, 'finance-report': loadFinanceReport, 'exchange-rates': loadExchangeRates, scheduler: loadScheduler, quota: loadQuota, 'saas-admin': loadSaasAdmin, 'audit-logs': loadAuditLogs, settings: loadSettings };
   loaders[view]();
 }
 window.addEventListener('hashchange', () => {
@@ -1914,6 +1928,413 @@ async function readAllNotif() {
     loadNotifBadge();
     toast('已全部标为已读', 'ok');
   } catch (e) { toast(e.message, 'err'); }
+}
+
+/* ================================================================
+ * V2.0 页面加载器（飞书文档 商用完整版 V2 架构）
+ * 每个 loader 都是异步骨架，渲染占位 + 调用 V2 API，展示完整面板。
+ * ================================================================ */
+
+/* --- 1. 商品·V2完整版（10大模块入口 + 列表 + 新建引导） --- */
+async function loadProductsV2() {
+  let list = { total: 0, items: [] };
+  try { list = await api('/products-v2?page=1&size=20'); }
+  catch (e) { list.error = e.message; }
+  document.getElementById('content').innerHTML = `
+    <div class="banner ok">
+      <strong>🚀 商品中心 V2 · 飞书文档商用版已上线</strong>
+      <span style="margin-left:12px;color:var(--text-2)">10大字段模块：基础 / 变体 / 多平台刊登 / 库存仓储 / 定价成本 / 物流重量 / 跨境合规 / AI智能 / 预售审核 / 审计日志</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin:18px 0 22px">
+      ${['基础信息','规格变体','多平台刊登','库存仓储','定价成本','物流重量','跨境合规','AI智能配置','预售/赠品','审核与发布'].map((t,i) => `
+        <div style="padding:14px;border:1px solid var(--border);border-radius:12px;background:#fff">
+          <div style="width:30px;height:30px;border-radius:8px;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:800;margin-bottom:8px">${i+1}</div>
+          <div style="font-weight:700;font-size:13px">${t}</div>
+          <div style="font-size:12px;color:var(--text-2);margin-top:4px">单商品最多 56 字段</div>
+        </div>`).join('')}
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;margin-bottom:14px">
+      <button class="btn primary" onclick="toast('新建商品·V2完整表单（WIP）','ok')">+ 新建商品·完整表单</button>
+      <button class="btn-ghost" onclick="toast('批量导入 CSV / 批量发布到多平台（WIP）','ok')">批量操作</button>
+      <span style="color:var(--text-2);font-size:13px;margin-left:auto">
+        总数：<strong style="color:var(--primary)">${list.total || '—'}</strong> 个SKU
+        ${list.error ? `<span style="color:var(--red)">（后端提示：${list.error.slice(0,40)}）</span>` : ''}
+      </span>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>ID</th><th>SKU / 内部SKU</th><th>中/英文名</th><th>状态</th><th>变体数</th><th>最近更新</th></tr></thead>
+      <tbody>
+        ${(list.items || []).slice(0,10).map(p => `<tr>
+          <td>#${p.id}</td><td>${p.sku || '-'} / ${p.inner_sku || '-'}</td>
+          <td>${p.name || '-'}<br/><span style="color:var(--text-2);font-size:12px">${p.name_en || ''}</span></td>
+          <td><span class="pill ${p.biz_status==='on_sale'?'ok':(p.biz_status==='draft'?'neutral':'warn')}">${p.biz_status || 'draft'}</span></td>
+          <td>${p.variant_count || 0}</td><td>${String(p.updated_at||'').slice(0,16)}</td>
+        </tr>`).join('') || `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-2)">暂无商品 V2 数据；点击「+ 新建商品·完整表单」开始录入（兼容旧商品管理页数据）</td></tr>`}
+      </tbody>
+    </table>`;
+}
+
+/* --- 2. 自动审单配置 --- */
+async function loadAutoAudit() {
+  let rule = null;
+  try { const r = await api('/auto-audit/rules'); rule = r.rule; } catch(e) {}
+  const R = rule || {};
+  document.getElementById('content').innerHTML = `
+    <div class="banner warn">
+      <strong>🤖 自动审单规则（V2）</strong>
+      <span style="margin-left:12px;color:var(--text-2)">调度中心每 5 分钟自动扫描待审订单，命中规则时自动通过或流转人工审核。</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:16px">
+      <div class="card">
+        <h3>审单规则（本租户独立一套）</h3>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:14px">
+          <label class="switch-row">
+            <span><strong>无异常订单自动通过</strong><div class="hint">默认开启：付款、地址、库存都无异常的订单直接通过 → PAID</div></span>
+            <input type="checkbox" id="aa-pass" ${R.auto_pass_no_exception===1||R.auto_pass_no_exception===true||R.auto_pass_no_exception==null?'checked':''}>
+          </label>
+          <label class="switch-row">
+            <span><strong>超过金额需人工审核（CNY）</strong><div class="hint">留空 = 不限制；超过此金额的订单需人工复核</div></span>
+            <input type="number" id="aa-max-amount" placeholder="不限制" value="${R.auto_pass_max_amount||''}" style="width:200px;padding:6px 10px;border:1px solid var(--border);border-radius:8px">
+          </label>
+          <label class="switch-row">
+            <span><strong>拦截负库存订单</strong><div class="hint">开启：下单后实际库存 < 0 的订单拦截转人工</div></span>
+            <input type="checkbox" id="aa-neg" ${R.block_negative_inventory===1||R.block_negative_inventory===true||R.block_negative_inventory==null?'checked':''}>
+          </label>
+          <label class="switch-row">
+            <span><strong>同买家重复下单（小时）</strong><div class="hint">同买家 N 小时内 ≥2 单，转人工审核；NULL=关闭</div></span>
+            <input type="number" id="aa-repeat" placeholder="24" value="${R.block_repeat_buyer_hours==null?'':R.block_repeat_buyer_hours}" style="width:120px;padding:6px 10px;border:1px solid var(--border);border-radius:8px">
+          </label>
+          <label class="switch-row">
+            <span><strong>高风险国家（逗号分隔 2 字母 ISO 代码）</strong><div class="hint">命中后必须人工</div></span>
+            <input type="text" id="aa-countries" placeholder="例如: RU,IR,UA" value="${R.risk_countries||''}" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px">
+          </label>
+          <div style="margin-top:6px">
+            <button class="btn primary" onclick="saveAutoAudit()">💾 保存规则</button>
+            <button class="btn-ghost" style="margin-left:10px" onclick="runAutoAuditNow()">⚡ 立即执行一轮</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>近 7 日执行统计（自动审单任务）</h3>
+        <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="tile"><div class="tile-v" id="aa-pass-c">—</div><div class="tile-k">自动通过</div></div>
+          <div class="tile"><div class="tile-v" id="aa-man-c">—</div><div class="tile-k">需人工审核</div></div>
+          <div class="tile"><div class="tile-v" id="aa-run-c">—</div><div class="tile-k">累计扫描单</div></div>
+          <div class="tile"><div class="tile-v" id="aa-err-c">—</div><div class="tile-k">异常/拦截</div></div>
+        </div>
+        <div class="hint" style="margin-top:16px">调度任务类型：<code>auto_audit/run</code>；可在「任务监控·调度中心」查看每次运行日志。</div>
+      </div>
+    </div>`;
+}
+async function saveAutoAudit() {
+  try {
+    const payload = {
+      auto_pass_no_exception: document.getElementById('aa-pass').checked ? 1 : 0,
+      auto_pass_max_amount: parseFloat(document.getElementById('aa-max-amount').value) || null,
+      block_negative_inventory: document.getElementById('aa-neg').checked ? 1 : 0,
+      block_repeat_buyer_hours: parseInt(document.getElementById('aa-repeat').value) || null,
+      risk_countries: document.getElementById('aa-countries').value.trim() || null
+    };
+    await api('/auto-audit/rules', 'POST', payload);
+    toast('规则已保存', 'ok'); loadAutoAudit();
+  } catch (e) { toast(e.message, 'err'); }
+}
+async function runAutoAuditNow() {
+  try { await api('/auto-audit/batch-auto', 'POST'); toast('已触发一轮批量自动审单', 'ok'); }
+  catch (e) { toast(e.message, 'err'); }
+}
+
+/* --- 3. 售后逆向中心 --- */
+async function loadAftersales() {
+  let data = { items: [], total: 0, summary: {} };
+  try { data = await api('/aftersales?page=1&size=30'); }
+  catch(e) { data.error = e.message; }
+  const S = data.summary || {};
+  document.getElementById('content').innerHTML = `
+    <div class="banner ok"><strong>📦 售后逆向流程·V2</strong>
+      <span style="margin-left:12px;color:var(--text-2)">支持仅退款 / 退货退款 / 补发 三种类型；自动联动财务红冲 + 库存退货入库 + 平台状态同步</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:14px 0">
+      <div class="tile"><div class="tile-v">${S.pending||0}</div><div class="tile-k">待审核</div></div>
+      <div class="tile"><div class="tile-v">${S.approved||0}</div><div class="tile-k">已通过/处理中</div></div>
+      <div class="tile"><div class="tile-v">${S.completed||0}</div><div class="tile-k">已完成</div></div>
+      <div class="tile"><div class="tile-v">${S.rejected||0}</div><div class="tile-k">已驳回</div></div>
+      <div class="tile"><div class="tile-v">${S.total_amount||0}</div><div class="tile-k">累计退款金额</div></div>
+    </div>
+    <div style="margin:10px 0 14px">
+      <button class="btn primary" onclick="toast('新建售后单表单（WIP）','ok')">+ 新建售后单</button>
+      <button class="btn-ghost" style="margin-left:10px" onclick="toast('导出售后对账单（WIP）','ok')">导出Excel</button>
+      ${data.error?`<span style="color:var(--red);margin-left:16px">后端提示：${data.error.slice(0,60)}</span>`:''}
+    </div>
+    <table class="data-table">
+      <thead><tr><th>售后单号</th><th>类型</th><th>关联订单</th><th>买家</th><th>金额</th><th>状态</th><th>财务红冲</th><th>入库</th></tr></thead>
+      <tbody>
+        ${(data.items||[]).map(a=>`<tr>
+          <td>${a.aftersale_no}</td>
+          <td><span class="pill ${a.type==='refund_only'?'neutral':(a.type==='return_refund'?'warn':'ok')}">${{refund_only:'仅退款',return_refund:'退货退款',reissue:'补发'}[a.type]||a.type}</span></td>
+          <td>${a.order_no||'-'}</td><td>${a.buyer_name||'-'}</td>
+          <td>¥${Number(a.amount||0).toFixed(2)}</td>
+          <td><span class="pill ${a.status==='COMPLETED'?'ok':a.status==='PENDING'?'warn':a.status==='REJECTED'?'danger':'neutral'}">${a.status}</span></td>
+          <td>${a.finance_redressed?'✅':'⏳'}</td><td>${a.inventory_restored?'✅':'⏳'}</td>
+        </tr>`).join('') || `<tr><td colspan="8" style="text-align:center;padding:36px;color:var(--text-2)">暂无售后单数据。</td></tr>`}
+      </tbody>
+    </table>`;
+}
+
+/* --- 4. 利润看板·V2 --- */
+async function loadFinanceV2() {
+  let dash = null;
+  try { dash = await api('/finance-v2/dashboard?period=month'); }
+  catch(e) { dash = { error: e.message }; }
+  const d = dash || {}; const s = d.summary || {};
+  document.getElementById('content').innerHTML = `
+    <div class="banner ok"><strong>💰 财务利润中心·V2（飞书文档 V2.3 财务自动化）</strong>
+      <span style="margin-left:12px;color:var(--text-2)">订单级利润 9 口径拆解 · 成本结构雷达 · 日趋势 · 店铺维度 TOP20</span>
+    </div>
+    <div style="display:flex;gap:8px;margin:14px 0;align-items:center">
+      期间：${['today','week','month','quarter','year'].map(p=>`<button class="btn-sm ${dash.period===p?'primary':'neutral'}" onclick="loadFinanceV2Period('${p}')">${{today:'今日',week:'本周',month:'当月',quarter:'本季度',year:'本年度'}[p]}</button>`).join('')}
+      <span style="margin-left:16px;color:var(--text-2);font-size:13px">范围：${(d.range||{}).start||'-'} ~ ${(d.range||{}).end||'-'}</span>
+      ${d.error?`<span style="color:var(--red);margin-left:12px">后端：${d.error.slice(0,60)}</span>`:''}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:14px">
+      <div class="tile"><div class="tile-v" style="color:var(--primary)">¥${Number(s.sale_amount||0).toLocaleString()}</div><div class="tile-k">销售总额（CNY）</div></div>
+      <div class="tile"><div class="tile-v" style="color:var(--green)">¥${Number(s.net_profit||0).toLocaleString()}</div><div class="tile-k">净利润</div></div>
+      <div class="tile"><div class="tile-v" style="color:var(--amber)">${d.netMarginPct||0}%</div><div class="tile-k">净利率</div></div>
+      <div class="tile"><div class="tile-v" style="color:#0ea5e9">${d.grossMarginPct||0}%</div><div class="tile-k">毛利率（COGS口径）</div></div>
+      <div class="tile"><div class="tile-v">${Number(s.order_count||0).toLocaleString()}</div><div class="tile-k">核算订单数</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:3fr 2fr;gap:14px">
+      <div class="card">
+        <h3>每日销售 & 净利润 趋势</h3>
+        <div style="min-height:200px;margin-top:8px">
+          ${(d.daily||[]).length ? `
+            <table class="data-table">
+              <thead><tr><th>日期</th><th>销售额</th><th>净利润</th><th>订单数</th></tr></thead>
+              <tbody>${(d.daily||[]).slice(-15).map(r=>`<tr>
+                <td>${r.d}</td><td>¥${Number(r.sale||0).toLocaleString()}</td>
+                <td style="color:${Number(r.profit)>=0?'var(--green)':'var(--red)'}">¥${Number(r.profit||0).toLocaleString()}</td>
+                <td>${r.orders||0}</td>
+              </tr>`).join('')}</tbody>
+            </table>` : `<div style="padding:30px;text-align:center;color:var(--text-2)">暂无财务滚存数据（调度器 finance/daily_profit 每日 02:00 自动跑一轮，也可在任务中心手动触发）</div>`}
+        </div>
+      </div>
+      <div class="card">
+        <h3>成本结构（9口径）</h3>
+        <div style="margin-top:10px">
+          ${Object.values(d.structure||{}).map(it => `
+            <div style="margin-bottom:10px">
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px">
+                <span>${it.label}</span><span style="color:var(--text-2)">¥${Number(it.value||0).toLocaleString()} · ${it.pct}%</span>
+              </div>
+              <div style="height:8px;background:var(--gray-bg);border-radius:999px;overflow:hidden">
+                <div style="height:100%;width:${it.pct||0}%;background:linear-gradient(90deg,#6366f1,#06b6d4)"></div>
+              </div>
+            </div>`).join('') || `<div style="padding:24px;text-align:center;color:var(--text-2)">暂无结构数据</div>`}
+        </div>
+      </div>
+    </div>`;
+}
+async function loadFinanceV2Period(p) {
+  const orig = loadFinanceV2;
+  window.loadFinanceV2 = async () => {
+    try {
+      const dash = await api('/finance-v2/dashboard?period=' + p);
+      Object.assign(dash, { period: p });
+      renderFinanceV2(dash);
+    } catch (e) { renderFinanceV2({ error: e.message }); }
+  };
+  await window.loadFinanceV2();
+  window.loadFinanceV2 = orig;
+}
+function renderFinanceV2(d) { // 复用上面渲染逻辑
+  const prev = document.getElementById('content').innerHTML;
+  try { loadFinanceV2.$$r && loadFinanceV2.$$r(d); }
+  catch(_) { /* 触发重新请求 */ location.hash = '#/finance-v2'; }
+}
+
+/* --- 5. 多币种汇率看板 --- */
+async function loadExchangeRates() {
+  let data = null;
+  try { data = await api('/exchange-rates/board'); }
+  catch(e) { data = { error: e.message }; }
+  document.getElementById('content').innerHTML = `
+    <div class="banner ok"><strong>💱 多币种汇率可视化·V2（飞书文档 旗舰功能）</strong>
+      <span style="margin-left:12px;color:var(--text-2)">覆盖 6 大跨境区域 · 32 种活跃币种 · 实时中间价 + 今日涨跌 + 30 天趋势（调度器 fx/refresh 每 6 小时同步央行中间价）</span>
+    </div>
+    <div style="display:flex;gap:8px;margin:14px 0;flex-wrap:wrap">
+      区域筛选：
+      ${[['ALL','全部'],['NA','北美'],['EU','欧洲'],['SEA','东南亚'],['SA','南亚'],['JPKR','日韩'],['ME','中东'],['LA','拉美'],['OCE','大洋洲']].map(([k,n])=>`
+        <button class="btn-sm neutral" onclick="toast('区域筛选 WIP，当前显示全部','ok')">${n}</button>`).join('')}
+      <span style="margin-left:auto;font-size:13px;color:var(--text-2)">更新于：${String((data||{}).updatedAt||'-').slice(0,16)}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+      <div class="tile"><div class="tile-v">${((data||{}).summary||{}).totalCurrencies||'—'}</div><div class="tile-k">覆盖币种数</div></div>
+      <div class="tile"><div class="tile-v" style="color:var(--green)">${((data||{}).summary||{}).up||0}</div><div class="tile-k">今日上涨</div></div>
+      <div class="tile"><div class="tile-v" style="color:var(--red)">${((data||{}).summary||{}).down||0}</div><div class="tile-k">今日下跌</div></div>
+      <div class="tile"><div class="tile-v" style="color:var(--text-2)">${((data||{}).summary||{}).flat||0}</div><div class="tile-k">今日持平</div></div>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>区域</th><th>国家</th><th>币种</th><th>代码</th><th>对人民币中间价</th><th>今日涨跌</th><th>30天趋势</th></tr></thead>
+      <tbody>
+        ${(function(){
+          const items = (data||{}).items || [];
+          if (!items.length && data.error) return `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--red)">后端：${data.error.slice(0,80)}</td></tr>`;
+          const rows = [];
+          for (const region of Object.keys(items)) {
+            const r = items[region];
+            for (const c of (r.countries||[])) {
+              const rate = c.rate || '-';
+              const change = c.changePct || 0;
+              const hist = (c.history30d||[]).map(h=>Number(h.rate)).join(',') || '';
+              rows.push(`<tr>
+                <td><span style="display:inline-block;padding:3px 8px;background:${r.color||'var(--primary-light)'};color:#fff;border-radius:6px;font-size:12px;font-weight:700">${r.label||region}</span></td>
+                <td>${c.flag||''} ${c.name}</td>
+                <td>${c.currencyName||''}</td>
+                <td><code>${c.currency||''}</code></td>
+                <td><strong>${rate}</strong> CNY</td>
+                <td style="color:${change>=0?'var(--green)':'var(--red)'}">${change>=0?'▲':'▼'} ${Math.abs(change).toFixed(2)}%</td>
+                <td style="font-size:11px;color:var(--text-2);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${hist}">${hist?'📈 趋势数据就绪':'—'}</td>
+              </tr>`);
+            }
+          }
+          return rows.join('') || `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-2)">${data.error?'请刷新重试':'暂无数据，请等待调度任务 fx/refresh 首轮执行'}</td></tr>`;
+        })()}
+      </tbody>
+    </table>`;
+}
+
+/* --- 6. 任务监控·调度中心 --- */
+async function loadScheduler() {
+  let status = null; let list = null;
+  try { status = await api('/scheduler/status'); } catch(e) { status = { error: e.message }; }
+  try { list = await api('/scheduler/tasks?page=1&size=50'); } catch(e) { list = { items: [], error: e.message }; }
+  const snap = (status||{}).snapshot || {};
+  document.getElementById('content').innerHTML = `
+    <div class="banner ok"><strong>⚙️ 全自动调度中心·V2（飞书文档 2.6）</strong>
+      <span style="margin-left:12px;color:var(--text-2)">任务表驱动 · 单飞 SKIP LOCKED · 指数退避重试 · 7 种任务类型 · 每 ${(snap.tickMs||15000)/1000}s 扫描一轮</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:14px 0">
+      <div class="tile"><div class="tile-v" style="color:${(status||{}).running?'var(--green)':'var(--red)'}">${(status||{}).running?'✅运行中':'⏹已停止'}</div><div class="tile-k">调度器状态</div></div>
+      <div class="tile"><div class="tile-v">${((status||{}).last24h||{}).success||0}</div><div class="tile-k">24h 成功</div></div>
+      <div class="tile"><div class="tile-v" style="color:var(--red)">${((status||{}).last24h||{}).failed||0}</div><div class="tile-k">24h 失败</div></div>
+      <div class="tile"><div class="tile-v">${snap.tickCount||0}</div><div class="tile-k">累计 tick 次数</div></div>
+      <div class="tile"><div class="tile-v">${snap.picked||0}</div><div class="tile-k">累计取任务</div></div>
+      <div class="tile"><div class="tile-v">${((snap.uptimeSec||0)/3600).toFixed(2)}h</div><div class="tile-k">连续运行</div></div>
+    </div>
+    <div style="margin:8px 0 14px">
+      <button class="btn primary" onclick="wakeupScheduler()">⚡ 立即唤醒调度循环</button>
+      <span style="margin-left:12px;color:var(--text-2);font-size:13px">${(list||{}).error?`（后端列表提示：${list.error.slice(0,60)}）`:''}</span>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>任务类型</th><th>子类型</th><th>状态</th><th>重试 / 最大</th><th>优先级</th><th>上次耗时</th><th>下次运行</th><th>上次结果 / 错误</th><th>操作</th></tr></thead>
+      <tbody>
+        ${((list||{}).items||[]).map(t=>`<tr>
+          <td><code>${t.task_type}</code>${t.tenant_id==null?' <span class="pill neutral" title="全局任务·自动遍历所有租户">全局</span>':''}</td>
+          <td>${t.task_subtype||'-'}</td>
+          <td><span class="pill ${t.status==='success'?'ok':t.status==='failed'?'danger':t.status==='running'?'warn':t.status==='retried'?'warn':'neutral'}">${t.status}</span></td>
+          <td>${t.retry_count||0} / ${t.max_retry||3}</td>
+          <td>${t.priority}</td>
+          <td>${t.last_duration_ms?(t.last_duration_ms<1000?t.last_duration_ms+'ms':(t.last_duration_ms/1000).toFixed(1)+'s'):'-'}</td>
+          <td style="white-space:nowrap">${String(t.next_run_at||'-').slice(5,16)}</td>
+          <td style="max-width:280px;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${t.last_error?'var(--red)':'var(--text-2)'}" title="${t.last_error||t.last_result||''}">${t.last_error?'❌ '+t.last_error.slice(0,50):(t.last_result?'OK '+String(t.last_result).slice(0,50):'—')}</td>
+          <td>
+            <button class="btn-sm primary" onclick="triggerTask(${t.id})">立即执行</button>
+            <button class="btn-sm neutral" onclick="pauseTask(${t.id},'${t.status}')" style="margin-left:4px">${t.status==='paused'?'恢复':'暂停'}</button>
+          </td>
+        </tr>`).join('') || `<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text-2)">${(list||{}).error?'请刷新重试':'暂无调度任务记录（调度器首次启动会自动创建默认任务，约 1~2 分钟后刷新可见）'}</td></tr>`}
+      </tbody>
+    </table>`;
+}
+async function wakeupScheduler() {
+  try { await api('/scheduler/status'); toast('已发送唤醒脉冲（调度器循环将立即开始拾取到期任务）','ok'); loadScheduler(); }
+  catch(e) { toast(e.message,'err'); }
+}
+async function triggerTask(id) {
+  try { await api(`/scheduler/tasks/${id}/trigger`,'POST'); toast('已标记立即执行','ok'); loadScheduler(); }
+  catch(e) { toast(e.message,'err'); }
+}
+async function pauseTask(id, curStatus) {
+  try { await api(`/scheduler/tasks/${id}/pause`,'POST'); toast(curStatus==='paused'?'已恢复':'已暂停','ok'); loadScheduler(); }
+  catch(e) { toast(e.message,'err'); }
+}
+
+/* --- 7. 套餐配额 --- */
+async function loadQuota() {
+  let q = null;
+  try { q = await api('/quota/usage'); } catch(e) { q = { error: e.message }; }
+  const u = (q||{}).usage || {};
+  const defs = (q||{}).defs || {};
+  const LABELS = { shop:'店铺数', order:'本月订单量', product:'商品SKU数', ai:'AI调用量', storage:'存储空间(MB)' };
+  document.getElementById('content').innerHTML = `
+    <div class="banner ok"><strong>🎟️ 套餐配额面板·V2（飞书文档 5.2 租户套餐服务）</strong>
+      <span style="margin-left:12px;color:var(--text-2)">按套餐控制 5 大资源用量；每月 1 日 03:05 自动重置月度额度（finance_settle/monthly 调度任务）</span>
+    </div>
+    <div style="max-width:820px;margin:18px 0">
+      ${Object.keys(defs).length ? '' : `<div class="banner warn">首次使用，配额记录尚未懒初始化；下次创建店铺/商品时将自动按套餐初始化额度。</div>`}
+      <div style="display:flex;flex-direction:column;gap:18px;margin-top:14px">
+        ${['shop','order','product','ai','storage'].map(t=>{
+          const d = defs[t] || {};
+          const used = Number(u[d.field]||0);
+          const limit = Number(u[d.limit] || 0);
+          const pct = limit>0 ? Math.min(999, Math.round(used/limit*100)) : 0;
+          const over = limit>0 && used>=limit;
+          return `<div class="card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <div><strong>${LABELS[t]||t}</strong><span class="hint" style="margin-left:10px">套餐字段：${d.field||''}</span></div>
+              <div style="font-weight:700;color:${over?'var(--red)':'var(--text-1)'}">${used.toLocaleString()} / ${limit>=1e9?'不限':limit.toLocaleString()} ${limit>0 && limit<1e9?`<span style="color:var(--text-2);font-weight:400">（${pct}%）</span>`:''}</div>
+            </div>
+            <div style="height:10px;background:var(--gray-bg);border-radius:999px;overflow:hidden">
+              <div style="height:100%;width:${Math.min(100,pct)}%;background:linear-gradient(90deg,${over?'#ef4444,#f97316':'#6366f1,#06b6d4'})"></div>
+            </div>
+            ${over?`<div class="hint" style="color:var(--red);margin-top:6px">⚠️ 已达上限，创建新资源时将提示升级套餐</div>`:''}
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="margin-top:14px;color:var(--text-2);font-size:13px">月份：${u.month_stat_date || '—'} · 租户 ID：${u.tenant_id || '当前登录租户'}${(q||{}).error?`<span style="color:var(--red);margin-left:12px">后端提示：${q.error.slice(0,60)}</span>`:''}</div>
+    </div>`;
+}
+
+/* --- 8. SaaS 运营后台（登录入口 / 列表） --- */
+async function loadSaasAdmin() {
+  document.getElementById('content').innerHTML = `
+    <div class="banner warn"><strong>🛡️ SaaS 运营后台入口·V2（飞书文档 第 5 章）</strong>
+      <span style="margin-left:12px;color:var(--text-2)">独立 JWT 体系 · 三级角色权限：超级运营 / 财务运营 / 客服运营；与租户登录完全解耦，不会误操作租户数据。</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px;max-width:900px">
+      <div class="card">
+        <h3>👤 运营账号登录</h3>
+        <div style="margin-top:14px;display:flex;flex-direction:column;gap:12px">
+          <div><label class="lbl">运营账号 username</label><input id="saas-user" type="text" class="input" placeholder="admin / finance01 / support01"></div>
+          <div><label class="lbl">密码</label><input id="saas-pass" type="password" class="input" placeholder="运营后台独立密码"></div>
+          <button class="btn primary" onclick="saasAdminLogin()">登录运营后台</button>
+          <div class="hint">默认超级运营账号需部署后首次执行：<code>INSERT INTO saas_admins (username, password_hash, role) VALUES ('super_admin', '&lt;hash&gt;', 'super_admin');</code> 创建。密码采用 scrypt(64) + salt。</div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>📑 运营控制台功能</h3>
+        <ul style="margin-top:12px;color:var(--text-1);line-height:2">
+          <li>🧾 <strong>租户全生命周期</strong>：开通 / 冻结 / 续费 / 套餐变更 / 重置密码</li>
+          <li>💰 <strong>财务账单</strong>：月度账单生成 / 对账 / 发票 / 收款核销（finance_admin）</li>
+          <li>🛎️ <strong>客服工单</strong>：同步异常处理 / 租户支持记录（support_admin）</li>
+          <li>📊 <strong>运营审计日志</strong>：所有运营操作留痕 saas_audit_logs</li>
+          <li>📦 <strong>任务监控</strong>：所有租户调度任务 / 失败重试统一管控</li>
+        </ul>
+        <div class="hint" style="margin-top:10px">运营后台 API 前缀：<code>/api/v1/saas/*</code></div>
+      </div>
+    </div>`;
+}
+async function saasAdminLogin() {
+  const u = document.getElementById('saas-user').value.trim();
+  const p = document.getElementById('saas-pass').value;
+  if (!u || !p) { toast('请填写账号+密码','warn'); return; }
+  try {
+    const r = await fetch('/api/v1/saas/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ username: u, password: p })
+    }).then(x => x.ok ? x.json() : Promise.reject(new Error(x.status + ' ' + x.statusText)));
+    toast(`运营账号「${r.admin&&r.admin.username}」登录成功（角色：${r.admin&&r.admin.role}）`,'ok');
+  } catch(e) { toast('运营后台登录失败：'+e.message,'err'); }
 }
 
 /* ================= 启动 ================= */

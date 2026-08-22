@@ -38,8 +38,8 @@ async function checkLocked(username, ip) {
     'SELECT COUNT(*) AS c FROM login_attempts WHERE ip = ? AND success = 0 AND created_at >= ?',
     [ip, since]
   );
-  const userFails = byUser[0]?.c || 0;
-  const ipFails = byIp[0]?.c || 0;
+  const userFails = (byUser[0] && byUser[0].c) || 0;
+  const ipFails = (byIp[0] && byIp[0].c) || 0;
   return { locked: userFails >= MAX_FAIL || ipFails >= MAX_FAIL, remain: Math.max(0, MAX_FAIL - Math.max(userFails, ipFails)) };
 }
 
@@ -111,7 +111,7 @@ router.post('/login', async (req, res, next) => {
     const ok = users.length && verifyPassword(password, users[0].password_hash);
     if (!ok) {
       await recordAttempt(username, ip, false);
-      await auditLog({ tenantId: users[0]?.tenant_id || null, userId: users[0]?.id || null, username, action: 'auth.login_failed', method: 'POST', path: '/api/v1/auth/login', targetType: 'auth', targetId: null, statusCode: 401, ip, ua: (req.headers['user-agent'] || '').slice(0, 200), detail: '用户名或密码错误' });
+      await auditLog({ tenantId: (users[0] && users[0].tenant_id) || null, userId: (users[0] && users[0].id) || null, username, action: 'auth.login_failed', method: 'POST', path: '/api/v1/auth/login', targetType: 'auth', targetId: null, statusCode: 401, ip, ua: (req.headers['user-agent'] || '').slice(0, 200), detail: '用户名或密码错误' });
       return res.status(401).json({ error: '用户名或密码错误', remain: Math.max(0, remain - 1) });
     }
 
