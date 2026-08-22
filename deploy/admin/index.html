@@ -219,6 +219,28 @@ tr:hover td{background:#fafbff}
 .notif-meta{font-size:11px;color:var(--text-3);display:flex;justify-content:space-between}
 .notif-empty{padding:32px 16px;text-align:center;color:var(--text-3);font-size:13px}
 
+/* 头像下拉浮层菜单 —— 触发器 position:relative 容器包 position:absolute 浮层（含块参照 + 点击外部关闭的contains判定基准） */
+.avatar-wrap{position:relative;display:inline-flex;align-items:center}
+.avatar-btn{display:inline-flex;align-items:center;gap:8px;padding:5px 10px 5px 6px;border-radius:999px;border:1px solid var(--border);background:#fff;cursor:pointer;transition:all .15s}
+.avatar-btn:hover{border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,.08)}
+.avatar-img,.avatar-big{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;color:#fff;font-weight:800;font-size:12.5px;background:var(--primary);letter-spacing:0;line-height:1;flex:none}
+.avatar-big{width:40px;height:40px;font-size:16px}
+.avatar-caret{width:14px;height:14px;color:var(--text-3)}
+.avatar-menu{position:absolute;right:0;top:calc(100% + 8px);min-width:240px;background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:0 18px 48px rgba(15,23,42,.16);z-index:9999;padding:10px;display:none;flex-direction:column}
+.avatar-menu.show{display:flex;animation:avatarFadeIn .15s ease-out}
+@keyframes avatarFadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.avatar-menu-header{display:flex;align-items:center;gap:10px;padding:10px 10px 12px;margin:-2px -2px 6px;border-bottom:1px solid var(--border)}
+.avatar-menu-name{font-size:14px;font-weight:700;color:var(--text);line-height:1.4}
+.avatar-menu-role{font-size:11.5px;font-weight:600;color:var(--text-3);margin-top:3px}
+.avatar-menu-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13.5px;font-weight:500;color:var(--text);cursor:pointer;text-decoration:none;transition:background .1s;line-height:1.4}
+.avatar-menu-item:hover{background:var(--primary-light);color:var(--primary)}
+.avatar-menu-item svg{width:17px;height:17px;color:var(--text-2);flex:none}
+.avatar-menu-item:hover svg{color:var(--primary)}
+.avatar-menu-item.logout{color:var(--red)}
+.avatar-menu-item.logout:hover{background:var(--red-bg);color:var(--red)}
+.avatar-menu-item.logout svg{color:var(--red)}
+.avatar-menu-divider{height:1px;background:var(--border);margin:6px 4px}
+
 .filter-bar{display:flex;gap:10px;align-items:center}
 .filter-bar select{width:140px;padding:8px 10px}
 
@@ -307,7 +329,7 @@ tr:hover td{background:#fafbff}
       <div class="nav-group">
         <div class="nav-group-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>自动化中心·V2</div>
         <a class="nav-item sub badge-new" data-view="scheduler" href="#/scheduler" onclick="go('scheduler')">任务监控调度<em>NEW</em></a>
-                <a class="nav-item sub badge-new" data-view="saas-admin" href="#/saas-admin" onclick="go('saas-admin')">SaaS运营后台<em>NEW</em></a>
+                <a class="nav-item sub badge-new" id="nav-saas-admin" data-view="saas-admin" href="#/saas-admin" onclick="go('saas-admin')">SaaS运营后台<em>NEW</em></a>
       </div>
 
       <div class="nav-group">
@@ -515,9 +537,13 @@ async function enterApp() {
     const e = document.getElementById(id);
     if (e) { e.textContent = ch; e.style.background = color; }
   });
-  // 权限：子账号（staff/viewer）隐藏「套餐订阅」入口；超级管理员租户视图也隐藏
+  // 头像下拉菜单权限：仅 owner（主账号·拥有者）显示「套餐订阅」入口；
+  // 子账号（staff/viewer）、超级管理员（super_admin）的租户视图均隐藏套餐订阅
   const billingMenu = document.getElementById('menu-billing');
   if (billingMenu) billingMenu.style.display = (me && me.role === 'owner') ? '' : 'none';
+  // 侧边栏菜单权限：SaaS运营后台 仅 super_admin（超级管理员）可见，其他角色完全隐藏
+  const saasNav = document.getElementById('nav-saas-admin');
+  if (saasNav) saasNav.style.display = (me && me.role === 'super_admin') ? '' : 'none';
   // 角色权限：非 owner（staff/viewer）隐藏财务中心，viewer 再隐藏写操作入口
   const finNav = document.getElementById('nav-finance');
   if (finNav) finNav.style.display = (me && me.role !== 'owner') ? 'none' : '';
@@ -554,6 +580,17 @@ function renderPlanBox() {
 function go(view) {
   view = String(view || '').split('?')[0];
   if (!VIEW_TITLES[view]) view = 'dashboard';
+  // ===== 路由级前端权限拦截（403）：与后端双重保护 =====
+  // SaaS运营后台：仅超级管理员（super_admin）可访问，其他角色一律403拦截并跳回概览
+  if (view === 'saas-admin' && !(me && me.role === 'super_admin')) {
+    toast('403 无权限访问SaaS运营后台', 'err');
+    view = 'dashboard';
+  }
+  // 套餐订阅页：仅主账号 owner 可见，子账号/超级管理员（租户界面）无权限访问
+  if (view === 'billing' && !(me && me.role === 'owner')) {
+    toast('403 仅主账号可查看套餐订阅', 'warn');
+    view = 'dashboard';
+  }
   // 仅当停留在同一视图时保留 URL 查询参数（OAuth 回跳提示用）
   const cur = String(location.hash.replace('#/', '')).split('?')[0];
   const q = (cur === view && location.hash.includes('?')) ? '?' + location.hash.split('?')[1] : '';
@@ -2312,13 +2349,13 @@ async function loadScheduler() {
     </div>
     <div style="margin:8px 0 14px">
       <button class="btn primary" onclick="wakeupScheduler()">⚡ 立即唤醒调度循环</button>
-      <span style="margin-left:12px;color:var(--text-2);font-size:13px">${(list||{}).error?`（后端列表提示：${list.error.slice(0,60)}）`:''}</span>
+      <span style="margin-left:12px;color:var(--text-2);font-size:13px">${(list||{}).error?`（提示：${list.error.slice(0,60)}）`:''}</span>
     </div>
     <table class="data-table">
       <thead><tr><th>任务类型</th><th>子类型</th><th>状态</th><th>重试 / 最大</th><th>优先级</th><th>上次耗时</th><th>下次运行</th><th>上次结果 / 错误</th><th>操作</th></tr></thead>
       <tbody>
         ${((list||{}).items||[]).map(t=>`<tr>
-          <td><code>${t.task_type}</code>${t.tenant_id==null?' <span class="pill neutral" title="全局任务·自动遍历所有租户">全局</span>':''}</td>
+          <td><b>${t.task_type}</b>${t.tenant_id==null?' <span class="pill neutral" title="系统级自动任务·覆盖所有租户">全局</span>':''}</td>
           <td>${t.task_subtype||'-'}</td>
           <td><span class="pill ${t.status==='success'?'ok':t.status==='failed'?'danger':t.status==='running'?'warn':t.status==='retried'?'warn':'neutral'}">${t.status}</span></td>
           <td>${t.retry_count||0} / ${t.max_retry||3}</td>
@@ -2379,7 +2416,7 @@ async function loadQuota() {
           </div>`;
         }).join('')}
       </div>
-      <div style="margin-top:14px;color:var(--text-2);font-size:13px">月份：${u.month_stat_date || '—'} · 租户 ID：${u.tenant_id || '当前登录租户'}${(q||{}).error?`<span style="color:var(--red);margin-left:12px"></span>`:''}</div>
+      <div style="margin-top:14px;color:var(--text-2);font-size:13px">统计周期：${u.month_stat_date || '—'} · 所属账号：当前登录租户${(q||{}).error?`<span style="color:var(--red);margin-left:12px"></span>`:''}</div>
     </div>`;
 }
 
