@@ -72,13 +72,63 @@ def run(cmd_text, use_sudo=False):
 def _sh_quote(s):
     return "'" + s.replace("'", "'\\''") + "'"
 
+def put(local_path, remote_path):
+    """SFTP 上传单个文件(经代理 socket)。目标目录需存在。"""
+    sock = make_proxy_sock()
+    tr = paramiko.Transport(sock)
+    tr.set_keepalive(30)
+    try:
+        tr.connect(username=SSH_USER, password=SSH_PASS)
+        sftp = paramiko.SFTPClient.from_transport(tr)
+        sftp.put(local_path, remote_path)
+        st = sftp.stat(remote_path)
+        sftp.close()
+        print(f"[PUT OK] {local_path} -> {remote_path} ({st.st_size} bytes)")
+    finally:
+        tr.close()
+
+def put_dir(local_dir, remote_dir):
+    """SFTP 上传目录(递归)。remote_dir 不存在则创建。"""
+    import os
+    sock = make_proxy_sock()
+    tr = paramiko.Transport(sock)
+    tr.set_keepalive(30)
+    try:
+        tr.connect(username=SSH_USER, password=SSH_PASS)
+        sftp = paramiko.SFTPClient.from_transport(tr)
+        def ensure_dir(p):
+            try:
+                sftp.stat(p)
+            except IOError:
+                parent = "/".join(p.rstrip("/").split("/")[:-1]) or "/"
+                ensure_dir(parent)
+                sftp.mkdir(p)
+        for root, dirs, files in os.walk(local_dir):
+            rel = os.path.relpath(root, local_dir)
+            rdir = remote_dir if rel == "." else remote_dir + "/" + rel.replace(os.sep, "/")
+            ensure_dir(rdir)
+            for fn in files:
+                lp = os.path.join(root, fn)
+                rp = rdir + "/" + fn
+                sftp.put(lp, rp)
+                print(f"[PUT] {rp}")
+        sftp.close()
+    finally:
+        tr.close()
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        sys.exit("用法: ssh_cmd.py \"命令\"  |  --script 文件  |  --sudo \"命令\"")
+        sys.exit("用法: ssh_cmd.py \"命令\" | --script 文件 | --sudo \"命令\" | --put 本地 远程 | --putdir 本地目录 远程目录")
     if sys.argv[1] == "--script":
         with open(sys.argv[2], "r", encoding="utf-8") as f:
             cmd = f.read()
         sys.exit(run(cmd))
     if sys.argv[1] == "--sudo":
         sys.exit(run(sys.argv[2], use_sudo=True))
+    if sys.argv[1] == "--put":
+        put(sys.argv[2], sys.argv[3])
+        sys.exit(0)
+    if sys.argv[1] == "--putdir":
+        put_dir(sys.argv[2], sys.argv[3])
+        sys.exit(0)
     sys.exit(run(sys.argv[1]))
