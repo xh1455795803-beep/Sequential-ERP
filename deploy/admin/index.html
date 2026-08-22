@@ -389,6 +389,8 @@ async function doRegister(ev) {
 function afterAuth(r) {
   token = r.token; me = r.user; tenant = r.tenant;
   localStorage.setItem('sx_token', token);
+  // 登录成功：统一先落到「概览 dashboard」主控制台，再让用户通过侧边栏点店铺/商品等
+  location.hash = '#/dashboard';
   enterApp();
 }
 
@@ -411,6 +413,16 @@ async function enterApp() {
   // 通知中心初始化 + 每 30s 轮询
   try { await loadNotifBadge(); } catch {}
   if (!window.__notifTimer) window.__notifTimer = setInterval(loadNotifBadge, 30000);
+
+  // 统一主入口：
+  //  - 空 hash / 非法 view / 登录前停留在「shops」这种内嵌页 → 一律先跳 dashboard 主控制台
+  //  - 只有用户显式打开合法且非 shops 的书签（#/orders / #/finance 等）才保留
+  const raw = (location.hash || '').replace('#/', '').split('?')[0];
+  const isLegit = raw && VIEW_TITLES[raw];
+  const isInternalEmbedded = (raw === 'shops' || raw === 'platforms'); // 内嵌子页，不该作为首次进入 ERP 的落地页
+  if (!isLegit || isInternalEmbedded) {
+    location.hash = '#/dashboard';
+  }
   go(location.hash.replace('#/', '') || 'dashboard');
 }
 
@@ -1898,7 +1910,15 @@ async function readAllNotif() {
 
 /* ================= 启动 ================= */
 (async function init() {
-  if (!token) return;
+  // 未登录用户如果直接访问 #/shops / #/platforms 这种内嵌子页（收藏/历史记录里的），
+  // 先把 hash 清干净，登录完之后统一进入 dashboard，不再"一进来就是 shops"
+  if (!token) {
+    const raw = (location.hash || '').replace('#/', '').split('?')[0];
+    if (raw === 'shops' || raw === 'platforms') {
+      history.replaceState(null, '', location.pathname + '#/');
+    }
+    return;
+  }
   try {
     const r = await api('/auth/me');
     me = r.user; tenant = r.tenant;
