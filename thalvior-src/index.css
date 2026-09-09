@@ -1,0 +1,33 @@
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+  background: #f0f2f5;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Antd 微调 */
+.ant-layout-sider-trigger {
+  display: none !important;
+}
+
+.ant-menu-dark.ant-menu-inline .ant-menu-sub {
+  background: #000c17 !important;
+}
+
+/* 让菜单图标对齐 */
+.ant-menu-item .ant-menu-item-icon,
+.ant-menu-item .anticon {
+  font-size: 15px;
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #bfbfbf; }
