@@ -11,6 +11,7 @@ const Dashboard = lazy(() => import('../pages/Dashboard'));
 const OrderList = lazy(() => import('../pages/OrderList'));
 const Placeholder = lazy(() => import('../pages/Placeholder'));
 const ProductList = lazy(() => import('../pages/ProductList'));
+const ProductEdit = lazy(() => import('../pages/ProductEdit'));
 const OnlineProductList = lazy(() => import('../pages/OnlineProductList'));
 const ShopList = lazy(() => import('../pages/ShopList'));
 const InventoryList = lazy(() => import('../pages/InventoryList'));
@@ -173,6 +174,16 @@ function buildRoutes() {
       element: perm ? wrap(guard(perm, inner)) : wrap(inner),
     });
   }
+
+  // 商品编辑/新增独立大页动态路由 (不在菜单中, 走局部权限)
+  children.push({
+    path: 'product/sku/edit/:id',
+    element: wrap(guard('product:update', <ProductEdit />)),
+  });
+  children.push({
+    path: 'product/sku/create',
+    element: wrap(guard('product:create', <ProductEdit />)),
+  });
 
   const topRedirects = [
     { from: '/workbench', to: '/workbench/overview' },
