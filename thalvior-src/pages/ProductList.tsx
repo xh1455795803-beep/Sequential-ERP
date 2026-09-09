@@ -24,21 +24,23 @@ import {
 } from '@ant-design/icons';
 import { productApi } from '../api';
 import { usePermission } from '../hooks/usePermission';
+import { useTranslation } from '../i18n';
 
 const { Title, Text } = Typography;
-
-const STATUS = [
-  { value: 1, label: '在售', color: 'green' },
-  { value: 0, label: '下架', color: 'default' },
-  { value: 2, label: '违规', color: 'red' },
-];
-const STATUS_MAP = Object.fromEntries(STATUS.map((s) => [s.value, s]));
 
 export default function ProductList() {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<any>({ page: 1, pageSize: 10 });
   const qc = useQueryClient();
   const { has } = usePermission();
+  const { t } = useTranslation();
+
+  const STATUS = [
+    { value: 1, label: t('pages.productList.status.onSale'), color: 'green' },
+    { value: 0, label: t('pages.productList.status.offShelf'), color: 'default' },
+    { value: 2, label: t('pages.productList.status.violation'), color: 'red' },
+  ];
+  const STATUS_MAP = Object.fromEntries(STATUS.map((s) => [s.value, s]));
 
   const { data, isLoading } = useQuery({
     queryKey: ['products', filters],
@@ -48,38 +50,38 @@ export default function ProductList() {
   const removeMut = useMutation({
     mutationFn: productApi.remove,
     onSuccess: () => {
-      message.success('删除成功');
+      message.success(t('pages.productList.removeSuccess'));
       qc.invalidateQueries({ queryKey: ['products'] });
     },
   });
 
   const columns = [
     {
-      title: '图片',
+      title: t('pages.productList.colImage'),
       dataIndex: 'image',
       width: 70,
       render: (v: string) => (v ? <Image src={v} width={40} height={40} style={{ borderRadius: 4 }} /> : '-'),
     },
-    { title: 'SKU', dataIndex: 'sku', width: 130, fixed: 'left' as const },
-    { title: '商品名称', dataIndex: 'name', width: 220, ellipsis: true },
-    { title: '类目', dataIndex: 'category', width: 110, render: (v: string) => v || '-' },
-    { title: '品牌', dataIndex: 'brand', width: 110, render: (v: string) => v || '-' },
+    { title: t('pages.productList.colSku'), dataIndex: 'sku', width: 130, fixed: 'left' as const },
+    { title: t('pages.productList.colName'), dataIndex: 'name', width: 220, ellipsis: true },
+    { title: t('pages.productList.colCategory'), dataIndex: 'category', width: 110, render: (v: string) => v || '-' },
+    { title: t('pages.productList.colBrand'), dataIndex: 'brand', width: 110, render: (v: string) => v || '-' },
     {
-      title: '成本价',
+      title: t('pages.productList.colCostPrice'),
       dataIndex: 'costPrice',
       width: 100,
       align: 'right' as const,
       render: (v: number, r: any) => `${r.currency || 'USD'} ${(+v || 0).toFixed(2)}`,
     },
     {
-      title: '售价',
+      title: t('pages.productList.colSalePrice'),
       dataIndex: 'salePrice',
       width: 100,
       align: 'right' as const,
       render: (v: number, r: any) => `${r.currency || 'USD'} ${(+v || 0).toFixed(2)}`,
     },
     {
-      title: '毛利率',
+      title: t('pages.productList.colMarginRate'),
       width: 90,
       align: 'right' as const,
       render: (_: any, r: any) => {
@@ -88,16 +90,16 @@ export default function ProductList() {
       },
     },
     {
-      title: '状态',
+      title: t('pages.productList.colStatus'),
       dataIndex: 'status',
       width: 90,
       render: (v: number) => {
-        const s = STATUS_MAP[v] || { label: '未知', color: 'default' };
+        const s = STATUS_MAP[v] || { label: t('pages.productList.statusUnknown'), color: 'default' };
         return <Tag color={s.color}>{s.label}</Tag>;
       },
     },
     {
-      title: '操作',
+      title: t('pages.productList.colOperation'),
       key: 'op',
       width: 140,
       fixed: 'right' as const,
@@ -105,16 +107,16 @@ export default function ProductList() {
         <Space>
           {has('product:update') && (
             <Button type="link" size="small" icon={<EditOutlined />} onClick={() => navigate(`/product/sku/edit/${r.id}`)}>
-              编辑
+              {t('pages.productList.opEdit')}
             </Button>
           )}
           {has('product:delete') && (
             <Popconfirm
-              title="确认删除该商品?"
+              title={t('pages.productList.confirmDelete')}
               onConfirm={() => removeMut.mutate(r.id)}
             >
               <Button type="link" size="small" danger icon={<DeleteOutlined />}>
-                删除
+                {t('pages.productList.opDelete')}
               </Button>
             </Popconfirm>
           )}
@@ -125,8 +127,8 @@ export default function ProductList() {
 
   return (
     <div>
-      <Title level={4} style={{ marginTop: 0 }}>SKU 列表</Title>
-      <Text type="secondary">内部 SKU 库 · 共 {data?.total || 0} 条</Text>
+      <Title level={4} style={{ marginTop: 0 }}>{t('pages.productList.titleList')}</Title>
+      <Text type="secondary">{t('pages.productList.subtitle', { total: data?.total || 0 })}</Text>
 
       <Card style={{ marginTop: 16 }} bordered={false}>
         <Form
@@ -134,21 +136,21 @@ export default function ProductList() {
           onFinish={(v) => setFilters((f: any) => ({ ...f, ...v, page: 1 }))}
         >
           <Form.Item name="keyword">
-            <Input placeholder="SKU / 商品名 / 品牌" allowClear prefix={<SearchOutlined />} style={{ width: 260 }} />
+            <Input placeholder={t('pages.productList.filterKeywordPlaceholder')} allowClear prefix={<SearchOutlined />} style={{ width: 260 }} />
           </Form.Item>
           <Form.Item name="status">
-            <Select placeholder="状态" allowClear style={{ width: 140 }} options={STATUS.map((s) => ({ label: s.label, value: s.value }))} />
+            <Select placeholder={t('pages.productList.filterStatusPlaceholder')} allowClear style={{ width: 140 }} options={STATUS.map((s) => ({ label: s.label, value: s.value }))} />
           </Form.Item>
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit">筛选</Button>
+              <Button type="primary" htmlType="submit">{t('pages.productList.filter')}</Button>
               <Button
                 onClick={() =>
                   setFilters({ page: 1, pageSize: 10 })
                 }
                 icon={<ReloadOutlined />}
               >
-                重置
+                {t('pages.productList.reset')}
               </Button>
             </Space>
           </Form.Item>
@@ -158,11 +160,11 @@ export default function ProductList() {
       <Card
         style={{ marginTop: 16 }}
         bordered={false}
-        title="商品数据"
+        title={t('pages.productList.cardTitle')}
         extra={
           has('product:create') && (
             <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate('/product/sku/create')}>
-              新增商品
+              {t('pages.productList.create')}
             </Button>
           )
         }
@@ -179,7 +181,7 @@ export default function ProductList() {
             pageSize: filters.pageSize,
             total: data?.total || 0,
             showSizeChanger: true,
-            showTotal: (t) => `共 ${t} 条`,
+            showTotal: (total) => t('pages.productList.totalItems', { total }),
             onChange: (page, pageSize) => setFilters((f: any) => ({ ...f, page, pageSize })),
           }}
         />

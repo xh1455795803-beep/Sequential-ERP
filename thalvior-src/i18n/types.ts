@@ -1,4 +1,5 @@
 // Translation types
+// pages 为多级嵌套结构, 使用宽松索引类型
 export interface TranslationDict {
   common: Record<string, string>;
   menu: Record<string, string>;
@@ -9,6 +10,7 @@ export interface TranslationDict {
   order: Record<string, string>;
   product: Record<string, string>;
   settings: Record<string, string>;
+  pages: Record<string, any>;
 }
 
 export type LocaleCode = 'zh-CN' | 'en-US' | 'ja-JP' | 'ko-KR' | 'fr-FR' | 'de-DE' | 'es-ES' | 'pt-BR' | 'ru-RU';

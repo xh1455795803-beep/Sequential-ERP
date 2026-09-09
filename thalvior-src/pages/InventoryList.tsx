@@ -11,11 +11,13 @@ import {
 import dayjs from 'dayjs';
 import { inventoryApi, warehouseApi, productApi } from '../api';
 import { usePermission } from '../hooks/usePermission';
+import { useTranslation } from '../i18n';
 
 const { Title, Text } = Typography;
 
 // ============ 库存清单 Tab ============
 function InventoryTab() {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<any>({ page: 1, pageSize: 10 });
   const [adjustOpen, setAdjustOpen] = useState(false);
   const [safetyOpen, setSafetyOpen] = useState<any>(null);
@@ -44,7 +46,7 @@ function InventoryTab() {
   const adjustMut = useMutation({
     mutationFn: inventoryApi.adjust,
     onSuccess: () => {
-      message.success('库存调整成功');
+      message.success(t('pages.inventoryList.adjust.success'));
       setAdjustOpen(false);
       form.resetFields();
       qc.invalidateQueries({ queryKey: ['inventory'] });
@@ -56,7 +58,7 @@ function InventoryTab() {
   const safetyMut = useMutation({
     mutationFn: ({ id, safetyStock }: any) => inventoryApi.setSafetyStock(id, safetyStock),
     onSuccess: () => {
-      message.success('安全库存已更新');
+      message.success(t('pages.inventoryList.safety.success'));
       setSafetyOpen(null);
       qc.invalidateQueries({ queryKey: ['inventory'] });
     },
@@ -64,7 +66,7 @@ function InventoryTab() {
 
   const columns = [
     {
-      title: '商品',
+      title: t('pages.inventoryList.product'),
       dataIndex: ['product', 'name'],
       width: 240,
       fixed: 'left' as const,
@@ -78,13 +80,13 @@ function InventoryTab() {
         </Space>
       ),
     },
-    { title: '仓库', dataIndex: ['warehouse', 'name'], width: 140 },
-    { title: '总库存', dataIndex: 'quantity', width: 90, align: 'right' as const },
-    { title: '可用', dataIndex: 'available', width: 90, align: 'right' as const, render: (v: number) => <b>{v}</b> },
-    { title: '已占用', dataIndex: 'locked', width: 90, align: 'right' as const },
-    { title: '安全库存', dataIndex: 'safetyStock', width: 100, align: 'right' as const },
+    { title: t('pages.inventoryList.warehouse'), dataIndex: ['warehouse', 'name'], width: 140 },
+    { title: t('pages.inventoryList.totalStock'), dataIndex: 'quantity', width: 90, align: 'right' as const },
+    { title: t('pages.inventoryList.available'), dataIndex: 'available', width: 90, align: 'right' as const, render: (v: number) => <b>{v}</b> },
+    { title: t('pages.inventoryList.locked'), dataIndex: 'locked', width: 90, align: 'right' as const },
+    { title: t('pages.inventoryList.safetyStock'), dataIndex: 'safetyStock', width: 100, align: 'right' as const },
     {
-      title: '健康度',
+      title: t('pages.inventoryList.health'),
       width: 160,
       render: (_: any, r: any) => {
         const pct = r.safetyStock > 0 ? Math.min(100, (r.available / r.safetyStock) * 100) : 100;
@@ -100,17 +102,17 @@ function InventoryTab() {
       },
     },
     {
-      title: '预警',
+      title: t('pages.inventoryList.warning'),
       width: 100,
       render: (_: any, r: any) =>
         r.available <= r.safetyStock ? (
-          <Tag icon={<WarningOutlined />} color="red">需补货</Tag>
+          <Tag icon={<WarningOutlined />} color="red">{t('pages.inventoryList.needsRestock')}</Tag>
         ) : (
-          <Tag color="green">正常</Tag>
+          <Tag color="green">{t('pages.inventoryList.normal')}</Tag>
         ),
     },
     {
-      title: '操作',
+      title: t('pages.inventoryList.action'),
       width: 180,
       fixed: 'right' as const,
       render: (_: any, r: any) => (
@@ -119,7 +121,7 @@ function InventoryTab() {
             <Button size="small" type="link" onClick={() => {
               setSafetyOpen(r);
               safetyForm.setFieldsValue({ safetyStock: r.safetyStock });
-            }}>设安全库存</Button>
+            }}>{t('pages.inventoryList.setSafetyStock')}</Button>
           )}
         </Space>
       ),
@@ -129,10 +131,10 @@ function InventoryTab() {
   return (
     <div>
       <Row gutter={16} style={{ marginBottom: 12 }}>
-        <Col span={6}><Card bordered={false}><Statistic title="SKU × 仓数" value={summary?.total || 0} suffix="条" /></Card></Col>
-        <Col span={6}><Card bordered={false}><Statistic title="总库存量" value={summary?.totalQty || 0} /></Card></Col>
-        <Col span={6}><Card bordered={false}><Statistic title="可用库存" value={summary?.totalAvailable || 0} valueStyle={{ color: '#52c41a' }} /></Card></Col>
-        <Col span={6}><Card bordered={false}><Statistic title="需补货 SKU" value={summary?.lowCount || 0} valueStyle={{ color: '#f5222d' }} prefix={<WarningOutlined />} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.inventoryList.stat.skuWarehouses')} value={summary?.total || 0} suffix={t('pages.inventoryList.stat.itemsSuffix')} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.inventoryList.stat.totalQty')} value={summary?.totalQty || 0} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.inventoryList.stat.available')} value={summary?.totalAvailable || 0} valueStyle={{ color: '#52c41a' }} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.inventoryList.stat.lowSku')} value={summary?.lowCount || 0} valueStyle={{ color: '#f5222d' }} prefix={<WarningOutlined />} /></Card></Col>
       </Row>
 
       <Card bordered={false}>
@@ -141,11 +143,11 @@ function InventoryTab() {
           onFinish={(v) => setFilters((f: any) => ({ ...f, ...v, page: 1 }))}
         >
           <Form.Item name="keyword">
-            <Input placeholder="SKU / 商品名" allowClear prefix={<SearchOutlined />} style={{ width: 240 }} />
+            <Input placeholder={t('pages.inventoryList.filter.skuProduct')} allowClear prefix={<SearchOutlined />} style={{ width: 240 }} />
           </Form.Item>
           <Form.Item name="warehouseId">
             <Select
-              placeholder="选择仓库"
+              placeholder={t('pages.inventoryList.filter.selectWarehouse')}
               allowClear
               style={{ width: 180 }}
               options={(warehouses || []).map((w: any) => ({ label: w.name, value: w.id }))}
@@ -153,22 +155,22 @@ function InventoryTab() {
           </Form.Item>
           <Form.Item name="lowStock" valuePropName="checked">
             <Select
-              placeholder="预警"
+              placeholder={t('pages.inventoryList.warning')}
               allowClear
               style={{ width: 140 }}
               options={[
-                { label: '仅看需补货', value: 'true' },
-                { label: '仅看正常', value: 'false' },
+                { label: t('pages.inventoryList.filter.onlyRestock'), value: 'true' },
+                { label: t('pages.inventoryList.filter.onlyNormal'), value: 'false' },
               ]}
             />
           </Form.Item>
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit">筛选</Button>
-              <Button onClick={() => setFilters({ page: 1, pageSize: 10 })} icon={<ReloadOutlined />}>重置</Button>
+              <Button type="primary" htmlType="submit">{t('pages.inventoryList.filter.submit')}</Button>
+              <Button onClick={() => setFilters({ page: 1, pageSize: 10 })} icon={<ReloadOutlined />}>{t('pages.inventoryList.reset')}</Button>
               {has('inventory:adjust') && (
                 <Button type="primary" icon={<PlusOutlined />} onClick={() => setAdjustOpen(true)}>
-                  库存调整
+                  {t('pages.inventoryList.adjust.button')}
                 </Button>
               )}
             </Space>
@@ -176,7 +178,7 @@ function InventoryTab() {
         </Form>
       </Card>
 
-      <Card style={{ marginTop: 16 }} bordered={false} title="库存数据">
+      <Card style={{ marginTop: 16 }} bordered={false} title={t('pages.inventoryList.inventoryData')}>
         <Table
           size="middle"
           columns={columns as any}
@@ -189,7 +191,7 @@ function InventoryTab() {
             pageSize: filters.pageSize,
             total: data?.total || 0,
             showSizeChanger: true,
-            showTotal: (t) => `共 ${t} 条`,
+            showTotal: (count) => t('pages.inventoryList.paginationTotal', { count }),
             onChange: (page, pageSize) => setFilters((f: any) => ({ ...f, page, pageSize })),
           }}
         />
@@ -197,7 +199,7 @@ function InventoryTab() {
 
       {/* 库存调整弹窗 */}
       <Modal
-        title="库存调整"
+        title={t('pages.inventoryList.adjust.modalTitle')}
         open={adjustOpen}
         onCancel={() => setAdjustOpen(false)}
         onOk={() => form.submit()}
@@ -205,10 +207,10 @@ function InventoryTab() {
         width={520}
       >
         <Form form={form} layout="vertical" onFinish={(v) => adjustMut.mutate(v)}>
-          <Form.Item name="productId" label="商品" rules={[{ required: true }]}>
+          <Form.Item name="productId" label={t('pages.inventoryList.product')} rules={[{ required: true }]}>
             <Select
               showSearch
-              placeholder="选择商品"
+              placeholder={t('pages.inventoryList.adjust.selectProduct')}
               optionFilterProp="label"
               options={(products?.items || []).map((p: any) => ({
                 label: `${p.sku} - ${p.name}`,
@@ -216,33 +218,33 @@ function InventoryTab() {
               }))}
             />
           </Form.Item>
-          <Form.Item name="warehouseId" label="仓库" rules={[{ required: true }]}>
+          <Form.Item name="warehouseId" label={t('pages.inventoryList.warehouse')} rules={[{ required: true }]}>
             <Select
-              placeholder="选择仓库"
+              placeholder={t('pages.inventoryList.filter.selectWarehouse')}
               options={(warehouses || []).map((w: any) => ({ label: w.name, value: w.id }))}
             />
           </Form.Item>
-          <Form.Item name="type" label="类型" rules={[{ required: true }]} initialValue="in">
+          <Form.Item name="type" label={t('pages.inventoryList.type')} rules={[{ required: true }]} initialValue="in">
             <Select
               options={[
-                { label: '入库 (+)', value: 'in' },
-                { label: '出库 (-)', value: 'out' },
-                { label: '盘点调整', value: 'adjust' },
+                { label: t('pages.inventoryList.log.type.inboundAdd'), value: 'in' },
+                { label: t('pages.inventoryList.log.type.outboundSub'), value: 'out' },
+                { label: t('pages.inventoryList.log.type.adjust'), value: 'adjust' },
               ]}
             />
           </Form.Item>
-          <Form.Item name="delta" label="数量 (正数入库/负数出库)" rules={[{ required: true }]}>
-            <InputNumber style={{ width: '100%' }} placeholder="例如 100 或 -50" />
+          <Form.Item name="delta" label={t('pages.inventoryList.adjust.qtyLabel')} rules={[{ required: true }]}>
+            <InputNumber style={{ width: '100%' }} placeholder={t('pages.inventoryList.adjust.qtyPlaceholder')} />
           </Form.Item>
-          <Form.Item name="remark" label="备注">
-            <Input.TextArea rows={2} placeholder="调整原因/单据号" />
+          <Form.Item name="remark" label={t('pages.inventoryList.remark')}>
+            <Input.TextArea rows={2} placeholder={t('pages.inventoryList.adjust.remarkPlaceholder')} />
           </Form.Item>
         </Form>
       </Modal>
 
       {/* 安全库存弹窗 */}
       <Modal
-        title="设置安全库存"
+        title={t('pages.inventoryList.safety.modalTitle')}
         open={!!safetyOpen}
         onCancel={() => setSafetyOpen(null)}
         onOk={() => safetyForm.submit()}
@@ -256,7 +258,7 @@ function InventoryTab() {
           layout="vertical"
           onFinish={(v) => safetyMut.mutate({ id: safetyOpen.id, ...v })}
         >
-          <Form.Item name="safetyStock" label="安全库存阈值" rules={[{ required: true }]}>
+          <Form.Item name="safetyStock" label={t('pages.inventoryList.safety.threshold')} rules={[{ required: true }]}>
             <InputNumber min={0} style={{ width: '100%' }} />
           </Form.Item>
         </Form>
@@ -267,6 +269,7 @@ function InventoryTab() {
 
 // ============ 调拨单 Tab ============
 function TransferTab() {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<any>({ page: 1, pageSize: 10 });
   const [createOpen, setCreateOpen] = useState(false);
   const [detail, setDetail] = useState<any>(null);
@@ -290,7 +293,7 @@ function TransferTab() {
   const createMut = useMutation({
     mutationFn: inventoryApi.createTransfer,
     onSuccess: () => {
-      message.success('调拨单已创建');
+      message.success(t('pages.inventoryList.transfer.created'));
       setCreateOpen(false);
       form.resetFields();
       qc.invalidateQueries({ queryKey: ['transfers'] });
@@ -299,7 +302,7 @@ function TransferTab() {
   const shipMut = useMutation({
     mutationFn: inventoryApi.shipTransfer,
     onSuccess: () => {
-      message.success('已发货');
+      message.success(t('pages.inventoryList.transfer.shipped'));
       qc.invalidateQueries({ queryKey: ['transfers'] });
       qc.invalidateQueries({ queryKey: ['inventory'] });
       qc.invalidateQueries({ queryKey: ['inventory-logs'] });
@@ -309,7 +312,7 @@ function TransferTab() {
   const receiveMut = useMutation({
     mutationFn: inventoryApi.receiveTransfer,
     onSuccess: () => {
-      message.success('已收货');
+      message.success(t('pages.inventoryList.transfer.received'));
       qc.invalidateQueries({ queryKey: ['transfers'] });
       qc.invalidateQueries({ queryKey: ['inventory'] });
       qc.invalidateQueries({ queryKey: ['inventory-logs'] });
@@ -319,42 +322,42 @@ function TransferTab() {
   const cancelMut = useMutation({
     mutationFn: inventoryApi.cancelTransfer,
     onSuccess: () => {
-      message.success('已取消');
+      message.success(t('pages.inventoryList.transfer.cancelled'));
       qc.invalidateQueries({ queryKey: ['transfers'] });
     },
   });
 
   const statusMap: Record<string, { color: string; text: string }> = {
-    draft: { color: 'default', text: '草稿' },
-    shipped: { color: 'blue', text: '已发货' },
-    received: { color: 'green', text: '已收货' },
-    cancel: { color: 'red', text: '已取消' },
+    draft: { color: 'default', text: t('pages.inventoryList.transfer.status.draft') },
+    shipped: { color: 'blue', text: t('pages.inventoryList.transfer.status.shipped') },
+    received: { color: 'green', text: t('pages.inventoryList.transfer.status.received') },
+    cancel: { color: 'red', text: t('pages.inventoryList.transfer.status.cancel') },
   };
 
   const columns = [
-    { title: '调拨单号', dataIndex: 'transferNo', width: 180 },
-    { title: '调出仓', dataIndex: ['fromWarehouse', 'name'], width: 140 },
-    { title: '调入仓', dataIndex: ['toWarehouse', 'name'], width: 140 },
+    { title: t('pages.inventoryList.transfer.transferNo'), dataIndex: 'transferNo', width: 180 },
+    { title: t('pages.inventoryList.transfer.fromWarehouse'), dataIndex: ['fromWarehouse', 'name'], width: 140 },
+    { title: t('pages.inventoryList.transfer.toWarehouse'), dataIndex: ['toWarehouse', 'name'], width: 140 },
     {
-      title: '商品数',
+      title: t('pages.inventoryList.productCount'),
       width: 100,
-      render: (_: any, r: any) => `${r.items?.length || 0} 种`,
+      render: (_: any, r: any) => t('pages.inventoryList.productCountValue', { count: r.items?.length || 0 }),
     },
     {
-      title: '状态',
+      title: t('pages.inventoryList.status'),
       dataIndex: 'status',
       width: 100,
       render: (v: string) => <Tag color={statusMap[v]?.color}>{statusMap[v]?.text || v}</Tag>,
     },
     {
-      title: '创建时间',
+      title: t('pages.inventoryList.createdAt'),
       dataIndex: 'createdAt',
       width: 160,
       render: (v: string) => v ? dayjs(v).format('YYYY-MM-DD HH:mm') : '-',
     },
-    { title: '备注', dataIndex: 'remark', ellipsis: true },
+    { title: t('pages.inventoryList.remark'), dataIndex: 'remark', ellipsis: true },
     {
-      title: '操作',
+      title: t('pages.inventoryList.action'),
       width: 220,
       fixed: 'right' as const,
       render: (_: any, r: any) => (
@@ -362,15 +365,15 @@ function TransferTab() {
           <Button size="small" type="link" onClick={async () => {
             const d = await inventoryApi.transferDetail(r.id);
             setDetail(d);
-          }}>详情</Button>
+          }}>{t('pages.inventoryList.detail')}</Button>
           {has('inventory:transfer') && r.status === 'draft' && (
             <>
-              <Button size="small" type="link" onClick={() => shipMut.mutate(r.id)}>发货</Button>
-              <Button size="small" type="link" danger onClick={() => cancelMut.mutate(r.id)}>取消</Button>
+              <Button size="small" type="link" onClick={() => shipMut.mutate(r.id)}>{t('pages.inventoryList.transfer.ship')}</Button>
+              <Button size="small" type="link" danger onClick={() => cancelMut.mutate(r.id)}>{t('pages.inventoryList.transfer.cancel')}</Button>
             </>
           )}
           {has('inventory:transfer') && r.status === 'shipped' && (
-            <Button size="small" type="link" onClick={() => receiveMut.mutate(r.id)}>收货</Button>
+            <Button size="small" type="link" onClick={() => receiveMut.mutate(r.id)}>{t('pages.inventoryList.transfer.receive')}</Button>
           )}
         </Space>
       ),
@@ -386,24 +389,24 @@ function TransferTab() {
         >
           <Form.Item name="status">
             <Select
-              placeholder="状态"
+              placeholder={t('pages.inventoryList.status')}
               allowClear
               style={{ width: 140 }}
               options={[
-                { label: '草稿', value: 'draft' },
-                { label: '已发货', value: 'shipped' },
-                { label: '已收货', value: 'received' },
-                { label: '已取消', value: 'cancel' },
+                { label: t('pages.inventoryList.transfer.status.draft'), value: 'draft' },
+                { label: t('pages.inventoryList.transfer.status.shipped'), value: 'shipped' },
+                { label: t('pages.inventoryList.transfer.status.received'), value: 'received' },
+                { label: t('pages.inventoryList.transfer.status.cancel'), value: 'cancel' },
               ]}
             />
           </Form.Item>
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit">筛选</Button>
-              <Button onClick={() => setFilters({ page: 1, pageSize: 10 })} icon={<ReloadOutlined />}>重置</Button>
+              <Button type="primary" htmlType="submit">{t('pages.inventoryList.filter.submit')}</Button>
+              <Button onClick={() => setFilters({ page: 1, pageSize: 10 })} icon={<ReloadOutlined />}>{t('pages.inventoryList.reset')}</Button>
               {has('inventory:transfer') && (
                 <Button type="primary" icon={<SwapOutlined />} onClick={() => setCreateOpen(true)}>
-                  新建调拨
+                  {t('pages.inventoryList.transfer.createButton')}
                 </Button>
               )}
             </Space>
@@ -431,7 +434,7 @@ function TransferTab() {
 
       {/* 新建调拨 */}
       <Modal
-        title="新建调拨单"
+        title={t('pages.inventoryList.transfer.createTitle')}
         open={createOpen}
         onCancel={() => setCreateOpen(false)}
         onOk={() => form.submit()}
@@ -445,23 +448,23 @@ function TransferTab() {
         >
           <Row gutter={12}>
             <Col span={12}>
-              <Form.Item name="fromWarehouseId" label="调出仓库" rules={[{ required: true }]}>
+              <Form.Item name="fromWarehouseId" label={t('pages.inventoryList.transfer.fromWarehouse')} rules={[{ required: true }]}>
                 <Select
-                  placeholder="选择调出仓"
+                  placeholder={t('pages.inventoryList.transfer.selectFromWarehouse')}
                   options={(warehouses || []).map((w: any) => ({ label: w.name, value: w.id }))}
                 />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="toWarehouseId" label="调入仓库" rules={[{ required: true }]}>
+              <Form.Item name="toWarehouseId" label={t('pages.inventoryList.transfer.toWarehouse')} rules={[{ required: true }]}>
                 <Select
-                  placeholder="选择调入仓"
+                  placeholder={t('pages.inventoryList.transfer.selectToWarehouse')}
                   options={(warehouses || []).map((w: any) => ({ label: w.name, value: w.id }))}
                 />
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item label="调拨商品" required>
+          <Form.Item label={t('pages.inventoryList.transfer.itemsLabel')} required>
             <Form.List name="items">
               {(fields, { add, remove }) => (
                 <>
@@ -471,12 +474,12 @@ function TransferTab() {
                         <Form.Item
                           {...f}
                           name={[f.name, 'productId']}
-                          rules={[{ required: true, message: '请选择商品' }]}
+                          rules={[{ required: true, message: t('pages.inventoryList.validation.selectProduct') }]}
                           noStyle
                         >
                           <Select
                             showSearch
-                            placeholder="商品"
+                            placeholder={t('pages.inventoryList.product')}
                             optionFilterProp="label"
                             options={(products?.items || []).map((p: any) => ({
                               label: `${p.sku} - ${p.name}`,
@@ -489,25 +492,25 @@ function TransferTab() {
                         <Form.Item
                           {...f}
                           name={[f.name, 'quantity']}
-                          rules={[{ required: true, message: '请输入数量' }]}
+                          rules={[{ required: true, message: t('pages.inventoryList.validation.enterQty') }]}
                           noStyle
                         >
-                          <InputNumber min={1} style={{ width: '100%' }} placeholder="数量" />
+                          <InputNumber min={1} style={{ width: '100%' }} placeholder={t('pages.inventoryList.qty')} />
                         </Form.Item>
                       </Col>
                       <Col span={2}>
-                        <Button danger onClick={() => remove(f.name)}>删</Button>
+                        <Button danger onClick={() => remove(f.name)}>{t('pages.inventoryList.remove')}</Button>
                       </Col>
                     </Row>
                   ))}
                   <Button type="dashed" block icon={<PlusOutlined />} onClick={() => add({ quantity: 1 })}>
-                    添加商品
+                    {t('pages.inventoryList.addProduct')}
                   </Button>
                 </>
               )}
             </Form.List>
           </Form.Item>
-          <Form.Item name="remark" label="备注">
+          <Form.Item name="remark" label={t('pages.inventoryList.remark')}>
             <Input.TextArea rows={2} />
           </Form.Item>
         </Form>
@@ -515,7 +518,7 @@ function TransferTab() {
 
       {/* 详情 */}
       <Modal
-        title={`调拨单详情 ${detail?.transferNo || ''}`}
+        title={t('pages.inventoryList.transfer.detailTitle', { no: detail?.transferNo || '' })}
         open={!!detail}
         onCancel={() => setDetail(null)}
         footer={null}
@@ -524,15 +527,15 @@ function TransferTab() {
         {detail && (
           <>
             <Descriptions column={2} bordered size="small">
-              <Descriptions.Item label="调出仓">{detail.fromWarehouse?.name}</Descriptions.Item>
-              <Descriptions.Item label="调入仓">{detail.toWarehouse?.name}</Descriptions.Item>
-              <Descriptions.Item label="状态">
+              <Descriptions.Item label={t('pages.inventoryList.transfer.fromWarehouse')}>{detail.fromWarehouse?.name}</Descriptions.Item>
+              <Descriptions.Item label={t('pages.inventoryList.transfer.toWarehouse')}>{detail.toWarehouse?.name}</Descriptions.Item>
+              <Descriptions.Item label={t('pages.inventoryList.status')}>
                 <Tag color={statusMap[detail.status]?.color}>{statusMap[detail.status]?.text || detail.status}</Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="创建时间">{dayjs(detail.createdAt).format('YYYY-MM-DD HH:mm')}</Descriptions.Item>
-              {detail.shipTime && <Descriptions.Item label="发货时间">{dayjs(detail.shipTime).format('YYYY-MM-DD HH:mm')}</Descriptions.Item>}
-              {detail.receiveTime && <Descriptions.Item label="收货时间">{dayjs(detail.receiveTime).format('YYYY-MM-DD HH:mm')}</Descriptions.Item>}
-              <Descriptions.Item label="备注" span={2}>{detail.remark || '-'}</Descriptions.Item>
+              <Descriptions.Item label={t('pages.inventoryList.createdAt')}>{dayjs(detail.createdAt).format('YYYY-MM-DD HH:mm')}</Descriptions.Item>
+              {detail.shipTime && <Descriptions.Item label={t('pages.inventoryList.transfer.shipTime')}>{dayjs(detail.shipTime).format('YYYY-MM-DD HH:mm')}</Descriptions.Item>}
+              {detail.receiveTime && <Descriptions.Item label={t('pages.inventoryList.transfer.receiveTime')}>{dayjs(detail.receiveTime).format('YYYY-MM-DD HH:mm')}</Descriptions.Item>}
+              <Descriptions.Item label={t('pages.inventoryList.remark')} span={2}>{detail.remark || '-'}</Descriptions.Item>
             </Descriptions>
             <Table
               size="small"
@@ -542,8 +545,8 @@ function TransferTab() {
               pagination={false}
               columns={[
                 { title: 'SKU', dataIndex: ['product', 'sku'], width: 160 },
-                { title: '商品', dataIndex: ['product', 'name'] },
-                { title: '数量', dataIndex: 'quantity', width: 100, align: 'right' as const },
+                { title: t('pages.inventoryList.product'), dataIndex: ['product', 'name'] },
+                { title: t('pages.inventoryList.qty'), dataIndex: 'quantity', width: 100, align: 'right' as const },
               ]}
             />
           </>
@@ -555,6 +558,7 @@ function TransferTab() {
 
 // ============ 盘点单 Tab ============
 function CheckTab() {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<any>({ page: 1, pageSize: 10 });
   const [createOpen, setCreateOpen] = useState(false);
   const [detail, setDetail] = useState<any>(null);
@@ -578,7 +582,7 @@ function CheckTab() {
   const createMut = useMutation({
     mutationFn: inventoryApi.createCheck,
     onSuccess: () => {
-      message.success('盘点单已创建');
+      message.success(t('pages.inventoryList.check.created'));
       setCreateOpen(false);
       form.resetFields();
       qc.invalidateQueries({ queryKey: ['checks'] });
@@ -587,7 +591,7 @@ function CheckTab() {
   const applyMut = useMutation({
     mutationFn: inventoryApi.applyCheck,
     onSuccess: () => {
-      message.success('已确认盘点, 库存已更新');
+      message.success(t('pages.inventoryList.check.applied'));
       qc.invalidateQueries({ queryKey: ['checks'] });
       qc.invalidateQueries({ queryKey: ['inventory'] });
       qc.invalidateQueries({ queryKey: ['inventory-logs'] });
@@ -595,33 +599,33 @@ function CheckTab() {
   });
 
   const statusMap: Record<string, { color: string; text: string }> = {
-    draft: { color: 'default', text: '草稿' },
-    done: { color: 'green', text: '已确认' },
-    cancel: { color: 'red', text: '已取消' },
+    draft: { color: 'default', text: t('pages.inventoryList.check.status.draft') },
+    done: { color: 'green', text: t('pages.inventoryList.check.status.done') },
+    cancel: { color: 'red', text: t('pages.inventoryList.check.status.cancel') },
   };
 
   const columns = [
-    { title: '盘点单号', dataIndex: 'checkNo', width: 180 },
-    { title: '仓库', dataIndex: ['warehouse', 'name'], width: 160 },
+    { title: t('pages.inventoryList.check.checkNo'), dataIndex: 'checkNo', width: 180 },
+    { title: t('pages.inventoryList.warehouse'), dataIndex: ['warehouse', 'name'], width: 160 },
     {
-      title: '商品数',
+      title: t('pages.inventoryList.productCount'),
       width: 100,
-      render: (_: any, r: any) => `${r.items?.length || 0} 种`,
+      render: (_: any, r: any) => t('pages.inventoryList.productCountValue', { count: r.items?.length || 0 }),
     },
     {
-      title: '状态',
+      title: t('pages.inventoryList.status'),
       dataIndex: 'status',
       width: 100,
       render: (v: string) => <Tag color={statusMap[v]?.color}>{statusMap[v]?.text || v}</Tag>,
     },
     {
-      title: '创建时间',
+      title: t('pages.inventoryList.createdAt'),
       dataIndex: 'createdAt',
       width: 160,
       render: (v: string) => v ? dayjs(v).format('YYYY-MM-DD HH:mm') : '-',
     },
     {
-      title: '操作',
+      title: t('pages.inventoryList.action'),
       width: 220,
       fixed: 'right' as const,
       render: (_: any, r: any) => (
@@ -629,9 +633,9 @@ function CheckTab() {
           <Button size="small" type="link" onClick={async () => {
             const d = await inventoryApi.checkDetail(r.id);
             setDetail(d);
-          }}>详情</Button>
+          }}>{t('pages.inventoryList.detail')}</Button>
           {has('inventory:stocktaking') && r.status === 'draft' && (
-            <Button size="small" type="link" onClick={() => applyMut.mutate(r.id)}>确认盘点</Button>
+            <Button size="small" type="link" onClick={() => applyMut.mutate(r.id)}>{t('pages.inventoryList.check.confirm')}</Button>
           )}
         </Space>
       ),
@@ -647,23 +651,23 @@ function CheckTab() {
         >
           <Form.Item name="status">
             <Select
-              placeholder="状态"
+              placeholder={t('pages.inventoryList.status')}
               allowClear
               style={{ width: 140 }}
               options={[
-                { label: '草稿', value: 'draft' },
-                { label: '已确认', value: 'done' },
-                { label: '已取消', value: 'cancel' },
+                { label: t('pages.inventoryList.check.status.draft'), value: 'draft' },
+                { label: t('pages.inventoryList.check.status.done'), value: 'done' },
+                { label: t('pages.inventoryList.check.status.cancel'), value: 'cancel' },
               ]}
             />
           </Form.Item>
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit">筛选</Button>
-              <Button onClick={() => setFilters({ page: 1, pageSize: 10 })} icon={<ReloadOutlined />}>重置</Button>
+              <Button type="primary" htmlType="submit">{t('pages.inventoryList.filter.submit')}</Button>
+              <Button onClick={() => setFilters({ page: 1, pageSize: 10 })} icon={<ReloadOutlined />}>{t('pages.inventoryList.reset')}</Button>
               {has('inventory:stocktaking') && (
                 <Button type="primary" icon={<ScanOutlined />} onClick={() => setCreateOpen(true)}>
-                  新建盘点
+                  {t('pages.inventoryList.check.createButton')}
                 </Button>
               )}
             </Space>
@@ -690,7 +694,7 @@ function CheckTab() {
       </Card>
 
       <Modal
-        title="新建盘点单"
+        title={t('pages.inventoryList.check.createTitle')}
         open={createOpen}
         onCancel={() => setCreateOpen(false)}
         onOk={() => form.submit()}
@@ -698,13 +702,13 @@ function CheckTab() {
         width={680}
       >
         <Form form={form} layout="vertical" onFinish={(v) => createMut.mutate(v)}>
-          <Form.Item name="warehouseId" label="盘点仓库" rules={[{ required: true }]}>
+          <Form.Item name="warehouseId" label={t('pages.inventoryList.check.warehouse')} rules={[{ required: true }]}>
             <Select
-              placeholder="选择仓库"
+              placeholder={t('pages.inventoryList.filter.selectWarehouse')}
               options={(warehouses || []).map((w: any) => ({ label: w.name, value: w.id }))}
             />
           </Form.Item>
-          <Form.Item label="盘点商品 (填入实盘数量)" required>
+          <Form.Item label={t('pages.inventoryList.check.itemsLabel')} required>
             <Form.List name="items">
               {(fields, { add, remove }) => (
                 <>
@@ -714,12 +718,12 @@ function CheckTab() {
                         <Form.Item
                           {...f}
                           name={[f.name, 'productId']}
-                          rules={[{ required: true, message: '请选择商品' }]}
+                          rules={[{ required: true, message: t('pages.inventoryList.validation.selectProduct') }]}
                           noStyle
                         >
                           <Select
                             showSearch
-                            placeholder="商品"
+                            placeholder={t('pages.inventoryList.product')}
                             optionFilterProp="label"
                             options={(products?.items || []).map((p: any) => ({
                               label: `${p.sku} - ${p.name}`,
@@ -732,32 +736,32 @@ function CheckTab() {
                         <Form.Item
                           {...f}
                           name={[f.name, 'actualQty']}
-                          rules={[{ required: true, message: '请输入实盘数' }]}
+                          rules={[{ required: true, message: t('pages.inventoryList.validation.enterActualQty') }]}
                           noStyle
                         >
-                          <InputNumber min={0} style={{ width: '100%' }} placeholder="实盘数" />
+                          <InputNumber min={0} style={{ width: '100%' }} placeholder={t('pages.inventoryList.check.actualQty')} />
                         </Form.Item>
                       </Col>
                       <Col span={2}>
-                        <Button danger onClick={() => remove(f.name)}>删</Button>
+                        <Button danger onClick={() => remove(f.name)}>{t('pages.inventoryList.remove')}</Button>
                       </Col>
                     </Row>
                   ))}
                   <Button type="dashed" block icon={<PlusOutlined />} onClick={() => add({ actualQty: 0 })}>
-                    添加商品
+                    {t('pages.inventoryList.addProduct')}
                   </Button>
                 </>
               )}
             </Form.List>
           </Form.Item>
-          <Form.Item name="remark" label="备注">
+          <Form.Item name="remark" label={t('pages.inventoryList.remark')}>
             <Input.TextArea rows={2} />
           </Form.Item>
         </Form>
       </Modal>
 
       <Modal
-        title={`盘点单详情 ${detail?.checkNo || ''}`}
+        title={t('pages.inventoryList.check.detailTitle', { no: detail?.checkNo || '' })}
         open={!!detail}
         onCancel={() => setDetail(null)}
         footer={null}
@@ -766,13 +770,13 @@ function CheckTab() {
         {detail && (
           <>
             <Descriptions column={2} bordered size="small">
-              <Descriptions.Item label="仓库">{detail.warehouse?.name}</Descriptions.Item>
-              <Descriptions.Item label="状态">
+              <Descriptions.Item label={t('pages.inventoryList.warehouse')}>{detail.warehouse?.name}</Descriptions.Item>
+              <Descriptions.Item label={t('pages.inventoryList.status')}>
                 <Tag color={statusMap[detail.status]?.color}>{statusMap[detail.status]?.text || detail.status}</Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="创建时间">{dayjs(detail.createdAt).format('YYYY-MM-DD HH:mm')}</Descriptions.Item>
-              {detail.checkedAt && <Descriptions.Item label="确认时间">{dayjs(detail.checkedAt).format('YYYY-MM-DD HH:mm')}</Descriptions.Item>}
-              <Descriptions.Item label="备注" span={2}>{detail.remark || '-'}</Descriptions.Item>
+              <Descriptions.Item label={t('pages.inventoryList.createdAt')}>{dayjs(detail.createdAt).format('YYYY-MM-DD HH:mm')}</Descriptions.Item>
+              {detail.checkedAt && <Descriptions.Item label={t('pages.inventoryList.check.checkedAt')}>{dayjs(detail.checkedAt).format('YYYY-MM-DD HH:mm')}</Descriptions.Item>}
+              <Descriptions.Item label={t('pages.inventoryList.remark')} span={2}>{detail.remark || '-'}</Descriptions.Item>
             </Descriptions>
             <Table
               size="small"
@@ -782,11 +786,11 @@ function CheckTab() {
               pagination={false}
               columns={[
                 { title: 'SKU', dataIndex: ['product', 'sku'], width: 160 },
-                { title: '商品', dataIndex: ['product', 'name'] },
-                { title: '账面库存', dataIndex: 'systemQty', width: 100, align: 'right' as const },
-                { title: '实盘数', dataIndex: 'actualQty', width: 100, align: 'right' as const },
+                { title: t('pages.inventoryList.product'), dataIndex: ['product', 'name'] },
+                { title: t('pages.inventoryList.check.systemQty'), dataIndex: 'systemQty', width: 100, align: 'right' as const },
+                { title: t('pages.inventoryList.check.actualQty'), dataIndex: 'actualQty', width: 100, align: 'right' as const },
                 {
-                  title: '差异',
+                  title: t('pages.inventoryList.check.diff'),
                   width: 100,
                   align: 'right' as const,
                   render: (v: number) => v === 0 ? <Tag>0</Tag> : v > 0 ? <Tag color="green">+{v}</Tag> : <Tag color="red">{v}</Tag>,
@@ -802,6 +806,7 @@ function CheckTab() {
 
 // ============ 出入库记录 Tab ============
 function LogsTab() {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<any>({ page: 1, pageSize: 20 });
   const { data, isLoading } = useQuery({
     queryKey: ['inventory-logs', filters],
@@ -813,52 +818,52 @@ function LogsTab() {
   });
 
   const typeMap: Record<string, { color: string; text: string; icon: any }> = {
-    in: { color: 'green', text: '入库', icon: <ImportOutlined /> },
-    out: { color: 'red', text: '出库', icon: <ExportOutlined /> },
-    adjust: { color: 'blue', text: '调整', icon: <ScanOutlined /> },
-    lock: { color: 'orange', text: '占用', icon: <ScanOutlined /> },
-    unlock: { color: 'cyan', text: '释放', icon: <ScanOutlined /> },
+    in: { color: 'green', text: t('pages.inventoryList.log.type.in'), icon: <ImportOutlined /> },
+    out: { color: 'red', text: t('pages.inventoryList.log.type.out'), icon: <ExportOutlined /> },
+    adjust: { color: 'blue', text: t('pages.inventoryList.log.type.adjust'), icon: <ScanOutlined /> },
+    lock: { color: 'orange', text: t('pages.inventoryList.log.type.lock'), icon: <ScanOutlined /> },
+    unlock: { color: 'cyan', text: t('pages.inventoryList.log.type.unlock'), icon: <ScanOutlined /> },
   };
   const sourceMap: Record<string, string> = {
-    manual: '手动',
-    order: '订单',
-    transfer: '调拨',
-    check: '盘点',
+    manual: t('pages.inventoryList.log.source.manual'),
+    order: t('pages.inventoryList.log.source.order'),
+    transfer: t('pages.inventoryList.log.source.transfer'),
+    check: t('pages.inventoryList.log.source.check'),
   };
 
   const columns = [
     {
-      title: '时间',
+      title: t('pages.inventoryList.log.time'),
       dataIndex: 'createdAt',
       width: 160,
       render: (v: string) => v ? dayjs(v).format('YYYY-MM-DD HH:mm:ss') : '-',
     },
-    { title: '商品', dataIndex: ['product', 'name'], render: (_: any, r: any) => (
+    { title: t('pages.inventoryList.product'), dataIndex: ['product', 'name'], render: (_: any, r: any) => (
         <div>
           <div>{r.product?.name}</div>
           <Text type="secondary" style={{ fontSize: 12 }}>{r.product?.sku}</Text>
         </div>
       )
     },
-    { title: '仓库', dataIndex: ['warehouse', 'name'], width: 140 },
+    { title: t('pages.inventoryList.warehouse'), dataIndex: ['warehouse', 'name'], width: 140 },
     {
-      title: '类型',
+      title: t('pages.inventoryList.type'),
       dataIndex: 'type',
       width: 90,
       render: (v: string) => <Tag color={typeMap[v]?.color} icon={typeMap[v]?.icon}>{typeMap[v]?.text || v}</Tag>,
     },
     {
-      title: '数量',
+      title: t('pages.inventoryList.log.qty'),
       dataIndex: 'quantity',
       width: 90,
       align: 'right' as const,
       render: (v: number) => v > 0 ? <span style={{ color: '#52c41a' }}>+{v}</span> : <span style={{ color: '#f5222d' }}>{v}</span>,
     },
-    { title: '变更前', dataIndex: 'beforeQty', width: 90, align: 'right' as const },
-    { title: '变更后', dataIndex: 'afterQty', width: 90, align: 'right' as const },
-    { title: '来源', dataIndex: 'source', width: 80, render: (v: string) => sourceMap[v] || v },
-    { title: '关联单号', dataIndex: 'refId', width: 180, ellipsis: true },
-    { title: '备注', dataIndex: 'remark', ellipsis: true },
+    { title: t('pages.inventoryList.log.before'), dataIndex: 'beforeQty', width: 90, align: 'right' as const },
+    { title: t('pages.inventoryList.log.after'), dataIndex: 'afterQty', width: 90, align: 'right' as const },
+    { title: t('pages.inventoryList.log.sourceLabel'), dataIndex: 'source', width: 80, render: (v: string) => sourceMap[v] || v },
+    { title: t('pages.inventoryList.log.refId'), dataIndex: 'refId', width: 180, ellipsis: true },
+    { title: t('pages.inventoryList.remark'), dataIndex: 'remark', ellipsis: true },
   ];
 
   return (
@@ -870,19 +875,19 @@ function LogsTab() {
         >
           <Form.Item name="type">
             <Select
-              placeholder="类型"
+              placeholder={t('pages.inventoryList.type')}
               allowClear
               style={{ width: 120 }}
               options={[
-                { label: '入库', value: 'in' },
-                { label: '出库', value: 'out' },
-                { label: '调整', value: 'adjust' },
+                { label: t('pages.inventoryList.log.type.in'), value: 'in' },
+                { label: t('pages.inventoryList.log.type.out'), value: 'out' },
+                { label: t('pages.inventoryList.log.type.adjust'), value: 'adjust' },
               ]}
             />
           </Form.Item>
           <Form.Item name="warehouseId">
             <Select
-              placeholder="仓库"
+              placeholder={t('pages.inventoryList.warehouse')}
               allowClear
               style={{ width: 180 }}
               options={(warehouses || []).map((w: any) => ({ label: w.name, value: w.id }))}
@@ -890,8 +895,8 @@ function LogsTab() {
           </Form.Item>
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit">筛选</Button>
-              <Button onClick={() => setFilters({ page: 1, pageSize: 20 })} icon={<ReloadOutlined />}>重置</Button>
+              <Button type="primary" htmlType="submit">{t('pages.inventoryList.filter.submit')}</Button>
+              <Button onClick={() => setFilters({ page: 1, pageSize: 20 })} icon={<ReloadOutlined />}>{t('pages.inventoryList.reset')}</Button>
             </Space>
           </Form.Item>
         </Form>
@@ -920,18 +925,19 @@ function LogsTab() {
 
 // ============ 入口 ============
 export default function InventoryList() {
+  const { t } = useTranslation();
   return (
     <div>
-      <Title level={4} style={{ marginTop: 0 }}>库存管理</Title>
-      <Text type="secondary">多仓多 SKU 实时库存 · 出入库 · 调拨 · 盘点</Text>
+      <Title level={4} style={{ marginTop: 0 }}>{t('pages.inventoryList.title')}</Title>
+      <Text type="secondary">{t('pages.inventoryList.subtitle')}</Text>
       <Tabs
         style={{ marginTop: 12 }}
         defaultActiveKey="list"
         items={[
-          { key: 'list', label: '库存清单', children: <InventoryTab /> },
-          { key: 'transfer', label: '库存调拨', children: <TransferTab /> },
-          { key: 'check', label: '库存盘点', children: <CheckTab /> },
-          { key: 'log', label: '出入库记录', children: <LogsTab /> },
+          { key: 'list', label: t('pages.inventoryList.tab.list'), children: <InventoryTab /> },
+          { key: 'transfer', label: t('pages.inventoryList.tab.transfer'), children: <TransferTab /> },
+          { key: 'check', label: t('pages.inventoryList.tab.check'), children: <CheckTab /> },
+          { key: 'log', label: t('pages.inventoryList.tab.log'), children: <LogsTab /> },
         ]}
       />
     </div>

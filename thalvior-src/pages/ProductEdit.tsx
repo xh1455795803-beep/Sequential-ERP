@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from '../i18n';
 import {
   Card,
   Form,
@@ -35,9 +36,9 @@ import { productApi } from '../api';
 const { Title, Text } = Typography;
 
 const STATUS = [
-  { value: 1, label: '在售', color: 'green' },
-  { value: 0, label: '下架', color: 'default' },
-  { value: 2, label: '违规', color: 'red' },
+  { value: 1, labelKey: 'pages.productEdit.statusOnSale', color: 'green' },
+  { value: 0, labelKey: 'pages.productEdit.statusOffSale', color: 'default' },
+  { value: 2, labelKey: 'pages.productEdit.statusViolation', color: 'red' },
 ];
 
 const CURRENCIES = ['USD', 'CNY', 'EUR', 'GBP', 'JPY', 'HKD', 'SGD', 'AUD', 'CAD', 'MYR', 'THB', 'VND', 'BRL'];
@@ -46,6 +47,7 @@ export default function ProductEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const { t } = useTranslation();
   const [form] = Form.useForm();
   const [activeTab, setActiveTab] = useState('basic');
 
@@ -72,7 +74,7 @@ export default function ProductEdit() {
   const createMut = useMutation({
     mutationFn: productApi.create,
     onSuccess: () => {
-      message.success('创建成功');
+      message.success(t('pages.productEdit.msgCreateSuccess'));
       qc.invalidateQueries({ queryKey: ['products'] });
       goBack();
     },
@@ -80,7 +82,7 @@ export default function ProductEdit() {
   const updateMut = useMutation({
     mutationFn: (vars: { id: string; data: any }) => productApi.update(vars.id, vars.data),
     onSuccess: () => {
-      message.success('更新成功');
+      message.success(t('pages.productEdit.msgUpdateSuccess'));
       qc.invalidateQueries({ queryKey: ['products'] });
       goBack();
     },
@@ -99,7 +101,7 @@ export default function ProductEdit() {
         createMut.mutate(cleaned);
       }
     } catch (e) {
-      message.warning('请完善表单必填项后再保存');
+      message.warning(t('pages.productEdit.msgValidateWarning'));
       setActiveTab('basic');
     }
   };
@@ -112,9 +114,9 @@ export default function ProductEdit() {
       <Breadcrumb
         style={{ marginBottom: 4 }}
         items={[
-          { title: '商品' },
-          { title: <a onClick={() => navigate('/product/sku/list')}>SKU 列表</a> },
-          { title: isEdit ? '编辑商品' : '新增商品' },
+          { title: t('pages.productEdit.breadcrumbProduct') },
+          { title: <a onClick={() => navigate('/product/sku/list')}>{t('pages.productEdit.breadcrumbSkuList')}</a> },
+          { title: isEdit ? t('pages.productEdit.breadcrumbEdit') : t('pages.productEdit.breadcrumbCreate') },
         ]}
       />
 
@@ -131,12 +133,16 @@ export default function ProductEdit() {
         <Space align="center">
           <Button type="text" icon={<ArrowLeftOutlined />} onClick={goBack} />
           <Title level={4} style={{ margin: 0 }}>
-            {isEdit ? `编辑商品${detail?.sku ? ' · ' + detail.sku : ''}` : '新增商品'}
+            {isEdit
+              ? detail?.sku
+                ? t('pages.productEdit.titleEdit', { sku: detail.sku })
+                : t('pages.productEdit.titleEditBasic')
+              : t('pages.productEdit.titleCreate')}
           </Title>
         </Space>
         <Space>
           <Button icon={<CloseOutlined />} onClick={goBack}>
-            取消
+            {t('pages.productEdit.cancel')}
           </Button>
           <Button
             type="primary"
@@ -144,7 +150,7 @@ export default function ProductEdit() {
             loading={saving}
             onClick={onSubmit}
           >
-            保 存
+            {t('pages.productEdit.save')}
           </Button>
         </Space>
       </div>
@@ -164,7 +170,7 @@ export default function ProductEdit() {
                   key: 'basic',
                   label: (
                     <span>
-                      <TagsOutlined /> 基本信息
+                      <TagsOutlined /> {t('pages.productEdit.tabBasic')}
                     </span>
                   ),
                   children: (
@@ -172,32 +178,32 @@ export default function ProductEdit() {
                       <Col span={12}>
                         <Form.Item
                           name="sku"
-                          label="SKU 编码"
-                          rules={[{ required: true, message: '请输入 SKU' }]}
-                          extra={isEdit ? 'SKU 创建后不可修改' : undefined}
+                          label={t('pages.productEdit.labelSkuCode')}
+                          rules={[{ required: true, message: t('pages.productEdit.ruleSkuRequired') }]}
+                          extra={isEdit ? t('pages.productEdit.extraSkuImmutable') : undefined}
                         >
-                          <Input placeholder="例如 SKU-10001" disabled={isEdit} style={inputStyle} />
+                          <Input placeholder={t('pages.productEdit.placeholderSkuExample')} disabled={isEdit} style={inputStyle} />
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item name="name" label="商品名称" rules={[{ required: true, message: '请输入商品名称' }]}>
-                          <Input placeholder="商品名称" style={inputStyle} maxLength={200} showCount />
+                        <Form.Item name="name" label={t('pages.productEdit.labelProductName')} rules={[{ required: true, message: t('pages.productEdit.ruleProductNameRequired') }]}>
+                          <Input placeholder={t('pages.productEdit.placeholderProductName')} style={inputStyle} maxLength={200} showCount />
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item name="category" label="商品类目">
-                          <Input placeholder="例如 手机壳 / 配件" style={inputStyle} />
+                        <Form.Item name="category" label={t('pages.productEdit.labelCategory')}>
+                          <Input placeholder={t('pages.productEdit.placeholderCategory')} style={inputStyle} />
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item name="brand" label="品牌">
-                          <Input placeholder="品牌名称" style={inputStyle} />
+                        <Form.Item name="brand" label={t('pages.productEdit.labelBrand')}>
+                          <Input placeholder={t('pages.productEdit.placeholderBrand')} style={inputStyle} />
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item name="status" label="商品状态" initialValue={1}>
+                        <Form.Item name="status" label={t('pages.productEdit.labelStatus')} initialValue={1}>
                           <Select
-                            options={STATUS.map((s) => ({ label: `${s.label}`, value: s.value }))}
+                            options={STATUS.map((s) => ({ label: t(s.labelKey), value: s.value }))}
                             style={inputStyle}
                           />
                         </Form.Item>
@@ -209,23 +215,23 @@ export default function ProductEdit() {
                   key: 'price',
                   label: (
                     <span>
-                      <DollarOutlined /> 价格与库存
+                      <DollarOutlined /> {t('pages.productEdit.tabPriceStock')}
                     </span>
                   ),
                   children: (
                     <Row gutter={16}>
                       <Col span={12}>
-                        <Form.Item name="costPrice" label="成本价" tooltip="商品采购成本, 用于利润计算">
+                        <Form.Item name="costPrice" label={t('pages.productEdit.labelCostPrice')} tooltip={t('pages.productEdit.tooltipCostPrice')}>
                           <InputNumber min={0} step={0.01} style={inputStyle} addonAfter={form.getFieldValue('currency') || 'USD'} />
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item name="salePrice" label="售价" rules={[{ required: true, message: '请输入售价' }]}>
+                        <Form.Item name="salePrice" label={t('pages.productEdit.labelSalePrice')} rules={[{ required: true, message: t('pages.productEdit.ruleSalePriceRequired') }]}>
                           <InputNumber min={0} step={0.01} style={inputStyle} addonAfter={form.getFieldValue('currency') || 'USD'} />
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item name="currency" label="币种" initialValue="USD">
+                        <Form.Item name="currency" label={t('pages.productEdit.labelCurrency')} initialValue="USD">
                           <Select
                             options={CURRENCIES.map((c) => ({ label: c, value: c }))}
                             style={inputStyle}
@@ -235,15 +241,15 @@ export default function ProductEdit() {
                       </Col>
                       <Col span={24}>
                         <Divider titlePlacement="left" orientationMargin={0} plain style={{ fontSize: 13, color: '#86909C' }}>
-                          成本利润参考
+                          {t('pages.productEdit.dividerProfitRef')}
                         </Divider>
                         <Descriptions size="small" column={3} bordered>
-                          <Descriptions.Item label="毛利额">
+                          <Descriptions.Item label={t('pages.productEdit.profitAmount')}>
                             <Text type={+form.getFieldValue('salePrice') - +form.getFieldValue('costPrice') >= 0 ? 'success' : 'danger'}>
                               {((+form.getFieldValue('salePrice') || 0) - (+form.getFieldValue('costPrice') || 0)).toFixed(2)}
                             </Text>
                           </Descriptions.Item>
-                          <Descriptions.Item label="毛利率">
+                          <Descriptions.Item label={t('pages.productEdit.profitRate')}>
                             <Text type="success">
                               {(() => {
                                 const s = +form.getFieldValue('salePrice') || 0;
@@ -252,13 +258,13 @@ export default function ProductEdit() {
                               })()}
                             </Text>
                           </Descriptions.Item>
-                          <Descriptions.Item label="库存数量">
-                            <Text>{detail?.stock ?? '见库存模块'}</Text>
+                          <Descriptions.Item label={t('pages.productEdit.stockQuantity')}>
+                            <Text>{detail?.stock ?? t('pages.productEdit.seeStockModule')}</Text>
                           </Descriptions.Item>
                         </Descriptions>
                         <div style={{ marginTop: 8 }}>
                           <Text type="secondary" style={{ fontSize: 12 }}>
-                            库存请在「仓库管理 → 库存清单」中按仓库维护
+                            {t('pages.productEdit.stockHint')}
                           </Text>
                         </div>
                       </Col>
@@ -269,28 +275,28 @@ export default function ProductEdit() {
                   key: 'logistics',
                   label: (
                     <span>
-                      <CarOutlined /> 物流信息
+                      <CarOutlined /> {t('pages.productEdit.tabLogistics')}
                     </span>
                   ),
                   children: (
                     <Row gutter={16}>
                       <Col span={12}>
-                        <Form.Item name="weight" label="重量 (kg)">
+                        <Form.Item name="weight" label={t('pages.productEdit.labelWeight')}>
                           <InputNumber min={0} step={0.01} style={inputStyle} placeholder="0.00" />
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item name="length" label="长度 (cm)">
+                        <Form.Item name="length" label={t('pages.productEdit.labelLength')}>
                           <InputNumber min={0} step={0.1} style={inputStyle} placeholder="0.0" />
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item name="width" label="宽度 (cm)">
+                        <Form.Item name="width" label={t('pages.productEdit.labelWidth')}>
                           <InputNumber min={0} step={0.1} style={inputStyle} placeholder="0.0" />
                         </Form.Item>
                       </Col>
                       <Col span={12}>
-                        <Form.Item name="height" label="高度 (cm)">
+                        <Form.Item name="height" label={t('pages.productEdit.labelHeight')}>
                           <InputNumber min={0} step={0.1} style={inputStyle} placeholder="0.0" />
                         </Form.Item>
                       </Col>
@@ -298,7 +304,7 @@ export default function ProductEdit() {
                         <Alert
                           type="info"
                           showIcon
-                          message="重量与尺寸将用于运费预估、物流渠道匹配及海关申报"
+                          message={t('pages.productEdit.alertDimension')}
                         />
                       </Col>
                     </Row>
@@ -308,18 +314,18 @@ export default function ProductEdit() {
                   key: 'media',
                   label: (
                     <span>
-                      <PictureOutlined /> 图片与描述
+                      <PictureOutlined /> {t('pages.productEdit.tabMedia')}
                     </span>
                   ),
                   children: (
                     <Row gutter={16}>
                       <Col span={24}>
-                        <Form.Item name="image" label="主图 URL">
+                        <Form.Item name="image" label={t('pages.productEdit.labelMainImageUrl')}>
                           <Input placeholder="https://..." style={inputStyle} />
                         </Form.Item>
                       </Col>
                       <Col span={24}>
-                        <Form.Item shouldUpdate={(prev, cur) => prev.image !== cur.image} label="主图预览">
+                        <Form.Item shouldUpdate={(prev, cur) => prev.image !== cur.image} label={t('pages.productEdit.labelMainImagePreview')}>
                           {({ getFieldValue }) =>
                             getFieldValue('image') ? (
                               <Image
@@ -343,17 +349,17 @@ export default function ProductEdit() {
                                   fontSize: 12,
                                 }}
                               >
-                                暂无图片
+                                {t('pages.productEdit.noImage')}
                               </div>
                             )
                           }
                         </Form.Item>
                       </Col>
                       <Col span={24}>
-                        <Form.Item name="description" label="商品描述">
+                        <Form.Item name="description" label={t('pages.productEdit.labelDescription')}>
                           <Input.TextArea
                             rows={8}
-                            placeholder="商品详细描述, 支持多平台商品刊登"
+                            placeholder={t('pages.productEdit.placeholderDescription')}
                             maxLength={2000}
                             showCount
                           />
@@ -369,9 +375,9 @@ export default function ProductEdit() {
 
             <div style={{ textAlign: 'right' }}>
               <Space>
-                <Button onClick={goBack}>取消</Button>
+                <Button onClick={goBack}>{t('pages.productEdit.cancel')}</Button>
                 <Button type="primary" icon={<SaveOutlined />} loading={saving} onClick={onSubmit}>
-                  保 存
+                  {t('pages.productEdit.save')}
                 </Button>
               </Space>
             </div>

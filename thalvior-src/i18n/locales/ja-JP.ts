@@ -1,5 +1,6 @@
 // 日本語翻訳辞書（骨架 - 大部分需要后续填充）
 import type { TranslationDict } from '../types';
+import { pagesJaJP } from '../pages/ja-JP';
 
 export const jaJP: TranslationDict = {
   common: {
@@ -531,6 +532,8 @@ export const jaJP: TranslationDict = {
     wmsIntegration: 'WMS連携',
     financeIntegration: '財務連携',
   },
+
+  pages: pagesJaJP,
 };
 
 export default jaJP;

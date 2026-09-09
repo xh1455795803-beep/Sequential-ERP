@@ -1,4 +1,6 @@
 // 简体中文翻译字典（主字典，作为 fallback）
+import { pagesZhCN } from '../pages/zh-CN';
+
 export const zhCN = {
   // 通用
   common: {
@@ -538,6 +540,9 @@ export const zhCN = {
     wmsIntegration: 'WMS集成',
     financeIntegration: '财务集成',
   },
+
+  // 各业务页面正文
+  pages: pagesZhCN,
 };
 
 export default zhCN;

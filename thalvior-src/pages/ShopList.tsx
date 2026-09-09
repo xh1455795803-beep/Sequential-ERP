@@ -6,10 +6,12 @@ import { shopApi, syncApi } from '../api';
 import { useNavigate } from 'react-router-dom';
 import AuthButton from '../components/AuthButton';
 import dayjs from 'dayjs';
+import { useTranslation } from '../i18n';
 
 const { Title, Text } = Typography;
 
 export default function ShopList() {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<any>({ page: 1, pageSize: 10 });
   const [detail, setDetail] = useState<any | null>(null);
   const qc = useQueryClient();
@@ -23,36 +25,36 @@ export default function ShopList() {
   const handleRefresh = async (id: string) => {
     try {
       await shopApi.refresh(id);
-      message.success('Token 已刷新');
+      message.success(t('pages.shopList.message.tokenRefreshed'));
       qc.invalidateQueries({ queryKey: ['shops'] });
     } catch (e: any) {
-      message.error(e?.message || '刷新失败');
+      message.error(e?.message || t('pages.shopList.message.refreshFailed'));
     }
   };
 
   const handleUnbind = async (id: string) => {
     try {
       await shopApi.remove(id);
-      message.success('已解绑');
+      message.success(t('pages.shopList.message.unbound'));
       qc.invalidateQueries({ queryKey: ['shops'] });
     } catch (e: any) {
-      message.error(e?.message || '解绑失败');
+      message.error(e?.message || t('pages.shopList.message.unbindFailed'));
     }
   };
 
   const handleHealthCheck = async (id: string) => {
     try {
       await syncApi.run({ shopId: id, type: 'shop' });
-      message.success('验权任务已触发, 查看同步中心');
+      message.success(t('pages.shopList.message.healthTriggered'));
       qc.invalidateQueries({ queryKey: ['sync-tasks'] });
     } catch (e: any) {
-      message.error(e?.message || '触发失败');
+      message.error(e?.message || t('pages.shopList.message.triggerFailed'));
     }
   };
 
   const columns = [
     {
-      title: '店铺名',
+      title: t('pages.shopList.col.shopName'),
       dataIndex: 'name',
       width: 200,
       fixed: 'left' as const,
@@ -66,56 +68,56 @@ export default function ShopList() {
       ),
     },
     {
-      title: '平台',
+      title: t('pages.shopList.col.platform'),
       dataIndex: ['platform', 'name'],
       width: 120,
       render: (v: string) => <Tag color="blue">{v}</Tag>,
     },
-    { title: '店铺 ID', dataIndex: 'shopId', width: 160 },
-    { title: '国家/地区', dataIndex: 'region', width: 110 },
-    { title: '币种', dataIndex: 'currency', width: 90 },
+    { title: t('pages.shopList.col.shopId'), dataIndex: 'shopId', width: 160 },
+    { title: t('pages.shopList.col.region'), dataIndex: 'region', width: 110 },
+    { title: t('pages.shopList.col.currency'), dataIndex: 'currency', width: 90 },
     {
-      title: '状态',
+      title: t('pages.shopList.col.status'),
       dataIndex: 'status',
       width: 100,
       render: (v: number) => {
         const m: Record<number, { label: string; color: string }> = {
-          1: { label: '正常', color: 'green' },
-          0: { label: '停用', color: 'default' },
-          2: { label: '授权过期', color: 'red' },
+          1: { label: t('pages.shopList.status.normal'), color: 'green' },
+          0: { label: t('pages.shopList.status.disabled'), color: 'default' },
+          2: { label: t('pages.shopList.status.expired'), color: 'red' },
         };
         return <Tag color={m[v]?.color}>{m[v]?.label}</Tag>;
       },
     },
     {
-      title: 'Token 过期',
+      title: t('pages.shopList.col.tokenExpiresAt'),
       dataIndex: 'tokenExpiresAt',
       width: 170,
       render: (v: string) => v ? dayjs(v).format('YYYY-MM-DD HH:mm') : '-',
     },
     {
-      title: '授权时间',
+      title: t('pages.shopList.col.authorizedAt'),
       dataIndex: 'createdAt',
       width: 170,
       render: (v: string) => dayjs(v).format('YYYY-MM-DD HH:mm'),
     },
     {
-      title: '操作',
+      title: t('pages.shopList.col.action'),
       key: 'op',
       width: 280,
       fixed: 'right' as const,
       render: (_: any, r: any) => (
         <Space size={4} wrap>
-          <Button size="small" type="link" onClick={() => setDetail(r)}>详情</Button>
+          <Button size="small" type="link" onClick={() => setDetail(r)}>{t('pages.shopList.action.detail')}</Button>
           <AuthButton size="small" type="link" perm="auth:shop:bind" onClick={() => handleHealthCheck(r.id)} icon={<SyncOutlined />}>
-            验权
+            {t('pages.shopList.action.health')}
           </AuthButton>
           <AuthButton size="small" type="link" perm="auth:shop:bind" onClick={() => handleRefresh(r.id)}>
-            刷Token
+            {t('pages.shopList.action.refreshToken')}
           </AuthButton>
-          <Popconfirm title="确定解绑此店铺?" onConfirm={() => handleUnbind(r.id)} okType="danger">
+          <Popconfirm title={t('pages.shopList.unbind.confirmTitle')} onConfirm={() => handleUnbind(r.id)} okType="danger">
             <AuthButton size="small" type="link" danger perm="auth:shop:unbind" icon={<DisconnectOutlined />}>
-              解绑
+              {t('pages.shopList.action.unbind')}
             </AuthButton>
           </Popconfirm>
         </Space>
@@ -130,14 +132,14 @@ export default function ShopList() {
 
   return (
     <div>
-      <Title level={4} style={{ marginTop: 0 }}>店铺列表</Title>
-      <Text type="secondary">跨平台多店铺统一管理 · 共 {total} 家</Text>
+      <Title level={4} style={{ marginTop: 0 }}>{t('pages.shopList.title')}</Title>
+      <Text type="secondary">{t('pages.shopList.subtitle', { total })}</Text>
 
       <Row gutter={16} style={{ marginTop: 12 }}>
-        <Col span={6}><Card bordered={false}><Statistic title="店铺总数" value={total} suffix="家" /></Card></Col>
-        <Col span={6}><Card bordered={false}><Statistic title="当前页活跃" value={active} suffix="家" valueStyle={{ color: '#52c41a' }} /></Card></Col>
-        <Col span={6}><Card bordered={false}><Statistic title="覆盖地区" value={regions} suffix="个" /></Card></Col>
-        <Col span={6}><Card bordered={false}><Statistic title="已对接平台" value={items.length ? new Set(items.map((x: any) => x.platform?.id)).size : 0} suffix="个" /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.shopList.stat.total')} value={total} suffix={t('pages.shopList.stat.shopSuffix')} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.shopList.stat.active')} value={active} suffix={t('pages.shopList.stat.shopSuffix')} valueStyle={{ color: '#52c41a' }} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.shopList.stat.regions')} value={regions} suffix={t('pages.shopList.stat.regionSuffix')} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.shopList.stat.platforms')} value={items.length ? new Set(items.map((x: any) => x.platform?.id)).size : 0} suffix={t('pages.shopList.stat.platformSuffix')} /></Card></Col>
       </Row>
 
       <Card style={{ marginTop: 16 }} bordered={false}>
@@ -146,21 +148,21 @@ export default function ShopList() {
           onFinish={(v) => setFilters((f: any) => ({ ...f, ...v, page: 1 }))}
         >
           <Form.Item name="keyword">
-            <Input placeholder="店铺名 / 店铺 ID / 地区" allowClear prefix={<SearchOutlined />} style={{ width: 280 }} />
+            <Input placeholder={t('pages.shopList.filter.keyword')} allowClear prefix={<SearchOutlined />} style={{ width: 280 }} />
           </Form.Item>
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit">搜索</Button>
-              <Button onClick={() => setFilters({ page: 1, pageSize: 10 })} icon={<ReloadOutlined />}>重置</Button>
+              <Button type="primary" htmlType="submit">{t('pages.shopList.filter.search')}</Button>
+              <Button onClick={() => setFilters({ page: 1, pageSize: 10 })} icon={<ReloadOutlined />}>{t('pages.shopList.filter.reset')}</Button>
               <AuthButton type="primary" perm="auth:shop:bind" icon={<PlusOutlined />} onClick={() => navigate('/auth/bind')}>
-                授权新店铺
+                {t('pages.shopList.action.bind')}
               </AuthButton>
             </Space>
           </Form.Item>
         </Form>
       </Card>
 
-      <Card style={{ marginTop: 16 }} bordered={false} title="店铺列表">
+      <Card style={{ marginTop: 16 }} bordered={false} title={t('pages.shopList.title')}>
         {items.length ? (
           <Table
             size="middle"
@@ -174,12 +176,12 @@ export default function ShopList() {
               pageSize: filters.pageSize,
               total,
               showSizeChanger: true,
-              showTotal: (t) => `共 ${t} 条`,
+              showTotal: (count) => t('pages.shopList.paginationTotal', { count }),
               onChange: (page, pageSize) => setFilters((f: any) => ({ ...f, page, pageSize })),
             }}
           />
         ) : (
-          !isLoading && <Empty description="暂无数据" />
+          !isLoading && <Empty description={t('pages.shopList.empty')} />
         )}
       </Card>
 
@@ -191,15 +193,15 @@ export default function ShopList() {
       >
         {detail && (
           <Descriptions column={1} bordered size="small">
-            <Descriptions.Item label="平台">{detail.platform?.name}</Descriptions.Item>
-            <Descriptions.Item label="店铺 ID">{detail.shopId}</Descriptions.Item>
-            <Descriptions.Item label="国家/地区">{detail.region}</Descriptions.Item>
-            <Descriptions.Item label="结算币种">{detail.currency}</Descriptions.Item>
-            <Descriptions.Item label="授权时间">{dayjs(detail.createdAt).format('YYYY-MM-DD HH:mm')}</Descriptions.Item>
-            <Descriptions.Item label="Token 过期">{detail.tokenExpiresAt ? dayjs(detail.tokenExpiresAt).format('YYYY-MM-DD HH:mm') : '-'}</Descriptions.Item>
-            <Descriptions.Item label="状态">
+            <Descriptions.Item label={t('pages.shopList.col.platform')}>{detail.platform?.name}</Descriptions.Item>
+            <Descriptions.Item label={t('pages.shopList.col.shopId')}>{detail.shopId}</Descriptions.Item>
+            <Descriptions.Item label={t('pages.shopList.col.region')}>{detail.region}</Descriptions.Item>
+            <Descriptions.Item label={t('pages.shopList.detail.currency')}>{detail.currency}</Descriptions.Item>
+            <Descriptions.Item label={t('pages.shopList.col.authorizedAt')}>{dayjs(detail.createdAt).format('YYYY-MM-DD HH:mm')}</Descriptions.Item>
+            <Descriptions.Item label={t('pages.shopList.col.tokenExpiresAt')}>{detail.tokenExpiresAt ? dayjs(detail.tokenExpiresAt).format('YYYY-MM-DD HH:mm') : '-'}</Descriptions.Item>
+            <Descriptions.Item label={t('pages.shopList.col.status')}>
               <Tag color={detail.status === 1 ? 'green' : 'red'}>
-                {detail.status === 1 ? '正常' : '已停用'}
+                {detail.status === 1 ? t('pages.shopList.status.normal') : t('pages.shopList.detail.disabled')}
               </Tag>
             </Descriptions.Item>
             <Descriptions.Item label="Access Token">

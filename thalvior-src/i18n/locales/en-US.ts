@@ -1,5 +1,6 @@
 // English translation dictionary
 import type { TranslationDict } from '../types';
+import { pagesEnUS } from '../pages/en-US';
 
 export const enUS: TranslationDict = {
   common: {
@@ -531,6 +532,8 @@ export const enUS: TranslationDict = {
     wmsIntegration: 'WMS',
     financeIntegration: 'Finance',
   },
+
+  pages: pagesEnUS,
 };
 
 export default enUS;
