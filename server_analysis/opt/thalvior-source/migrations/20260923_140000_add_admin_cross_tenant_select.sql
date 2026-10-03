@@ -1,0 +1,41 @@
+-- ============================================
+-- 管理员跨租户只读策略：让 admin 角色可查看所有租户的业务数据（客服/审计场景）
+-- 仅开放 SELECT，不开放写（写仍走各租户自身 user_id 策略）
+-- ============================================
+
+-- 6 张核心表
+CREATE POLICY admins_select_products ON public.products FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_orders ON public.orders FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_inventory ON public.inventory FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_shops ON public.shops FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_purchase_suggestions ON public.purchase_suggestions FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_after_sales ON public.after_sales FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+
+-- 19 张扩展表
+CREATE POLICY admins_select_shop_auths ON public.shop_auths FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_source_auths ON public.source_auths FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_collect_items ON public.collect_items FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_materials ON public.materials FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_order_rules ON public.order_rules FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_fulfillment_plans ON public.fulfillment_plans FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_outbound_orders ON public.outbound_orders FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_suppliers ON public.suppliers FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_purchase_plans ON public.purchase_plans FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_inbound_orders ON public.inbound_orders FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_freight_forwarders ON public.freight_forwarders FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_logistics_channels ON public.logistics_channels FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_shipments ON public.shipments FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_ad_campaigns ON public.ad_campaigns FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_ad_keywords ON public.ad_keywords FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_bills ON public.bills FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_fees ON public.fees FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_reconciliations ON public.reconciliations FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_traffic_stats ON public.traffic_stats FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+
+-- 辅助表（配额/订阅/充值/用量等运营数据）
+CREATE POLICY admins_select_tenant_quotas ON public.tenant_quotas FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_subscriptions ON public.subscriptions FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_quota_recharges ON public.quota_recharges FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_ai_usage_logs ON public.ai_usage_logs FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_payment_orders ON public.payment_orders FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_select_profiles ON public.profiles FOR SELECT USING (public.has_role(auth.uid(), 'admin'));

@@ -1,0 +1,76 @@
+/* =====================================================
+   Thalvior ERP · 布局修复层 v2
+   解决的问题：
+   1) 左右两栏布局（lg:grid-cols-2）默认 items-stretch，
+      内容少的一栏被拉到与另一栏等高，底部出现大片空白
+   2) AI 中心操作按钮容器与输入区视觉割裂
+   3) 卡片内部弹性撑高导致的空洞
+
+   原则：只做布局纠正，不改配色、不改字号、不动内容
+
+   ⚠️ v2 重要修正（v1 回归事故）：
+   v1 的 "main .grid > .rounded-xl { align-self: start }" 会误伤
+   全屏类布局（如登录页 grid min-h-dvh lg:grid-cols-[5fr_7fr]），
+   导致左侧品牌 ASIDE 高度塌陷、入场动画被打断（opacity 停在 0），
+   整个品牌区不可见且登录卡片右偏。
+   → v2 删除该规则，并统一加 :not() 保护：跳过全屏容器内的元素。
+   ===================================================== */
+
+/* ---------------------------------------------------------------
+   全屏布局页保护常量：登录 / 注册 / 错误页等使用 min-h-dvh 或
+   min-h-screen 的根网格，其中的子元素一律不做 align-self 干预。
+   --------------------------------------------------------------- */
+
+/* ---- 1) 主内容区两栏网格：改为顶部对齐，各栏保持自身内容高度 ---- */
+main .grid.lg\:grid-cols-2:not([class*="min-h-dvh"]):not([class*="min-h-screen"]),
+main .grid[class*="lg:grid-cols-2"]:not([class*="min-h-dvh"]):not([class*="min-h-screen"]),
+main .grid[class*="xl:grid-cols-2"]:not([class*="min-h-dvh"]):not([class*="min-h-screen"]) {
+  align-items: start;
+}
+
+/* 常见变体：sm:grid-cols-2 / md:grid-cols-2 同样处理 */
+main .grid[class*="sm:grid-cols-2"]:not([class*="min-h-dvh"]):not([class*="min-h-screen"]),
+main .grid[class*="md:grid-cols-2"]:not([class*="min-h-dvh"]):not([class*="min-h-screen"]) {
+  align-items: start;
+}
+
+/* ---- 2) 被拉伸的卡片自身解除撑高 ---- */
+main .grid.lg\:grid-cols-2:not([class*="min-h-dvh"]):not([class*="min-h-screen"]) > *,
+main .grid[class*="lg:grid-cols-2"]:not([class*="min-h-dvh"]):not([class*="min-h-screen"]) > *,
+main .grid[class*="xl:grid-cols-2"]:not([class*="min-h-dvh"]):not([class*="min-h-screen"]) > *,
+main .grid[class*="sm:grid-cols-2"]:not([class*="min-h-dvh"]):not([class*="min-h-screen"]) > *,
+main .grid[class*="md:grid-cols-2"]:not([class*="min-h-dvh"]):not([class*="min-h-screen"]) > * {
+  align-self: start;
+}
+
+/* ---- 3) 卡片内的弹性占位元素：不再强制撑满，避免空洞 ---- */
+/* 只处理卡片直接子级的 flex-1（多用于把按钮推到底部），
+   在内容不足时它会造成中部空白，改为自然高度。
+   ⚠️ 限定在「带 border 的圆角卡片」内，且排除全屏容器与 ASIDE，
+   避免影响登录页等全屏布局。 */
+main .rounded-xl.border > .flex-1,
+main .rounded-lg.border > .flex-1 {
+  flex-grow: 0;
+}
+
+/* ---- 4) AI 中心：操作按钮区贴合输入卡片 ---- */
+/* 按钮容器 mt-4 flex items-center justify-end 在卡片外时会显得孤立，
+   这里收敛其上边距并保证与卡片同宽 */
+main .rounded-xl.border > .mt-4.flex.items-center.justify-end {
+  margin-top: 14px;
+}
+
+/* ---- 5) 三栏/四栏网格同样顶部对齐 ---- */
+main .grid[class*="grid-cols-3"]:not([class*="min-h-dvh"]):not([class*="min-h-screen"]),
+main .grid[class*="grid-cols-4"]:not([class*="min-h-dvh"]):not([class*="min-h-screen"]) {
+  align-items: start;
+}
+
+/* ---- 6) 【v2 已删除】
+   v1 此处为：
+     main .grid > .rounded-xl,
+     main .grid > .rounded-lg { align-self: start; }
+   该规则过于宽泛（任何 grid 的任何圆角子元素），
+   直接导致登录页 ASIDE 塌陷 + 入场动画失效。
+   经确认它并非修复 4 个样式 bug 所必需，故整体移除。
+   --------------------------------------------------------------- */

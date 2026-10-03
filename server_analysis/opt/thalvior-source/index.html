@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thalvior 跨境电商 ERP</title>
+    <meta name="description" content="Thalvior 跨境电商 ERP：订单、库存、物流、财务一站式管理" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231d1d1f' stroke-width='2.1' stroke-linecap='round'%3E%3Cpath d='M5 6.4h14'/%3E%3Cpath d='M12 6.4v11.2'/%3E%3Cpath d='M6.8 20.2q2.7-2 5.2 0t5.2 0' stroke-width='1.5' opacity='0.5'/%3E%3C/svg%3E" />
+    <style id="tv-brand-font">
+      /* Thalvior 品牌字体栈 · 纯系统字体，零外链（Google Fonts 国内不可达） */
+      :root {
+        --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+                     "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei",
+                     "Noto Sans CJK SC", sans-serif;
+        --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+      }
+      html, body { font-family: var(--font-sans) !important; }
+      code, kbd, pre, samp, .font-mono, [class*="mono"] { font-family: var(--font-mono) !important; }
+    </style>
+    <style>
+      /* 内联样式确保主题色立即生效，避免闪烁 */
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+      }
+      html.light, html.light body {
+        background-color: #ffffff !important;
+        color: #1d1d1f;
+      }
+      html.dark, html.dark body {
+        background-color: #1a1a1a !important;
+        color: #ffffff;
+      }
+    </style>
+    <script>
+      // 在 React 加载前立即设置主题，避免闪烁
+      (function() {
+        const isInIframe = window.self !== window.top;
+
+        function applyThemeToDOM(theme) {
+          document.documentElement.classList.remove('light', 'dark');
+          document.documentElement.classList.add(theme);
+          document.documentElement.setAttribute('data-theme', theme);
+        }
+
+        if (isInIframe) {
+          // 监听父窗口主动推送的主题消息
+          window.addEventListener('message', function(event) {
+            if (event.data && typeof event.data.theme === 'string') {
+              var theme = event.data.theme;
+              if (theme === 'light' || theme === 'dark') {
+                applyThemeToDOM(theme);
+              }
+            }
+          });
+        } else {
+          // 非 iframe 环境，使用默认 light 主题
+          applyThemeToDOM('light');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,24 @@
+-- 子账号表：主账号可创建多个子账号，用于团队协作与权限分配
+CREATE TABLE IF NOT EXISTS public.sub_accounts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID,
+  name TEXT NOT NULL DEFAULT '',
+  email TEXT NOT NULL DEFAULT '',
+  role TEXT NOT NULL DEFAULT '运营',
+  status TEXT NOT NULL DEFAULT '启用',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.sub_accounts ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY users_select_own_sub_accounts ON public.sub_accounts
+  FOR SELECT USING (user_id = auth.uid());
+
+CREATE POLICY users_insert_own_sub_accounts ON public.sub_accounts
+  FOR INSERT WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY users_update_own_sub_accounts ON public.sub_accounts
+  FOR UPDATE USING (user_id = auth.uid());
+
+CREATE POLICY users_delete_own_sub_accounts ON public.sub_accounts
+  FOR DELETE USING (user_id = auth.uid());

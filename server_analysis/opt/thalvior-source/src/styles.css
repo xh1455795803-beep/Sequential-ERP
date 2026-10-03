@@ -1,0 +1,298 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+/* Thalvior「素白 S1」设计系统
+   纯白底 · 无阴影/无渐变/无光斑 · 1px 浅灰发丝线 · 黑白灰文字层级
+   主按钮黑底白字；状态色仅用于徽章/告警等语义场景 */
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+  --color-ink: var(--ink);
+  --color-harbor: var(--harbor);
+  --color-primary-2: var(--primary-2);
+  --color-cargo-orange: var(--cargo-orange);
+  --color-cargo-teal: var(--cargo-teal);
+  --color-cargo-gold: var(--cargo-gold);
+  --color-cargo-violet: var(--cargo-violet);
+  --color-cargo-blue: var(--cargo-blue);
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+  --shadow-soft: var(--shadow-soft);
+  --shadow-lift: var(--shadow-lift);
+  --shadow-glow: var(--shadow-glow);
+}
+
+:root {
+  /* 克制圆角：8px */
+  --radius: 0.5rem;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+               "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei",
+               "Noto Sans CJK SC", sans-serif;
+  --font-display: var(--font-sans);
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
+  /* 墨色（原深色面板/品牌色统一收敛为近黑） */
+  --ink: oklch(0.24 0.004 285);
+  --harbor: oklch(0.55 0.006 285);
+
+  /* 主操作色：黑底白字 */
+  --primary: oklch(0.24 0.004 285);
+  --primary-2: oklch(0.24 0.004 285);
+  --primary-foreground: oklch(1 0 0);
+
+  /* 模块身份色全部归为中性灰（黑白灰） */
+  --cargo-orange: oklch(0.55 0.006 285);
+  --cargo-teal: oklch(0.55 0.006 285);
+  --cargo-gold: oklch(0.55 0.006 285);
+  --cargo-violet: oklch(0.55 0.006 285);
+  --cargo-blue: oklch(0.55 0.006 285);
+
+  /* 底与文字三级层级 */
+  --background: oklch(1 0 0);             /* 纯白 #ffffff */
+  --foreground: oklch(0.24 0.004 285);    /* #1d1d1f */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.24 0.004 285);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.24 0.004 285);
+
+  --secondary: oklch(0.965 0.002 285);    /* #f6f6f6 */
+  --secondary-foreground: oklch(0.24 0.004 285);
+  --muted: oklch(0.965 0.002 285);        /* #f6f6f6 */
+  --muted-foreground: oklch(0.46 0.008 285); /* #5a5a5e */
+  --accent: oklch(0.955 0.003 285);       /* 浅灰选中块 #f4f4f5 */
+  --accent-foreground: oklch(0.24 0.004 285);
+
+  --destructive: oklch(0.58 0.2 25);
+  --destructive-foreground: oklch(0.99 0.003 247);
+
+  /* 发丝线 */
+  --border: oklch(0.945 0.002 285);       /* #f0f0f0 */
+  --input: oklch(0.945 0.002 285);
+  --ring: oklch(0.24 0.004 285 / 0.18);
+
+  /* 语义色仅用于状态徽章/告警 */
+  --success: oklch(0.62 0.12 155);
+  --warning: oklch(0.7 0.12 75);
+  --info: oklch(0.55 0.006 285);
+
+  /* 图表：黑白灰阶 */
+  --chart-1: oklch(0.24 0.004 285);       /* 销售额 #1d1d1f */
+  --chart-2: oklch(0.8 0.004 285);        /* 订单量 #c8c8cc */
+  --chart-3: oklch(0.86 0.003 285);
+  --chart-4: oklch(0.9 0.002 285);
+  --chart-5: oklch(0.68 0.006 285);
+
+  /* 侧栏：白底深字 */
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.24 0.004 285);
+  --sidebar-primary: oklch(0.24 0.004 285);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.955 0.003 285);
+  --sidebar-accent-foreground: oklch(0.24 0.004 285);
+  --sidebar-border: oklch(0.945 0.002 285);
+  --sidebar-ring: oklch(0.24 0.004 285 / 0.18);
+
+  /* 素白无阴影（卡片/悬浮一律不投影；下拉菜单等组件自身保留功能必要的最小阴影） */
+  --shadow-soft: none;
+  --shadow-lift: none;
+  --shadow-glow: none;
+  --shadow-float: 0 1px 2px oklch(0.24 0.004 285 / 0.05), 0 4px 16px oklch(0.24 0.004 285 / 0.06);
+  --shadow-ink: 0 1px 2px oklch(0.24 0.004 285 / 0.05), 0 8px 28px oklch(0.24 0.004 285 / 0.1);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    background-image: none;
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "tnum";
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background: oklch(0.24 0.004 285 / 0.12);
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.9 0.002 285);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.82 0.003 285);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* 货单行：等宽数据字（单号、SKU、金额） */
+  .font-data {
+    font-family: var(--font-mono);
+    font-feature-settings: "tnum";
+    letter-spacing: -0.01em;
+  }
+
+  /* 货单眉标 */
+  .manifest-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  /* 主按钮：纯黑（渐变统一） */
+  .btn-cargo {
+    background: var(--primary);
+    transition: background-color 0.15s ease, transform 0.15s ease;
+  }
+  .btn-cargo:hover {
+    background: oklch(0.36 0.005 285);
+  }
+  .btn-cargo:active {
+    transform: scale(0.985);
+  }
+
+  /* 素白图标芯片：统一浅灰 */
+  .chip-orange, .chip-teal, .chip-gold, .chip-violet, .chip-blue {
+    background: oklch(0.955 0.003 285);
+    color: oklch(0.46 0.008 285);
+  }
+
+  /* 玻璃类在素白体系下降级为白底发丝线（保留类名兼容旧页面） */
+  .glass {
+    background: var(--card);
+    border: 1px solid var(--border);
+  }
+  .glass::before {
+    content: none;
+  }
+  .glass-dark {
+    background: var(--ink);
+    border: 1px solid var(--ink);
+  }
+
+  /* 细网格：中性灰（仅个别深色场景使用） */
+  .grid-texture {
+    background-image:
+      linear-gradient(oklch(1 0 0 / 0.04) 1px, transparent 1px),
+      linear-gradient(to right, oklch(1 0 0 / 0.04) 1px, transparent 1px);
+    background-size: 44px 44px;
+  }
+
+  /* 渐变描边卡片：素白下不发光、不位移 */
+  .card-glow {
+    position: relative;
+  }
+  .card-glow::after {
+    content: none;
+  }
+  .card-glow:hover {
+    transform: none;
+  }
+
+  /* 航线虚线流动动画（物流可视化保留） */
+  .route-dash {
+    stroke-dasharray: 6 8;
+    animation: route-flow 1.6s linear infinite;
+  }
+  @keyframes route-flow {
+    to {
+      stroke-dashoffset: -14;
+    }
+  }
+
+  /* 港口节点呼吸光 */
+  .port-pulse {
+    animation: port-breathe 3.2s ease-in-out infinite;
+    transform-origin: center;
+  }
+  @keyframes port-breathe {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.62; transform: scale(1.18); }
+  }
+
+  /* 缓和入场 */
+  .rise-in {
+    animation: rise-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes rise-in {
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* 看板顶条流光：素白下停用 */
+  .shine::after {
+    content: none;
+  }
+}

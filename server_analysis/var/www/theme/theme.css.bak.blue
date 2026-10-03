@@ -1,0 +1,180 @@
+/* ============================================================
+   Thalvior 淡蓝主题（多元素化） · 由 nginx 层注入，脱离 dist 目录
+   主色天蓝 + 靛蓝，辅以青蓝/宝蓝/蓝紫形成层次
+   不含任何橙色与绿色（错误色红保留）
+   ============================================================ */
+
+:root {
+  --radius: .75rem;
+
+  --font-sans: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Space Grotesk", "PingFang SC", "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* —— 蓝系色阶：由浅到深，六个层次，避免单调 —— */
+  --brand-1: oklch(88% .05 216);   /* 冰蓝 */
+  --brand-2: oklch(78% .09 210);   /* 浅青蓝 */
+  --brand-3: oklch(70% .105 208);  /* 青蓝 */
+  --brand-4: oklch(64% .125 238);  /* 天蓝（主） */
+  --brand-5: oklch(55% .14 258);   /* 宝蓝 */
+  --brand-6: oklch(46% .15 264);   /* 靛蓝 */
+  --brand-7: oklch(58% .12 285);   /* 蓝紫（点缀） */
+
+  --ink: oklch(42% .05 252);
+  --harbor: oklch(68% .1 216);
+  --primary: var(--brand-4);
+  --primary-2: var(--brand-6);
+  --primary-foreground: oklch(99% .003 238);
+
+  --cargo-orange: var(--brand-4);
+  --cargo-teal:   var(--brand-3);
+  --cargo-gold:   var(--brand-6);
+  --cargo-violet: var(--brand-7);
+  --cargo-blue:   var(--brand-5);
+
+  --background: oklch(98.8% .004 238);
+  --foreground: oklch(33% .025 255);
+
+  --card: oklch(100% 0 0);
+  --card-foreground: oklch(33% .025 255);
+  --popover: oklch(100% 0 0);
+  --popover-foreground: oklch(33% .025 255);
+
+  --secondary: oklch(96.5% .008 238);
+  --secondary-foreground: oklch(38% .05 255);
+  --muted: oklch(96.8% .006 238);
+  --muted-foreground: oklch(53% .02 250);
+
+  --accent: oklch(95% .03 238);
+  --accent-foreground: oklch(45% .13 238);
+
+  --destructive: oklch(58% .18 27);
+  --destructive-foreground: oklch(99% .002 27);
+
+  --border: oklch(91.5% .01 238);
+  --input: oklch(91.5% .01 238);
+  --ring: oklch(64% .125 238);
+
+  --success: oklch(62% .12 212);
+  --warning: oklch(72% .11 230);
+  --info: oklch(68% .1 216);
+
+  --chart-1: var(--brand-5);
+  --chart-2: var(--brand-4);
+  --chart-3: var(--brand-3);
+  --chart-4: var(--brand-7);
+  --chart-5: var(--brand-2);
+
+  --sidebar: oklch(97.5% .006 238);
+  --sidebar-foreground: oklch(33% .025 255);
+  --sidebar-primary: var(--brand-4);
+  --sidebar-primary-foreground: oklch(99% .003 238);
+  --sidebar-accent: oklch(94% .03 238);
+  --sidebar-accent-foreground: oklch(40% .12 238);
+  --sidebar-border: oklch(91% .01 238);
+  --sidebar-ring: oklch(64% .125 238);
+
+  --shadow-soft: 0 1px 2px oklch(42% .05 252/.04), 0 1px 3px oklch(42% .05 252/.05);
+  --shadow-lift: 0 4px 12px oklch(42% .05 252/.07), 0 1px 3px oklch(42% .05 252/.05);
+  --shadow-glow: 0 6px 20px oklch(64% .125 238/.24), 0 2px 8px oklch(46% .15 264/.16);
+  --shadow-float: 0 1px 2px oklch(42% .05 252/.05), 0 8px 24px oklch(42% .05 252/.07), 0 20px 48px oklch(42% .05 252/.08);
+  --shadow-ink: 0 12px 32px oklch(42% .05 252/.16), 0 4px 12px oklch(42% .05 252/.1);
+}
+
+/* 深蓝块 → 浅色 */
+.bg-ink {
+  background-color: oklch(96.8% .008 238) !important;
+  color: var(--foreground) !important;
+}
+.bg-ink :where(h1,h2,h3,h4,p,span,div,a,dt,dd,li,strong,em,small,label,td,th) { color: inherit; }
+.bg-ink .text-white,
+.bg-ink .text-white\/90,
+.bg-ink .text-white\/80,
+.bg-ink .text-white\/70 { color: var(--foreground) !important; }
+.bg-ink .text-white\/60,
+.bg-ink .text-white\/50,
+.bg-ink .text-muted-foreground { color: var(--muted-foreground) !important; }
+.bg-ink .border-white\/10,
+.bg-ink .border-white\/20,
+.bg-ink .border-white\/15 { border-color: oklch(89% .012 238) !important; }
+.bg-ink .bg-white\/5,
+.bg-ink .bg-white\/10 { background-color: oklch(100% 0 0/.6) !important; }
+
+/* 网格纹理 */
+.grid-texture {
+  background-image:
+    linear-gradient(oklch(42% .05 252/.05) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(42% .05 252/.05) 1px, transparent 1px) !important;
+  background-size: 32px 32px, 32px 32px !important;
+}
+
+/* 图标色块：六个层次，蓝系内变化 */
+.chip-orange { color: var(--brand-6) !important; background: oklch(64% .125 238/.13) !important; }
+.chip-teal   { color: oklch(50% .12 208) !important; background: oklch(70% .105 208/.16) !important; }
+.chip-blue   { color: var(--brand-5) !important; background: oklch(55% .14 258/.13) !important; }
+.chip-gold   { color: var(--brand-6) !important; background: oklch(46% .15 264/.13) !important; }
+.chip-violet { color: oklch(50% .13 285) !important; background: oklch(58% .12 285/.14) !important; }
+
+/* 卡片光晕 / 按钮 / 玻璃 */
+.card-glow:after {
+  background: linear-gradient(135deg, oklch(64% .125 238/.55), transparent 40% 60%, oklch(46% .15 264/.35)) !important;
+}
+.btn-cargo { background: linear-gradient(135deg, var(--primary), var(--primary-2)) !important; }
+.glass-dark {
+  background: oklch(100% 0 0/.72) !important;
+  border: 1px solid oklch(90% .012 238) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.15) !important;
+  backdrop-filter: blur(14px) saturate(1.15) !important;
+  box-shadow: var(--shadow-float) !important;
+  color: var(--foreground) !important;
+}
+
+html.light, html.light body {
+  background-color: oklch(98.8% .004 238) !important;
+  color: var(--foreground) !important;
+}
+
+/* 圆角与过渡 */
+.rounded-lg, .rounded-xl, .rounded-md { border-radius: .75rem !important; }
+.card-glow, .btn-cargo { transition: box-shadow .3s ease, transform .3s ease, border-color .3s ease !important; }
+
+/* ===== Tailwind 暖色/绿色/紫色调色板 → 蓝系重映射（99 个变量）===== */
+:root{--color-orange-50:oklch(97% 0.03 238);--color-orange-100:oklch(94% 0.06 238);--color-orange-200:oklch(88% 0.1 238);--color-orange-300:oklch(81% 0.13 238);--color-orange-400:oklch(74% 0.15 238);--color-orange-500:oklch(64% 0.16 238);--color-orange-600:oklch(55% 0.15 238);--color-orange-700:oklch(47% 0.14 238);--color-orange-800:oklch(40% 0.12 238);--color-orange-900:oklch(34% 0.1 238);--color-orange-950:oklch(24% 0.08 238);--color-amber-50:oklch(97% 0.03 232);--color-amber-100:oklch(94% 0.06 232);--color-amber-200:oklch(88% 0.1 232);--color-amber-300:oklch(81% 0.13 232);--color-amber-400:oklch(74% 0.15 232);--color-amber-500:oklch(64% 0.16 232);--color-amber-600:oklch(55% 0.15 232);--color-amber-700:oklch(47% 0.14 232);--color-amber-800:oklch(40% 0.12 232);--color-amber-900:oklch(34% 0.1 232);--color-amber-950:oklch(24% 0.08 232);--color-yellow-50:oklch(97% 0.03 226);--color-yellow-100:oklch(94% 0.06 226);--color-yellow-200:oklch(88% 0.1 226);--color-yellow-300:oklch(81% 0.13 226);--color-yellow-400:oklch(74% 0.15 226);--color-yellow-500:oklch(64% 0.16 226);--color-yellow-600:oklch(55% 0.15 226);--color-yellow-700:oklch(47% 0.14 226);--color-yellow-800:oklch(40% 0.12 226);--color-yellow-900:oklch(34% 0.1 226);--color-yellow-950:oklch(24% 0.08 226);--color-lime-50:oklch(97% 0.03 218);--color-lime-100:oklch(94% 0.06 218);--color-lime-200:oklch(88% 0.1 218);--color-lime-300:oklch(81% 0.13 218);--color-lime-400:oklch(74% 0.15 218);--color-lime-500:oklch(64% 0.16 218);--color-lime-600:oklch(55% 0.15 218);--color-lime-700:oklch(47% 0.14 218);--color-lime-800:oklch(40% 0.12 218);--color-lime-900:oklch(34% 0.1 218);--color-lime-950:oklch(24% 0.08 218);--color-green-50:oklch(97% 0.03 214);--color-green-100:oklch(94% 0.06 214);--color-green-200:oklch(88% 0.1 214);--color-green-300:oklch(81% 0.13 214);--color-green-400:oklch(74% 0.15 214);--color-green-500:oklch(64% 0.16 214);--color-green-600:oklch(55% 0.15 214);--color-green-700:oklch(47% 0.14 214);--color-green-800:oklch(40% 0.12 214);--color-green-900:oklch(34% 0.1 214);--color-green-950:oklch(24% 0.08 214);--color-emerald-50:oklch(97% 0.03 210);--color-emerald-100:oklch(94% 0.06 210);--color-emerald-200:oklch(88% 0.1 210);--color-emerald-300:oklch(81% 0.13 210);--color-emerald-400:oklch(74% 0.15 210);--color-emerald-500:oklch(64% 0.16 210);--color-emerald-600:oklch(55% 0.15 210);--color-emerald-700:oklch(47% 0.14 210);--color-emerald-800:oklch(40% 0.12 210);--color-emerald-900:oklch(34% 0.1 210);--color-emerald-950:oklch(24% 0.08 210);--color-teal-50:oklch(97% 0.03 205);--color-teal-100:oklch(94% 0.06 205);--color-teal-200:oklch(88% 0.1 205);--color-teal-300:oklch(81% 0.13 205);--color-teal-400:oklch(74% 0.15 205);--color-teal-500:oklch(64% 0.16 205);--color-teal-600:oklch(55% 0.15 205);--color-teal-700:oklch(47% 0.14 205);--color-teal-800:oklch(40% 0.12 205);--color-teal-900:oklch(34% 0.1 205);--color-teal-950:oklch(24% 0.08 205);--color-violet-50:oklch(97% 0.03 262);--color-violet-100:oklch(94% 0.06 262);--color-violet-200:oklch(88% 0.1 262);--color-violet-300:oklch(81% 0.13 262);--color-violet-400:oklch(74% 0.15 262);--color-violet-500:oklch(64% 0.16 262);--color-violet-600:oklch(55% 0.15 262);--color-violet-700:oklch(47% 0.14 262);--color-violet-800:oklch(40% 0.12 262);--color-violet-900:oklch(34% 0.1 262);--color-violet-950:oklch(24% 0.08 262);--color-purple-50:oklch(97% 0.03 266);--color-purple-100:oklch(94% 0.06 266);--color-purple-200:oklch(88% 0.1 266);--color-purple-300:oklch(81% 0.13 266);--color-purple-400:oklch(74% 0.15 266);--color-purple-500:oklch(64% 0.16 266);--color-purple-600:oklch(55% 0.15 266);--color-purple-700:oklch(47% 0.14 266);--color-purple-800:oklch(40% 0.12 266);--color-purple-900:oklch(34% 0.1 266);--color-purple-950:oklch(24% 0.08 266)}
+
+/* ===== JS 内联硬编码色兜底（图表数组 / SVG presentation attribute）===== */
+[fill="#f97316"],[fill="#f59e0b"],[fill="#ea580c"],[fill="#c75015"],[fill="#d95d2b"],
+[fill="#10b981"],[fill="#14b8a6"],[fill="#22c55e"],[fill="#84cc16"],[fill="#a3e635"]{fill:var(--brand-4)!important}
+[fill="#8b5cf6"],[fill="#ec4899"],[fill="#6366f1"]{fill:var(--brand-5)!important}
+[stroke="#f97316"],[stroke="#f59e0b"],[stroke="#ea580c"],[stroke="#c75015"],
+[stroke="#10b981"],[stroke="#14b8a6"],[stroke="#22c55e"],[stroke="#84cc16"]{stroke:var(--brand-4)!important}
+[style*="#f97316"],[style*="#f59e0b"],[style*="#10b981"],[style*="#14b8a6"],[style*="#ea580c"]{color:var(--brand-4)!important}
+
+/* ============================================================
+   侧边栏可见性修复（关键）
+   原设计为「深底 + 白字」(--sidebar: oklch(25% .045 258))；
+   淡蓝主题把侧边栏底改为浅色后，菜单里写死的白色类
+   (text-white / text-white/45 / text-white/50 ... 及 bg-white/5、border-white/*)
+   在浅底上变成不可见，造成「菜单消失/只剩激活项」。
+   这里仅对侧边栏作用域重映射为深色，不影响站内切白字的其它模块。
+   ============================================================ */
+.bg-sidebar .text-white,
+.bg-sidebar .text-white\/45,
+.bg-sidebar .text-white\/50,
+.bg-sidebar .text-white\/55,
+.bg-sidebar .text-white\/60,
+.bg-sidebar .text-white\/65,
+.bg-sidebar .text-white\/70,
+.bg-sidebar .text-white\/80,
+.bg-sidebar .text-white\/85,
+.bg-sidebar .text-white\/90 {
+  color: var(--sidebar-foreground) !important;
+}
+.bg-sidebar .bg-white\/5,
+.bg-sidebar .bg-white\/10 {
+  background-color: oklch(100% 0 0 / .55) !important;
+}
+.bg-sidebar .border-white\/10,
+.bg-sidebar .border-white\/15,
+.bg-sidebar .border-white\/20 {
+  border-color: var(--sidebar-border) !important;
+}

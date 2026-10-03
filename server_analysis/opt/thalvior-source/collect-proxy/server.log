@@ -1,0 +1,15 @@
+[proxy] listening on :8788
+[proxy] GET https://detail.1688.com/offer/749083768804.html
+[proxy] OK https://detail.1688.com/offer/749083768804.html 13015 10862ms
+[proxy] GET https://m.1688.com/offer/749083768804.html
+[proxy] OK https://m.1688.com/offer/749083768804.html 13085 20593ms
+[proxy] GET https://detail.m.1688.com/offer/749083768804.html
+[proxy] OK https://detail.m.1688.com/offer/749083768804.html 12993 9494ms
+[proxy] GET https://h5.m.1688.com/page/offerDetail.html?offerId=749083768804
+[proxy] OK https://h5.m.1688.com/page/offerDetail.html?offerId=749083768804 129730 5672ms
+[proxy] GET https://www.1688.com/offer/749083768804.html
+[proxy] ERR https://www.1688.com/offer/749083768804.html page.content: Unable to retrieve content because the page is navigating and changing the content.
+[proxy] GET https://detail.1688.com/offer/749083768804.html?spm=a26352.13672862.offerlist.1.2e5c18b2x
+[proxy] OK https://detail.1688.com/offer/749083768804.html?spm=a26352.13672862.offerlist.1.2e5c18b2x 12999 10023ms
+[proxy] GET https://www.aliexpress.com/w/wholesale-top-selling-products.html
+[proxy] OK https://www.aliexpress.com/w/wholesale-top-selling-products.html 966455 7265ms

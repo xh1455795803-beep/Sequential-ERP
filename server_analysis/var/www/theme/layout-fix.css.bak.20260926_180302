@@ -1,0 +1,58 @@
+/* =====================================================
+   Thalvior ERP · 布局修复层 v1
+   解决的问题：
+   1) 左右两栏布局（lg:grid-cols-2）默认 items-stretch，
+      内容少的一栏被拉到与另一栏等高，底部出现大片空白
+   2) AI 中心操作按钮容器与输入区视觉割裂
+   3) 卡片内部弹性撑高导致的空洞
+   原则：只做布局纠正，不改配色、不改字号、不动内容
+   ===================================================== */
+
+/* ---- 1) 主内容区两栏网格：改为顶部对齐，各栏保持自身内容高度 ---- */
+main .grid.lg\:grid-cols-2,
+main .grid[class*="lg:grid-cols-2"],
+main .grid[class*="xl:grid-cols-2"] {
+  align-items: start;
+}
+
+/* 常见变体：sm:grid-cols-2 / md:grid-cols-2 同样处理 */
+main .grid[class*="sm:grid-cols-2"],
+main .grid[class*="md:grid-cols-2"] {
+  align-items: start;
+}
+
+/* ---- 2) 被拉伸的卡片自身解除撑高 ---- */
+main .grid.lg\:grid-cols-2 > *,
+main .grid[class*="lg:grid-cols-2"] > *,
+main .grid[class*="xl:grid-cols-2"] > *,
+main .grid[class*="sm:grid-cols-2"] > *,
+main .grid[class*="md:grid-cols-2"] > * {
+  align-self: start;
+}
+
+/* ---- 3) 卡片内的弹性占位元素：不再强制撑满，避免空洞 ---- */
+/* 只处理卡片直接子级的 flex-1（多用于把按钮推到底部），
+   在内容不足时它会造成中部空白，改为自然高度 */
+main .rounded-xl.border > .flex-1,
+main .rounded-lg.border > .flex-1 {
+  flex-grow: 0;
+}
+
+/* ---- 4) AI 中心：操作按钮区贴合输入卡片 ---- */
+/* 按钮容器 mt-4 flex items-center justify-end 在卡片外时会显得孤立，
+   这里收敛其上边距并保证与卡片同宽 */
+main .rounded-xl.border > .mt-4.flex.items-center.justify-end {
+  margin-top: 14px;
+}
+
+/* ---- 5) 三栏/四栏网格同样顶部对齐 ---- */
+main .grid[class*="grid-cols-3"],
+main .grid[class*="grid-cols-4"] {
+  align-items: start;
+}
+
+/* ---- 6) 空状态、提示条在拉伸容器内不做纵向拉伸 ---- */
+main .grid > .rounded-xl,
+main .grid > .rounded-lg {
+  align-self: start;
+}

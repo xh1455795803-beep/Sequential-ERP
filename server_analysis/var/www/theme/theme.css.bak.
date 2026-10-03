@@ -1,0 +1,119 @@
+/* ===== Thalvior 晨曦蓝·多元 主题 · 由 nginx 注入，脱离 dist ===== */
+:root {
+  --radius: .75rem;
+  --font-sans: "PingFang SC","Microsoft YaHei","Hiragino Sans GB",ui-sans-serif,system-ui,sans-serif;
+  --font-display: "Space Grotesk","PingFang SC","Microsoft YaHei",ui-sans-serif,system-ui,sans-serif;
+  --font-mono: "IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+
+  /* —— 色阶：由浅到深，多元素化避免单调 —— */
+  --brand-1: oklch(90% 0.045 220);
+  --brand-2: oklch(80% 0.09 222);
+  --brand-3: oklch(72% 0.11 230);
+  --brand-4: oklch(64% 0.14 240);
+  --brand-5: oklch(56% 0.15 258);
+  --brand-6: oklch(50% 0.16 280);
+  --brand-7: oklch(62% 0.15 330);
+  --ink: oklch(42% .05 257);
+  --harbor: oklch(68% .1 230);
+  --primary: var(--brand-4);
+  --primary-2: var(--brand-6);
+  --primary-foreground: oklch(99% .003 240);
+
+  --cargo-orange: var(--brand-4);
+  --cargo-teal:   var(--brand-3);
+  --cargo-gold:   var(--brand-6);
+  --cargo-violet: var(--brand-7);
+  --cargo-blue:   var(--brand-5);
+
+  --background: oklch(98.8% .004 238);
+  --foreground: oklch(33% .025 255);
+  --card: oklch(100% 0 0);
+  --card-foreground: oklch(33% .025 255);
+  --popover: oklch(100% 0 0);
+  --popover-foreground: oklch(33% .025 255);
+  --secondary: oklch(96.5% .008 238);
+  --secondary-foreground: oklch(38% .05 257);
+  --muted: oklch(96.8% .006 238);
+  --muted-foreground: oklch(53% .02 252);
+  --accent: oklch(95% .03 238);
+  --accent-foreground: oklch(45% .13 240);
+  --destructive: oklch(58% .18 27);
+  --destructive-foreground: oklch(99% .002 27);
+  --border: oklch(91.5% .01 238);
+  --input: oklch(91.5% .01 238);
+  --ring: oklch(64% .125 240);
+  --success: oklch(62% .12 230);
+  --warning: oklch(72% .11 240);
+  --info: oklch(68% .1 222);
+  --chart-1: var(--brand-5); --chart-2: var(--brand-4); --chart-3: var(--brand-3); --chart-4: var(--brand-7); --chart-5: var(--brand-2);
+  --tone-blue: var(--brand-4);
+  --tone-cyan: oklch(68% .12 230);
+  --tone-indigo: var(--brand-5);
+  --tone-violet: var(--brand-6);
+  --tone-rose: var(--brand-7);
+
+  --sidebar: oklch(97.5% .006 238);
+  --sidebar-foreground: oklch(33% .025 255);
+  --sidebar-primary: var(--brand-4);
+  --sidebar-primary-foreground: oklch(99% .003 240);
+  --sidebar-accent: oklch(94% .03 238);
+  --sidebar-accent-foreground: oklch(40% .12 240);
+  --sidebar-border: oklch(91% .01 238);
+  --sidebar-ring: oklch(64% .125 240);
+  --shadow-soft: 0 1px 2px oklch(42% .05 257/.04),0 1px 3px oklch(42% .05 257/.05);
+  --shadow-lift: 0 4px 12px oklch(42% .05 257/.07),0 1px 3px oklch(42% .05 257/.05);
+  --shadow-glow: 0 6px 20px oklch(64% .125 240/.24),0 2px 8px oklch(50% .15 280/.16);
+  --shadow-float: 0 1px 2px oklch(42% .05 257/.05),0 8px 24px oklch(42% .05 257/.07),0 20px 48px oklch(42% .05 257/.08);
+  --shadow-ink: 0 12px 32px oklch(42% .05 257/.16),0 4px 12px oklch(42% .05 257/.1);
+}
+
+.bg-ink{background-color:oklch(96.8% .006 238)!important;color:var(--foreground)!important}
+.bg-ink :where(h1,h2,h3,h4,p,span,div,a,dt,dd,li,strong,em,small,label,td,th){color:inherit}
+.bg-ink .text-white,.bg-ink .text-white\/90,.bg-ink .text-white\/80,.bg-ink .text-white\/70{color:var(--foreground)!important}
+.bg-ink .text-white\/60,.bg-ink .text-white\/50,.bg-ink .text-muted-foreground{color:var(--muted-foreground)!important}
+.bg-ink .border-white\/10,.bg-ink .border-white\/20,.bg-ink .border-white\/15{border-color:oklch(89% .012 240)!important}
+.bg-ink .bg-white\/5,.bg-ink .bg-white\/10{background-color:oklch(100% 0 0/.6)!important}
+
+.grid-texture{background-image:linear-gradient(oklch(42% .05 257/.05) 1px,transparent 1px),linear-gradient(90deg,oklch(42% .05 257/.05) 1px,transparent 1px)!important;background-size:32px 32px,32px 32px!important}
+
+.chip-orange{color:var(--brand-6)!important;background:oklch(64% .125 240/.13)!important}
+.chip-teal{color:oklch(50% .12 230)!important;background:oklch(72% .105 230/.16)!important}
+.chip-blue{color:var(--brand-5)!important;background:oklch(56% .14 258/.13)!important}
+.chip-gold{color:var(--brand-6)!important;background:oklch(50% .15 280/.13)!important}
+.chip-violet{color:oklch(50% .13 330)!important;background:oklch(62% .12 330/.14)!important}
+
+.card-glow:after{background:linear-gradient(135deg,oklch(64% .125 240/.55),transparent 40% 60%,oklch(50% .15 280/.35))!important}
+.btn-cargo{background:linear-gradient(135deg,var(--primary),var(--primary-2))!important}
+.glass-dark{background:oklch(100% 0 0/.72)!important;border:1px solid oklch(90% .012 240)!important;-webkit-backdrop-filter:blur(14px) saturate(1.15)!important;backdrop-filter:blur(14px) saturate(1.15)!important;box-shadow:var(--shadow-float)!important;color:var(--foreground)!important}
+
+html.light,html.light body{background-color:oklch(98.8% .004 238)!important;color:var(--foreground)!important}
+
+.rounded-lg,.rounded-xl,.rounded-md{border-radius:.75rem!important}
+.card-glow,.btn-cargo{transition:box-shadow .3s ease,transform .3s ease,border-color .3s ease!important}
+
+/* ===== Tailwind 暖色/绿色/紫色 -> 本族重映射 ===== */
+:root{--color-orange-50:oklch(97% 0.03 240); --color-orange-51:oklch(94% 0.06 240); --color-orange-52:oklch(88% 0.1 240); --color-orange-53:oklch(81% 0.13 240); --color-orange-54:oklch(74% 0.15 240); --color-orange-55:oklch(64% 0.16 240); --color-orange-56:oklch(55% 0.15 240); --color-orange-57:oklch(47% 0.14 240); --color-orange-58:oklch(40% 0.12 240); --color-orange-59:oklch(34% 0.1 240); --color-orange-60:oklch(24% 0.08 240);--color-amber-50:oklch(97% 0.03 234); --color-amber-51:oklch(94% 0.06 234); --color-amber-52:oklch(88% 0.1 234); --color-amber-53:oklch(81% 0.13 234); --color-amber-54:oklch(74% 0.15 234); --color-amber-55:oklch(64% 0.16 234); --color-amber-56:oklch(55% 0.15 234); --color-amber-57:oklch(47% 0.14 234); --color-amber-58:oklch(40% 0.12 234); --color-amber-59:oklch(34% 0.1 234); --color-amber-60:oklch(24% 0.08 234);--color-yellow-50:oklch(97% 0.03 228); --color-yellow-51:oklch(94% 0.06 228); --color-yellow-52:oklch(88% 0.1 228); --color-yellow-53:oklch(81% 0.13 228); --color-yellow-54:oklch(74% 0.15 228); --color-yellow-55:oklch(64% 0.16 228); --color-yellow-56:oklch(55% 0.15 228); --color-yellow-57:oklch(47% 0.14 228); --color-yellow-58:oklch(40% 0.12 228); --color-yellow-59:oklch(34% 0.1 228); --color-yellow-60:oklch(24% 0.08 228);--color-lime-50:oklch(97% 0.03 220); --color-lime-51:oklch(94% 0.06 220); --color-lime-52:oklch(88% 0.1 220); --color-lime-53:oklch(81% 0.13 220); --color-lime-54:oklch(74% 0.15 220); --color-lime-55:oklch(64% 0.16 220); --color-lime-56:oklch(55% 0.15 220); --color-lime-57:oklch(47% 0.14 220); --color-lime-58:oklch(40% 0.12 220); --color-lime-59:oklch(34% 0.1 220); --color-lime-60:oklch(24% 0.08 220);--color-green-50:oklch(97% 0.03 216); --color-green-51:oklch(94% 0.06 216); --color-green-52:oklch(88% 0.1 216); --color-green-53:oklch(81% 0.13 216); --color-green-54:oklch(74% 0.15 216); --color-green-55:oklch(64% 0.16 216); --color-green-56:oklch(55% 0.15 216); --color-green-57:oklch(47% 0.14 216); --color-green-58:oklch(40% 0.12 216); --color-green-59:oklch(34% 0.1 216); --color-green-60:oklch(24% 0.08 216);--color-emerald-50:oklch(97% 0.03 216); --color-emerald-51:oklch(94% 0.06 216); --color-emerald-52:oklch(88% 0.1 216); --color-emerald-53:oklch(81% 0.13 216); --color-emerald-54:oklch(74% 0.15 216); --color-emerald-55:oklch(64% 0.16 216); --color-emerald-56:oklch(55% 0.15 216); --color-emerald-57:oklch(47% 0.14 216); --color-emerald-58:oklch(40% 0.12 216); --color-emerald-59:oklch(34% 0.1 216); --color-emerald-60:oklch(24% 0.08 216);--color-teal-50:oklch(97% 0.03 212); --color-teal-51:oklch(94% 0.06 212); --color-teal-52:oklch(88% 0.1 212); --color-teal-53:oklch(81% 0.13 212); --color-teal-54:oklch(74% 0.15 212); --color-teal-55:oklch(64% 0.16 212); --color-teal-56:oklch(55% 0.15 212); --color-teal-57:oklch(47% 0.14 212); --color-teal-58:oklch(40% 0.12 212); --color-teal-59:oklch(34% 0.1 212); --color-teal-60:oklch(24% 0.08 212);--color-cyan-50:oklch(97% 0.03 207); --color-cyan-51:oklch(94% 0.06 207); --color-cyan-52:oklch(88% 0.1 207); --color-cyan-53:oklch(81% 0.13 207); --color-cyan-54:oklch(74% 0.15 207); --color-cyan-55:oklch(64% 0.16 207); --color-cyan-56:oklch(55% 0.15 207); --color-cyan-57:oklch(47% 0.14 207); --color-cyan-58:oklch(40% 0.12 207); --color-cyan-59:oklch(34% 0.1 207); --color-cyan-60:oklch(24% 0.08 207);--color-sky-50:oklch(97% 0.03 224); --color-sky-51:oklch(94% 0.06 224); --color-sky-52:oklch(88% 0.1 224); --color-sky-53:oklch(81% 0.13 224); --color-sky-54:oklch(74% 0.15 224); --color-sky-55:oklch(64% 0.16 224); --color-sky-56:oklch(55% 0.15 224); --color-sky-57:oklch(47% 0.14 224); --color-sky-58:oklch(40% 0.12 224); --color-sky-59:oklch(34% 0.1 224); --color-sky-60:oklch(24% 0.08 224);--color-blue-50:oklch(97% 0.03 240); --color-blue-51:oklch(94% 0.06 240); --color-blue-52:oklch(88% 0.1 240); --color-blue-53:oklch(81% 0.13 240); --color-blue-54:oklch(74% 0.15 240); --color-blue-55:oklch(64% 0.16 240); --color-blue-56:oklch(55% 0.15 240); --color-blue-57:oklch(47% 0.14 240); --color-blue-58:oklch(40% 0.12 240); --color-blue-59:oklch(34% 0.1 240); --color-blue-60:oklch(24% 0.08 240);--color-indigo-50:oklch(97% 0.03 258); --color-indigo-51:oklch(94% 0.06 258); --color-indigo-52:oklch(88% 0.1 258); --color-indigo-53:oklch(81% 0.13 258); --color-indigo-54:oklch(74% 0.15 258); --color-indigo-55:oklch(64% 0.16 258); --color-indigo-56:oklch(55% 0.15 258); --color-indigo-57:oklch(47% 0.14 258); --color-indigo-58:oklch(40% 0.12 258); --color-indigo-59:oklch(34% 0.1 258); --color-indigo-60:oklch(24% 0.08 258);--color-violet-50:oklch(97% 0.03 285); --color-violet-51:oklch(94% 0.06 285); --color-violet-52:oklch(88% 0.1 285); --color-violet-53:oklch(81% 0.13 285); --color-violet-54:oklch(74% 0.15 285); --color-violet-55:oklch(64% 0.16 285); --color-violet-56:oklch(55% 0.15 285); --color-violet-57:oklch(47% 0.14 285); --color-violet-58:oklch(40% 0.12 285); --color-violet-59:oklch(34% 0.1 285); --color-violet-60:oklch(24% 0.08 285);--color-purple-50:oklch(97% 0.03 285); --color-purple-51:oklch(94% 0.06 285); --color-purple-52:oklch(88% 0.1 285); --color-purple-53:oklch(81% 0.13 285); --color-purple-54:oklch(74% 0.15 285); --color-purple-55:oklch(64% 0.16 285); --color-purple-56:oklch(55% 0.15 285); --color-purple-57:oklch(47% 0.14 285); --color-purple-58:oklch(40% 0.12 285); --color-purple-59:oklch(34% 0.1 285); --color-purple-60:oklch(24% 0.08 285);--color-fuchsia-50:oklch(97% 0.03 285); --color-fuchsia-51:oklch(94% 0.06 285); --color-fuchsia-52:oklch(88% 0.1 285); --color-fuchsia-53:oklch(81% 0.13 285); --color-fuchsia-54:oklch(74% 0.15 285); --color-fuchsia-55:oklch(64% 0.16 285); --color-fuchsia-56:oklch(55% 0.15 285); --color-fuchsia-57:oklch(47% 0.14 285); --color-fuchsia-58:oklch(40% 0.12 285); --color-fuchsia-59:oklch(34% 0.1 285); --color-fuchsia-60:oklch(24% 0.08 285);--color-pink-50:oklch(97% 0.03 285); --color-pink-51:oklch(94% 0.06 285); --color-pink-52:oklch(88% 0.1 285); --color-pink-53:oklch(81% 0.13 285); --color-pink-54:oklch(74% 0.15 285); --color-pink-55:oklch(64% 0.16 285); --color-pink-56:oklch(55% 0.15 285); --color-pink-57:oklch(47% 0.14 285); --color-pink-58:oklch(40% 0.12 285); --color-pink-59:oklch(34% 0.1 285); --color-pink-60:oklch(24% 0.08 285);--color-rose-50:oklch(97% 0.03 285); --color-rose-51:oklch(94% 0.06 285); --color-rose-52:oklch(88% 0.1 285); --color-rose-53:oklch(81% 0.13 285); --color-rose-54:oklch(74% 0.15 285); --color-rose-55:oklch(64% 0.16 285); --color-rose-56:oklch(55% 0.15 285); --color-rose-57:oklch(47% 0.14 285); --color-rose-58:oklch(40% 0.12 285); --color-rose-59:oklch(34% 0.1 285); --color-rose-60:oklch(24% 0.08 285);}
+
+/* ===== JS 内联硬编码色兜底 ===== */
+[fill="#f97316"],[fill="#f59e0b"],[fill="#ea580c"],[fill="#c75015"],[fill="#d95d2b"],
+[fill="#10b981"],[fill="#14b8a6"],[fill="#22c55e"],[fill="#84cc16"],[fill="#a3e635"]{fill:var(--brand-4)!important}
+[fill="#8b5cf6"],[fill="#ec4899"],[fill="#6366f1"]{fill:var(--brand-5)!important}
+[stroke="#f97316"],[stroke="#f59e0b"],[stroke="#ea580c"],[stroke="#c75015"],
+[stroke="#10b981"],[stroke="#14b8a6"],[stroke="#22c55e"],[stroke="#84cc16"]{stroke:var(--brand-4)!important}
+[style*="#f97316"],[style*="#f59e0b"],[style*="#10b981"],[style*="#14b8a6"],[style*="#ea580c"]{color:var(--brand-4)!important}
+
+/* ===== 侧边栏可见性修复（关键）=====
+   原设计「深底+白字」；浅色主题下白字不可见，仅对侧边栏作用域重映射为深色。 */
+.bg-sidebar .text-white,
+.bg-sidebar .text-white\/45,
+.bg-sidebar .text-white\/50,
+.bg-sidebar .text-white\/55,
+.bg-sidebar .text-white\/60,
+.bg-sidebar .text-white\/65,
+.bg-sidebar .text-white\/70,
+.bg-sidebar .text-white\/80,
+.bg-sidebar .text-white\/85,
+.bg-sidebar .text-white\/90,
+.bg-sidebar .text-white\/90{color:var(--sidebar-foreground)!important}
+.bg-sidebar .bg-white\/5,.bg-sidebar .bg-white\/10{background-color:oklch(100% 0 0/.55)!important}
+.bg-sidebar .border-white\/10,.bg-sidebar .border-white\/15,.bg-sidebar .border-white\/20{border-color:var(--sidebar-border)!important}

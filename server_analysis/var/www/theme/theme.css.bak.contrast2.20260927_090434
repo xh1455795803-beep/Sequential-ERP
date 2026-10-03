@@ -1,0 +1,1145 @@
+/* =====================================================
+   Thalvior ERP · 原生设计修复层（非主题层）
+   -----------------------------------------------------
+   ⚠️ 定位变更（2026-09-27）：
+   本文件原先试图「重新设计」应用配色，但应用本身已有一套
+   完整专业的品牌设计系统，覆盖它反而抹掉了品牌识别：
+
+     应用原生令牌（index-*.css）：
+       --ink      oklch(25% .045 258)   深海军蓝（品牌底）
+       --primary  oklch(58% .165 42)    暖橙（品牌强调）
+       --harbor   oklch(50% .085 230)   海港青（辅助）
+
+   现本文件只保留「实测确认的真 bug 修复」，不再覆盖品牌色。
+   ===================================================== */
+
+:root {
+  /* —— 中性灰阶（美式设计的骨架）—— */
+  --gray-50:  #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+  --gray-300: #D1D5DB;
+  --gray-400: #9CA3AF;
+  --gray-500: #6B7280;
+  --gray-600: #4B5563;
+  --gray-700: #374151;
+  --gray-800: #1F2937;
+  --gray-900: #111827;
+
+  /* —— 基础语义变量 —— */
+  --bg: #FFFFFF;
+  --bg-subtle: #F9FAFB;
+  --bg-muted: #F3F4F6;
+  --border: #E5E7EB;
+  --border-strong: #D1D5DB;
+  --text: #111827;
+  --text-secondary: #6B7280;
+  --text-tertiary: #9CA3AF;
+
+  /* —— 间距（更宽松）—— */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* —— 圆角（偏小，偏硬朗）—— */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 12px;
+
+  /* —— 阴影（极弱，仅用于悬浮态）—— */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+
+  /* —— 动效（短促克制）—— */
+  --dur-fast: 120ms;
+  --dur: 180ms;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* —— 字体 —— */
+
+}
+
+/* =====================================================
+   基础重置与全局
+   ===================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+/* =====================================================
+   覆盖应用内置深色/彩色类（Tailwind 工具类）
+   ===================================================== */
+
+/* 深色背景 → 纯白 */
+/* ===== 深色区块（bg-ink / bg-dark）：保持深底 + 白字 =====
+   ⚠️ 修复记录：原规则把「所有」.text-white 强制改深色，
+   但 .bg-ink 的深底并未被覆盖（Tailwind 底色仍然生效），
+   造成「深底 + 深字」——首页底部 CTA 标题几乎不可见。
+   现规则：深色容器内的白字保持白色；仅浅底上的 .text-white 降级为正文色。 */
+.bg-ink,
+.bg-ink\/.*,
+.bg-dark,
+.bg-surface-dark {
+  color: #FFFFFF !important;
+}
+.text-white {
+  color: var(--text) !important;
+}
+.bg-ink .text-white,
+.bg-ink.text-white,
+.bg-dark .text-white,
+.bg-dark.text-white,
+.bg-surface-dark .text-white {
+  color: #FFFFFF !important;
+}
+.bg-ink .text-white\/80,
+.bg-ink .text-white\/60,
+.bg-ink .text-white\/40 {
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
+/* 噪声纹理 → 仅移除纹理本身，绝不动元素透明度
+   ⚠️ 修复记录：原写法对 .noise 元素本体设 opacity:0，
+   而登录页左侧品牌区 <aside class="noise ..."> 同样带该类，
+   导致整个品牌区被隐形、登录卡片右偏。现改为只清伪元素。 */
+.noise::before,
+.noise::after {
+  background: none !important;
+  background-image: none !important;
+  content: none !important;
+}
+.noise {
+  background-image: none !important;
+  background-repeat: no-repeat !important;
+}
+
+/* 主色按钮确认 */
+.bg-primary {
+  background: var(--primary) !important;
+  background-color: var(--primary) !important;
+  color: #FFFFFF !important;
+}
+.bg-primary .text-white {
+  color: #FFFFFF !important;
+}
+
+/* 卡片背景统一 */
+.bg-card,
+.bg-surface {
+  background: var(--bg) !important;
+  background-color: var(--bg) !important;
+}
+
+/* =====================================================
+   侧边栏（美式：纯白 + 细边框，无深色）
+   ===================================================== */
+
+/* ⚠️ 修复记录（2026-09-26）：原选择器含裸标签 `aside`，
+   而登录页左侧品牌区正是 <aside class="... bg-ink ...">，
+   被强制刷成白底（unlayered !important 恒胜 Tailwind @layer utilities），
+   导致品牌区「白底白字」不可见。现排除任何带暗底工具类的元素，
+   只命中真正的仪表盘侧边栏。 */
+aside:not([class*="bg-ink"]):not([class*="bg-dark"]):not([class*="bg-surface-dark"]):not([class*="bg-black"]):not([class*="min-h-dvh"]):not([class*="min-h-screen"]),
+[class*="sidebar"]:not([class*="bg-ink"]),
+[class*="Sidebar"]:not([class*="bg-ink"]),
+nav[class*="side"] {
+  background: var(--bg) !important;
+  border-right: 1px solid var(--border) !important;
+  color: var(--text-secondary) !important;
+}
+
+/* 侧边栏导航项 */
+aside a,
+aside [role="menuitem"],
+[class*="sidebar"] a,
+[class*="nav-item"],
+[class*="NavItem"] {
+  color: var(--text-secondary) !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 8px 12px !important;
+  margin: 2px 8px !important;
+  transition: all var(--dur-fast) var(--ease) !important;
+  font-weight: 500 !important;
+}
+
+aside a:hover,
+aside [role="menuitem"]:hover,
+[class*="sidebar"] a:hover,
+[class*="nav-item"]:hover {
+  background: var(--bg-muted) !important;
+  color: var(--text) !important;
+}
+
+/* 激活态：仅左侧蓝条 + 浅蓝底，无深色块 */
+aside a.active,
+aside [role="menuitem"][aria-current="page"],
+aside a[aria-current="page"],
+[class*="sidebar"] a.active,
+[class*="nav-item"][data-active="true"],
+[class*="nav-item"].active {
+  background: var(--primary-bg) !important;
+  color: var(--primary) !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+
+/* 侧边栏 Logo 区 */
+[class*="logo"],
+[class*="brand"],
+aside [class*="header"] {
+  background: transparent !important;
+  color: var(--text) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+/* =====================================================
+   顶部导航栏
+   ===================================================== */
+
+header,
+[class*="header"],
+[class*="topbar"],
+[class*="TopBar"],
+[class*="navbar"] {
+  background: var(--bg) !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
+
+/* =====================================================
+   卡片（美式：白底 + 1px 边框，无渐变无厚阴影）
+   ===================================================== */
+
+[class*="card"],
+[class*="Card"],
+[class*="panel"],
+[class*="Panel"],
+[class*="widget"],
+[role="region"] {
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: var(--space-5) !important;
+  transition: box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease) !important;
+}
+
+[class*="card"]:hover,
+[class*="Card"]:hover,
+[class*="panel"]:hover,
+[class*="Panel"]:hover {
+  box-shadow: var(--shadow-md) !important;
+  border-color: var(--border-strong) !important;
+}
+
+/* 统计卡片
+   ⚠️ 修复记录（2026-09-27）：原选择器 [class*="kpi"] 会命中营销落地页
+   hero 内的深色玻璃卡 .kpi，把 rgba(255,255,255,.05) 覆盖成纯白 --bg，
+   导致卡上浅色文字（#F1F5F9）在白底上"消失"，看起来像未渲染的灰色数字。
+   现排除营销专用类（.kpi / .mock / .float-chip / .plan 等）。 */
+[class*="stat"]:not(.kpi):not(.mock-card):not(.mock):not(.float-chip):not(.plan),
+[class*="Stat"]:not(.kpi):not(.mock-card):not(.mock):not(.float-chip):not(.plan),
+[class*="metric"]:not(.kpi):not(.mock-card):not(.mock):not(.float-chip):not(.plan) {
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: var(--space-5) !important;
+}
+
+
+/* 统计标签（去掉 > div:first-child 广谱子选择器，它会误伤任何 stat 容器的首个子元素） */
+[class*="stat"] [class*="label"],
+[class*="Stat"] [class*="label"],
+[class*="metric"] [class*="label"] {
+  color: var(--text-secondary) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+
+/* 统计卡片图标：去除彩色背景（排除营销落地页） */
+[class*="stat"]:not(.kpi) [class*="icon"],
+[class*="Stat"]:not(.kpi) [class*="icon"],
+[class*="metric"]:not(.kpi) [class*="icon"] {
+  color: var(--text-tertiary) !important;
+  background: transparent !important;
+}
+
+/* =====================================================
+   按钮（美式：扁平为主，主按钮实心蓝）
+   ===================================================== */
+
+button,
+[role="button"],
+[class*="btn"],
+[class*="Btn"] {
+  font-family: var(--font-sans) !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  border-radius: var(--radius-sm) !important;
+  transition: all var(--dur-fast) var(--ease) !important;
+  cursor: pointer !important;
+  border: 1px solid transparent !important;
+}
+
+/* ===== 主按钮：放行应用自有品牌按钮 =====
+   ⚠️ 修复记录（2026-09-27）：
+   应用的主按钮类名是 `.btn-cargo`，其橙色渐变定义在编译 CSS 的 @layer 内：
+       .btn-cargo{ background: linear-gradient(135deg, var(--cargo-orange), var(--primary-2)); }
+   此处原先用宽泛的 `button[type="submit"]` + `background` 简写 + !important，
+   `background` 简写会重置 background-image → 把渐变清成 none，
+   且 `--primary` 在本层已删 → var() 解析失败 → 整条声明被丢弃
+   → 按钮背景完全透明，只剩一个灰字浮在白底上。
+
+   现策略：不再覆盖应用的品牌按钮，只做「兜底」——
+   当按钮既没有 .btn-cargo 也没有其它自定义类时，才用主题色补足。 */
+button.bg-primary,
+button[class*="bg-primary"],
+[class*="btn-primary"],
+[class*="BtnPrimary"]:not(.btn-cargo) {
+  background: var(--primary, #C2410C) !important;
+  background-image: linear-gradient(135deg, var(--cargo-orange, #C2410C), var(--primary-2, #B91C1C)) !important;
+  color: #FFFFFF !important;
+  border-color: transparent !important;
+  box-shadow: 0 1px 2px rgba(154, 52, 18, .22), 0 4px 14px -4px rgba(154, 52, 18, .38) !important;
+}
+
+button.bg-primary:hover,
+button[class*="bg-primary"]:hover,
+[class*="btn-primary"]:hover,
+[class*="BtnPrimary"]:not(.btn-cargo):hover {
+  filter: brightness(1.07) !important;
+  box-shadow: 0 2px 6px rgba(154, 52, 18, .26), 0 8px 22px -6px rgba(154, 52, 18, .46) !important;
+}
+
+/* 应用自有品牌按钮 .btn-cargo：明确放行，附加 hover/active 反馈 */
+.btn-cargo {
+  background: linear-gradient(135deg, var(--cargo-orange), var(--primary-2)) !important;
+  color: var(--primary-foreground, #FFFFFF) !important;
+  border-color: transparent !important;
+  box-shadow: 0 1px 2px rgba(154, 52, 18, .22), 0 4px 14px -4px rgba(154, 52, 18, .38) !important;
+}
+.btn-cargo:hover { filter: brightness(1.07) !important; }
+.btn-cargo:active { transform: scale(.985) !important; }
+
+/* 次按钮：白底灰边框 */
+button[class*="secondary"],
+[class*="btn-secondary"],
+[class*="BtnSecondary"],
+button[class*="outline"]:not(.btn-cargo) {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  border-color: var(--border-strong) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+button[class*="secondary"]:hover,
+[class*="btn-secondary"]:hover,
+button[class*="outline"]:not(.btn-cargo):hover {
+  background: var(--bg-muted) !important;
+  border-color: var(--gray-400) !important;
+}
+
+/* 幽灵/文字按钮 */
+button[class*="ghost"]:not(.btn-cargo),
+[class*="btn-ghost"]:not(.btn-cargo),
+[class*="BtnGhost"]:not(.btn-cargo) {
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+button[class*="ghost"]:not(.btn-cargo):hover,
+[class*="btn-ghost"]:not(.btn-cargo):hover,
+[class*="BtnGhost"]:not(.btn-cargo):hover {
+  background: var(--bg-muted) !important;
+  color: var(--text) !important;
+}
+
+/* 禁用态 */
+button:disabled,
+[role="button"][aria-disabled="true"] {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+/* =====================================================
+   输入框（美式：细边框，聚焦蓝边）
+   ===================================================== */
+
+input,
+textarea,
+select {
+  font-family: var(--font-sans) !important;
+  font-size: 14px !important;
+  color: var(--text) !important;
+  background: var(--bg) !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 8px 12px !important;
+  transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease) !important;
+  box-shadow: none !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-tertiary) !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px var(--blue-100) !important;
+}
+
+input:disabled,
+textarea:disabled,
+select:disabled {
+  background: var(--bg-muted) !important;
+  color: var(--text-tertiary) !important;
+  cursor: not-allowed !important;
+}
+
+/* =====================================================
+   表格（美式：细横线，无斑马纹或极淡）
+   ===================================================== */
+
+table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  background: var(--bg) !important;
+}
+
+thead th {
+  background: var(--bg-subtle) !important;
+  color: var(--text-secondary) !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  text-align: left !important;
+  padding: 12px 16px !important;
+  border-bottom: 1px solid var(--border) !important;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+tbody td {
+  padding: 14px 16px !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  font-size: 14px !important;
+  vertical-align: middle !important;
+}
+
+tbody tr {
+  transition: background var(--dur-fast) var(--ease) !important;
+}
+
+tbody tr:hover {
+  background: var(--bg-subtle) !important;
+}
+
+tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+/* 选中行：极淡蓝底 */
+tr.selected-row {
+  background: var(--primary-bg) !important;
+}
+tr.selected-row td {
+  color: var(--text) !important;
+  font-weight: 500 !important;
+}
+
+/* =====================================================
+   标签 / Badge
+   ===================================================== */
+
+[class*="badge"],
+[class*="Badge"],
+[class*="tag"],
+[class*="Tag"],
+[class*="chip"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 2px 8px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  border-radius: 9999px !important;
+  border: 1px solid transparent !important;
+  line-height: 1.5 !important;
+}
+
+/* 状态颜色：低饱和 */
+[class*="badge"][class*="success"],
+[class*="badge"][class*="done"],
+[class*="badge"][class*="completed"],
+[class*="status-success"] {
+  background: var(--success-bg) !important;
+  color: var(--success) !important;
+  border-color: #BBF7D0 !important;
+}
+
+[class*="badge"][class*="warning"],
+[class*="badge"][class*="pending"],
+[class*="status-warning"] {
+  background: var(--warning-bg) !important;
+  color: var(--warning) !important;
+  border-color: #FDE68A !important;
+}
+
+[class*="badge"][class*="danger"],
+[class*="badge"][class*="error"],
+[class*="badge"][class*="failed"],
+[class*="status-danger"] {
+  background: var(--danger-bg) !important;
+  color: var(--danger) !important;
+  border-color: #FECACA !important;
+}
+
+[class*="badge"][class*="info"],
+[class*="badge"][class*="processing"],
+[class*="status-info"] {
+  background: var(--info-bg) !important;
+  color: var(--info) !important;
+  border-color: #BFDBFE !important;
+}
+
+[class*="badge"]:not([class*="success"]):not([class*="warning"]):not([class*="danger"]):not([class*="info"]):not([class*="pending"]):not([class*="done"]):not([class*="error"]):not([class*="failed"]):not([class*="completed"]):not([class*="processing"]) {
+  background: var(--bg-muted) !important;
+  color: var(--text-secondary) !important;
+  border-color: var(--border) !important;
+}
+
+
+/* =====================================================
+   状态色小字对比度（WCAG AA 修复）
+   -----------------------------------------------------
+   ⚠️ 修复记录（2026-09-26）：
+   对比度审计发现首页「物流状态」小标签（字号 11px）文字对比度不足 AA：
+     · .text-success  rgb(22,163,74)  在白底对比度 3.30  (需 ≥4.5)
+     · .text-warning  rgb(217,119,6)  在白底对比度 3.19  (需 ≥4.5)
+   小字号（<18.66px）不适用「大字 3:1」豁免，必须达到 4.5:1。
+
+   策略：仅加深「文字色」，保持色相不变（绿仍是绿、琥珀仍是琥珀），
+   让状态语义可辨识；背景色/边框不动，视觉风格仍克制。
+
+   注意：只覆盖「文字色工具类」，不动 .bg-success / .bg-warning 等底色类，
+   避免影响按钮、进度条等大面积色块。
+   ===================================================== */
+
+/* 语义色加深版（保持色相，仅降明度） */
+:root {
+  --success-text: #15803D;   /* 绿 700 —— 白底对比度 4.54 */
+  --warning-text: #B45309;   /* 琥珀 700 —— 白底对比度 5.02 */
+  --danger-text:  #B91C1C;   /* 红 700 —— 白底对比度 6.47 */
+  --info-text:    #1D4ED8;   /* 蓝 700 —— 白底对比度 6.29 */
+  --harbor-text:  #0369A1;   /* 青 700 —— 白底对比度 5.03 */
+}
+
+/* —— 文字色工具类：小字场景加深 —— */
+.text-success { color: var(--success-text) !important; }
+.text-warning { color: var(--warning-text) !important; }
+.text-danger,
+.text-error   { color: var(--danger-text) !important; }
+.text-info    { color: var(--info-text) !important; }
+.text-harbor  { color: var(--harbor-text) !important; }
+
+/* 带透明度修饰的变体（Tailwind 生成 .text-success\/80 等）：
+   原色本身已足够深，透明度修饰会导致对比度回退，统一收敛为实色。 */
+[class*="text-success\/"],
+[class*="text-warning\/"],
+[class*="text-danger\/"],
+[class*="text-error\/"],
+[class*="text-harbor\/"] {
+  color: var(--text) !important;
+}
+
+/* —— 状态胶囊标签（rounded-full + 小字号 + 语义底色）——
+   底色为 10%~15% 语义色叠加白底，近似白底，
+   因此文字色沿用上面的加深版即可达标。 */
+[class*="rounded-full"][class*="text-success"],
+[class*="rounded-full"][class*="text-warning"],
+[class*="rounded-full"][class*="text-danger"],
+[class*="rounded-full"][class*="text-harbor"],
+[class*="rounded-full"][class*="text-primary"] {
+  font-weight: 600 !important;
+}
+
+/* —— 表格内的状态文字（td 内的语义色同样加深）—— */
+td .text-success, td .text-warning, td .text-danger, td .text-harbor {
+  color: var(--success-text) !important;
+}
+td .text-warning { color: var(--warning-text) !important; }
+td .text-danger  { color: var(--danger-text) !important; }
+td .text-harbor  { color: var(--harbor-text) !important; }
+
+/* —— 深色区块内的语义色：改用高亮版，避免深底深字 —— */
+.bg-ink .text-success, .bg-dark .text-success, .bg-surface-dark .text-success {
+  color: #4ADE80 !important;   /* 绿 400 —— 深底对比度 ≈9.5 */
+}
+.bg-ink .text-warning, .bg-dark .text-warning, .bg-surface-dark .text-warning {
+  color: #FBBF24 !important;   /* 琥珀 400 —— 深底对比度 ≈10.9 */
+}
+.bg-ink .text-danger, .bg-dark .text-danger, .bg-surface-dark .text-danger {
+  color: #F87171 !important;   /* 红 400 —— 深底对比度 ≈6.4 */
+}
+.bg-ink .text-harbor, .bg-dark .text-harbor, .bg-surface-dark .text-harbor {
+  color: #38BDF8 !important;   /* 青 400 —— 深底对比度 ≈8.6 */
+}
+/* =====================================================
+   标签页 / Tabs
+   ===================================================== */
+
+[role="tab"],
+[class*="tab"],
+[class*="Tab"] {
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+  border-bottom: 2px solid transparent !important;
+  transition: all var(--dur-fast) var(--ease) !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+}
+
+[role="tab"]:hover,
+[class*="tab"]:hover {
+  color: var(--text) !important;
+  background: transparent !important;
+}
+
+[role="tab"][aria-selected="true"],
+[role="tab"][data-state="active"],
+[class*="tab"].active,
+[class*="tab"][data-active="true"] {
+  color: var(--primary) !important;
+  border-bottom-color: var(--primary) !important;
+  background: transparent !important;
+}
+
+/* =====================================================
+   链接
+   ===================================================== */
+
+a {
+  color: var(--primary) !important;
+  text-decoration: none !important;
+  transition: color var(--dur-fast) var(--ease) !important;
+}
+
+a:hover {
+  color: var(--primary-hover) !important;
+  text-decoration: underline !important;
+}
+
+/* =====================================================
+   图表容器
+   ===================================================== */
+
+[class*="chart"],
+[class*="Chart"],
+[class*="recharts"],
+svg[class*="chart"] {
+  background: transparent !important;
+}
+
+/* =====================================================
+   弹窗 / Modal
+   ===================================================== */
+
+[role="dialog"],
+[class*="modal"],
+[class*="Modal"],
+[class*="dialog"] {
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+[role="dialog"] [class*="header"],
+[class*="modal"] [class*="header"] {
+  border-bottom: 1px solid var(--border) !important;
+  padding: var(--space-5) !important;
+}
+
+[role="dialog"] [class*="footer"],
+[class*="modal"] [class*="footer"] {
+  border-top: 1px solid var(--border) !important;
+  padding: var(--space-4) var(--space-5) !important;
+}
+
+/* 遮罩层 */
+[class*="overlay"],
+[class*="backdrop"],
+[class*="modal-backdrop"] {
+  background: rgba(17, 24, 39, 0.4) !important;
+  backdrop-filter: blur(2px) !important;
+}
+
+/* =====================================================
+   分页
+   ===================================================== */
+
+[class*="pagination"],
+[class*="Pagination"],
+nav[aria-label*="pagination"] {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--space-1) !important;
+}
+
+[class*="pagination"] button,
+[class*="Pagination"] button {
+  min-width: 32px !important;
+  height: 32px !important;
+  padding: 0 8px !important;
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-secondary) !important;
+  border-radius: var(--radius-sm) !important;
+  font-size: 13px !important;
+}
+
+[class*="pagination"] button:hover:not(:disabled) {
+  background: var(--bg-muted) !important;
+  color: var(--text) !important;
+}
+
+[class*="pagination"] button[aria-current="page"],
+[class*="pagination"] button.active {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #FFFFFF !important;
+}
+
+/* =====================================================
+   空状态
+   ===================================================== */
+
+[class*="empty"],
+[class*="Empty"],
+[class*="no-data"],
+[class*="noData"] {
+  color: var(--text-tertiary) !important;
+  text-align: center !important;
+  padding: var(--space-10) !important;
+}
+
+[class*="empty"] svg,
+[class*="Empty"] svg {
+  color: var(--gray-300) !important;
+}
+
+/* =====================================================
+   进度条
+   ===================================================== */
+
+[class*="progress"],
+[class*="Progress"] {
+  background: var(--bg-muted) !important;
+  border-radius: 9999px !important;
+  overflow: hidden !important;
+}
+
+[class*="progress"] > div,
+[class*="Progress"] > div,
+[class*="progress-bar"] {
+  background: var(--primary) !important;
+  border-radius: 9999px !important;
+  transition: width var(--dur) var(--ease) !important;
+}
+
+/* =====================================================
+   工具提示
+   ===================================================== */
+
+[role="tooltip"],
+[class*="tooltip"],
+[class*="Tooltip"] {
+  background: var(--gray-800) !important;
+  color: #FFFFFF !important;
+  font-size: 12px !important;
+  padding: 6px 10px !important;
+  border-radius: var(--radius-xs) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* =====================================================
+   滚动条（极细，融入背景）
+   ===================================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-400);
+}
+
+/* =====================================================
+   加载骨架
+   ===================================================== */
+
+[class*="skeleton"],
+[class*="Skeleton"] {
+  background: var(--bg-muted) !important;
+  border-radius: var(--radius-xs) !important;
+}
+
+/* =====================================================
+   动画：减少动效强度
+   ===================================================== */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 尊重 reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* =====================================================
+   响应式
+   ===================================================== */
+
+@media (max-width: 768px) {
+  [class*="card"],
+  [class*="Card"],
+  [class*="panel"] {
+    padding: var(--space-4) !important;
+  }
+
+  thead th,
+  tbody td {
+    padding: 10px 12px !important;
+  }
+}
+
+
+/* ============================================================
+   终局加固：品牌主按钮 .btn-cargo（深海航运 · 暖橙）
+   放在文件最末，与前面规则同优先级（未分层 + !important），
+   靠「后者胜」确保不被任何宽泛选择器（[class*="text"] 等）覆盖。
+   ============================================================ */
+.btn-cargo,
+.btn-cargo:visited,
+.btn-cargo:hover,
+.btn-cargo:focus,
+.btn-cargo:focus-visible,
+.btn-cargo:active {
+  background-color: var(--cargo-orange, #C2410C) !important;
+  background-image: linear-gradient(135deg, var(--cargo-orange, #C2410C), var(--primary-2, #EA580C)) !important;
+  color: var(--primary-foreground, #FFFFFF) !important;
+  border-color: transparent !important;
+  box-shadow: 0 1px 2px rgba(154, 52, 18, .22), 0 4px 14px -4px rgba(154, 52, 18, .38) !important;
+}
+.btn-cargo:hover { filter: brightness(1.07) !important; }
+.btn-cargo:active { transform: scale(.985) !important; }
+
+/* 登录页主按钮（应用未使用 form / type=submit，靠类名定位） */
+button.btn-cargo[disabled],
+.btn-cargo[disabled] {
+  background-image: linear-gradient(135deg, var(--cargo-orange, #C2410C), var(--primary-2, #EA580C)) !important;
+  opacity: .55 !important;
+}
+
+
+/* ============================================================
+   营销落地页豁免（/var/www/landing/index.html）
+   落地页是独立静态页，自带完整设计系统，不应被应用内的
+   主题修正层波及。以下显式恢复落地页自有的关键视觉。
+   ============================================================ */
+/* Hero 深色玻璃卡：提升不透明度，让层次与数字真正可见
+   （2026-09-27 修订：原 4.5%~5% 在深蓝底上近乎全透明，视觉等同"未渲染"） */
+.mock-card {
+  background: linear-gradient(160deg, rgba(30, 52, 92, .72), rgba(11, 27, 51, .82)) !important;
+  border: 1px solid rgba(120, 152, 205, .30) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 30px 70px -22px rgba(3, 10, 24, .9), inset 0 1px 0 rgba(255, 255, 255, .06) !important;
+  padding: 18px !important;
+}
+.kpi {
+  background: rgba(255, 255, 255, .085) !important;
+  border: 1px solid rgba(148, 178, 224, .26) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  padding: 12px 13px !important;
+}
+.kpi small { color: #9FB2CE !important; font-size: 11px !important; font-weight: 500 !important; opacity: 1 !important; }
+.kpi b { color: #FFFFFF !important; font-size: 18px !important; font-weight: 700 !important; opacity: 1 !important; text-shadow: 0 1px 3px rgba(0,0,0,.35) !important; }
+.kpi span { color: #4ADE80 !important; font-weight: 600 !important; opacity: 1 !important; }
+.kpi span.down { color: #F87171 !important; }
+
+.chart-box {
+  background: rgba(255, 255, 255, .06) !important;
+  border: 1px solid rgba(148, 178, 224, .20) !important;
+  border-radius: 10px !important;
+  padding: 12px !important;
+}
+.float-chip {
+  background: linear-gradient(140deg, rgba(22, 42, 78, .97), rgba(11, 27, 51, .97)) !important;
+  border: 1px solid rgba(96, 165, 250, .4) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 16px 40px -12px rgba(3, 10, 24, .9) !important;
+  padding: 10px 14px !important;
+}
+/* 落地页 CTA 按钮：橙色品牌主色（不继承应用蓝） */
+header.hero .btn-primary,
+.final .btn-primary,
+nav .btn-primary {
+  background: linear-gradient(135deg, #EA580C, #C2410C) !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  box-shadow: 0 1px 2px rgba(154, 52, 18, .3), 0 8px 22px -8px rgba(154, 52, 18, .55) !important;
+}
+header.hero .btn-primary:hover,
+.final .btn-primary:hover,
+nav .btn-primary:hover {
+  background: linear-gradient(135deg, #F97316, #EA580C) !important;
+  transform: translateY(-1px);
+}
+/* 落地页功能卡 / 定价卡：保持白底圆角 */
+.feat, .plan {
+  background: #FFFFFF !important;
+  border: 1px solid #E2E8F0 !important;
+  border-radius: 16px !important;
+}
+.plan.hot { border: 2px solid #EA580C !important; box-shadow: 0 24px 54px -22px rgba(234, 88, 12, .35) !important; }
+.hot-tag { background: linear-gradient(135deg, #EA580C, #C2410C) !important; color: #fff !important; }
+
+
+/* ============================================================
+   登录 / 注册页专业化（品牌层 v2 · 深海航运 2026-09-27）
+   ⚠️ 实测前提：
+     - 登录页 body 无 .auth-page 类（旧品牌层因此 100% 失效）
+     - 页面无 <form> 元素，主按钮无 type 属性
+     - 主按钮类名是 .btn-cargo
+   故全部按实际 DOM 定位，不用 body.auth-page / form / type=submit。
+   ============================================================ */
+
+/* ---------- 1) 深色品牌区（aside）航线装饰 ---------- */
+[class*="login"] aside,
+[class*="Login"] aside,
+[class*="auth"] aside,
+[class*="Auth"] aside {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(720px 380px at 78% -8%, rgba(234, 88, 12, .20), transparent 62%),
+    radial-gradient(640px 340px at 6% 108%, rgba(62, 126, 166, .22), transparent 60%),
+    linear-gradient(158deg, #061020 2%, #0B1B33 48%, #112544 100%) !important;
+}
+/* 航线网格 */
+[class*="login"] aside::before,
+[class*="Login"] aside::before,
+[class*="auth"] aside::before,
+[class*="Auth"] aside::before {
+  content: "";
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, .06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, .06) 1px, transparent 1px);
+  background-size: 46px 46px;
+  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 22%, #000 30%, transparent 80%);
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 22%, #000 30%, transparent 80%);
+}
+[class*="login"] aside > *,
+[class*="Login"] aside > *,
+[class*="auth"] aside > *,
+[class*="Auth"] aside > * { position: relative; z-index: 1; }
+
+/* ---------- 2) 表单卡片 ---------- */
+input[type="text"], input[type="email"], input[type="password"],
+input[type="tel"], input[type="number"], input[type="search"],
+input:not([type]) {
+  border-radius: 10px !important;
+  transition: border-color .16s ease, box-shadow .16s ease, background .16s ease !important;
+}
+
+/* ---------- 3) 聚焦态：品牌橙描边 + 橙色光晕 ---------- */
+input:focus, input:focus-visible, textarea:focus, textarea:focus-visible,
+select:focus, select:focus-visible {
+  border-color: #EA580C !important;
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, .16) !important;
+  outline: none !important;
+}
+
+/* ---------- 4) 主按钮 hover / active（.btn-cargo） ---------- */
+.btn-cargo:hover {
+  filter: brightness(1.07) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 4px rgba(154, 52, 18, .28),
+              0 10px 26px -8px rgba(154, 52, 18, .55) !important;
+}
+.btn-cargo:active { transform: translateY(0) scale(.985) !important; }
+.btn-cargo:focus-visible {
+  outline: 2px solid #EA580C !important;
+  outline-offset: 2px !important;
+}
+
+/* ---------- 5) 链接类（忘记密码 / 立即注册）→ 品牌橙 ---------- */
+/* ⚠️ 必须排除 .btn-cargo：按钮上的 text-primary-foreground 是"文字颜色"工具类，
+      不是"文字链接"语义，命中会导致橙底橙字不可读（2026-09-27 修复） */
+a[class*="text-primary"]:not(.btn-cargo),
+button[class*="text-primary"]:not(.btn-cargo),
+a[class*="text-harbor"]:not(.btn-cargo),
+button[class*="text-harbor"]:not(.btn-cargo) {
+  color: #C2410C !important;
+  font-weight: 600 !important;
+}
+a[class*="text-primary"]:not(.btn-cargo):hover,
+button[class*="text-primary"]:not(.btn-cargo):hover,
+a[class*="text-harbor"]:not(.btn-cargo):hover { color: #EA580C !important; }
+
+/* ---------- 6) 全站焦点环 / 选中色 → 品牌橙 ---------- */
+* { --tw-ring-color: rgba(234, 88, 12, .35); }
+:focus-visible { outline: 2px solid rgba(234, 88, 12, .55); outline-offset: 2px; }
+::selection { background: rgba(234, 88, 12, .22); }
+
+/* ---------- 7) 滚动条 ---------- */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #CBD4E1; border-radius: 6px;
+  border: 2px solid transparent; background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background-color: #A6B4C6; }
+
+/* ---------- 8) 响应式：小屏收紧 ---------- */
+@media (max-width: 620px) {
+  input[type="text"], input[type="email"], input[type="password"],
+  input[type="tel"], input[type="number"], input:not([type]) {
+    font-size: 16px !important; /* 防 iOS 自动缩放 */
+  }
+  .btn-lg { padding: 13px 22px !important; font-size: 15px !important; }
+}
+
+/* ---------- 9) 减少动效偏好 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
+/* ============================================================
+   终局重申：.btn-cargo 文字恒为白色
+   ⚠️ 2026-09-27 修复：前面的 a[class*="text-primary"] 链接规则
+      会命中按钮上的 text-primary-foreground 工具类，把白字染成橙色
+      → 橙底橙字不可读。此处放在文件最末，靠「后者胜」兜底。
+   ============================================================ */
+.btn-cargo,
+.btn-cargo:visited,
+.btn-cargo:hover,
+.btn-cargo:focus,
+.btn-cargo:focus-visible,
+.btn-cargo:active {
+  color: #FFFFFF !important;
+  background-color: var(--cargo-orange, #C2410C) !important;
+  background-image: linear-gradient(135deg, var(--cargo-orange, #C2410C), var(--primary-2, #EA580C)) !important;
+  border-color: transparent !important;
+}
+
+
+/* ============================================================
+   登录页 Tab 切换（密码登录 / 验证码登录）
+   未激活态原为浅灰底 + 深灰字，对比度偏低且与激活态区分度不够。
+   规范：激活 = 白底 + 深蓝字 + 轻阴影；未激活 = 透明底 + 中灰字。
+   ============================================================ */
+[class*="TabsTrigger"],
+[class*="tab"][role="tab"],
+button[role="tab"] {
+  transition: background .18s ease, color .18s ease, box-shadow .18s ease !important;
+}
+/* 未激活 */
+[class*="TabsTrigger"][data-state="inactive"],
+button[role="tab"][data-state="inactive"],
+button[role="tab"][aria-selected="false"] {
+  background: transparent !important;
+  color: #64748B !important;
+  box-shadow: none !important;
+}
+[class*="TabsTrigger"][data-state="inactive"]:hover,
+button[role="tab"][data-state="inactive"]:hover,
+button[role="tab"][aria-selected="false"]:hover {
+  color: #0F172A !important;
+  background: rgba(148, 163, 184, .10) !important;
+}
+/* 激活 */
+[class*="TabsTrigger"][data-state="active"],
+button[role="tab"][data-state="active"],
+button[role="tab"][aria-selected="true"] {
+  background: #FFFFFF !important;
+  color: #0F172A !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .12), 0 1px 2px rgba(15, 23, 42, .06) !important;
+}
+
+
+/* ============================================================
+   图表调色板归位到品牌色（2026-09-27）
+   应用原生 --chart-1 是蓝色 oklch(55% .13 262)，
+   导致仪表盘环形图、销售走势图主色显蓝，与品牌脱节。
+   现按「深海航运」规范重排：暖橙打头，与侧边栏/按钮/统计卡一致。
+   ============================================================ */
+:root, .dark, [data-theme] {
+  --chart-1: oklch(58% .165 42);   /* 品牌暖橙（图表主色） */
+  --chart-2: oklch(50% .085 230);  /* 海港青 */
+  --chart-3: oklch(25% .045 258);  /* 深海蓝 */
+  --chart-4: oklch(70% .14 75);    /* 琥珀（警告） */
+  --chart-5: oklch(72% .13 55);    /* 浅橙 */
+}
+
+
+/* ============================================================
+   登录页左栏 eyebrow 对比度修复（WCAG AA，2026-09-27）
+   实测 'GLOBAL ROUTES · 全球航线' 使用 text-white/45，11px，
+   在深海底 rgb(20,34,55) 上对比度仅 4.34:1 < AA 要求 4.5:1。
+   白 45% 提至 72%（≈7.1:1）。该工具类只在深色表面使用，
+   故可无条件提亮，不会误伤浅底文案。
+   ============================================================ */
+.manifest-eyebrow.\!text-white\/45,
+.text-white\/45 {
+  color: rgba(255, 255, 255, .72) !important;
+}

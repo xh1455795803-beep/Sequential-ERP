@@ -1,0 +1,903 @@
+/* =====================================================
+   Thalvior ERP · 美式简约主题
+   设计语言：中性灰阶 · 单一蓝色点缀 · 大面积留白 · 细边框弱阴影
+   设计原则：少即是多 · 功能优先 · 克制即专业
+   ===================================================== */
+
+:root {
+  /* —— 中性灰阶（美式设计的骨架）—— */
+  --gray-50:  #F9FAFB;
+  --gray-100: #F3F4F6;
+  --gray-200: #E5E7EB;
+  --gray-300: #D1D5DB;
+  --gray-400: #9CA3AF;
+  --gray-500: #6B7280;
+  --gray-600: #4B5563;
+  --gray-700: #374151;
+  --gray-800: #1F2937;
+  --gray-900: #111827;
+
+  /* —— 唯一强调色：克制的蓝（仅用于主操作/链接/选中态）—— */
+  --blue-50:  #EFF6FF;
+  --blue-100: #DBEAFE;
+  --blue-500: #3B82F6;
+  --blue-600: #2563EB;   /* 主色 */
+  --blue-700: #1D4ED8;
+
+  /* —— 语义色（低饱和，融入灰阶）—— */
+  --success: #16A34A;
+  --success-bg: #F0FDF4;
+  --warning: #D97706;
+  --warning-bg: #FFFBEB;
+  --danger: #DC2626;
+  --danger-bg: #FEF2F2;
+  --info: #2563EB;
+  --info-bg: #EFF6FF;
+
+  /* —— 基础语义变量 —— */
+  --bg: #FFFFFF;
+  --bg-subtle: #F9FAFB;
+  --bg-muted: #F3F4F6;
+  --border: #E5E7EB;
+  --border-strong: #D1D5DB;
+  --text: #111827;
+  --text-secondary: #6B7280;
+  --text-tertiary: #9CA3AF;
+  --primary: #2563EB;
+  --primary-hover: #1D4ED8;
+  --primary-bg: #EFF6FF;
+
+  /* —— 间距（更宽松）—— */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* —— 圆角（偏小，偏硬朗）—— */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 12px;
+
+  /* —— 阴影（极弱，仅用于悬浮态）—— */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+
+  /* —— 动效（短促克制）—— */
+  --dur-fast: 120ms;
+  --dur: 180ms;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* —— 字体 —— */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* =====================================================
+   基础重置与全局
+   ===================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  background: var(--bg-subtle) !important;
+  color: var(--text) !important;
+  font-family: var(--font-sans) !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* 去除所有渐变背景 */
+* {
+  background-image: none !important;
+}
+
+/* =====================================================
+   覆盖应用内置深色/彩色类（Tailwind 工具类）
+   ===================================================== */
+
+/* 深色背景 → 纯白 */
+/* ===== 深色区块（bg-ink / bg-dark）：保持深底 + 白字 =====
+   ⚠️ 修复记录：原规则把「所有」.text-white 强制改深色，
+   但 .bg-ink 的深底并未被覆盖（Tailwind 底色仍然生效），
+   造成「深底 + 深字」——首页底部 CTA 标题几乎不可见。
+   现规则：深色容器内的白字保持白色；仅浅底上的 .text-white 降级为正文色。 */
+.bg-ink,
+.bg-ink\/.*,
+.bg-dark,
+.bg-surface-dark {
+  color: #FFFFFF !important;
+}
+.text-white {
+  color: var(--text) !important;
+}
+.bg-ink .text-white,
+.bg-ink.text-white,
+.bg-dark .text-white,
+.bg-dark.text-white,
+.bg-surface-dark .text-white {
+  color: #FFFFFF !important;
+}
+.bg-ink .text-white\/80,
+.bg-ink .text-white\/60,
+.bg-ink .text-white\/40 {
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
+/* 噪声纹理 → 仅移除纹理本身，绝不动元素透明度
+   ⚠️ 修复记录：原写法对 .noise 元素本体设 opacity:0，
+   而登录页左侧品牌区 <aside class="noise ..."> 同样带该类，
+   导致整个品牌区被隐形、登录卡片右偏。现改为只清伪元素。 */
+.noise::before,
+.noise::after {
+  background: none !important;
+  background-image: none !important;
+  content: none !important;
+}
+.noise {
+  background-image: none !important;
+  background-repeat: no-repeat !important;
+}
+
+/* 彩色光晕装饰 → 移除 */
+.bg-primary\/30,
+.bg-harbor\/25,
+.bg-cargo-orange\/.*,
+.bg-cargo-teal\/.*,
+.bg-cargo-gold\/.*,
+[class*="blur-3xl"],
+[class*="blur-2xl"] {
+  display: none !important;
+}
+
+/* 彩色顶边条 → 统一为浅灰或移除 */
+.bg-cargo-orange,
+.bg-cargo-teal,
+.bg-cargo-gold,
+.bg-cargo-blue,
+.bg-cargo-navy,
+.bg-cargo-sand,
+[class*="bg-cargo"] {
+  background: var(--border) !important;
+  background-color: var(--border) !important;
+}
+
+/* 深色阴影 → 弱化 */
+.shadow-ink,
+.shadow-dark,
+.shadow-lg {
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* 渐变条 → 移除 */
+.bg-gradient-to-b,
+.bg-gradient-to-r,
+.bg-gradient-to-t,
+.bg-gradient-to-l,
+[class*="from-white"] {
+  background: none !important;
+  background-image: none !important;
+}
+
+/* 主色按钮确认 */
+.bg-primary {
+  background: var(--primary) !important;
+  background-color: var(--primary) !important;
+  color: #FFFFFF !important;
+}
+.bg-primary .text-white {
+  color: #FFFFFF !important;
+}
+
+/* 卡片背景统一 */
+.bg-card,
+.bg-surface {
+  background: var(--bg) !important;
+  background-color: var(--bg) !important;
+}
+
+/* 彩色文字 → 统一为深色（数字/标题），仅保留蓝色链接 */
+.text-cargo-orange,
+.text-cargo-teal,
+.text-cargo-gold,
+.text-cargo-blue,
+.text-cargo-navy,
+.text-cargo-sand,
+[class*="text-cargo"] {
+  color: var(--text) !important;
+}
+
+/* 彩色图标背景 → 浅灰 */
+.bg-cargo-orange\/10,
+.bg-cargo-teal\/10,
+.bg-cargo-gold\/10,
+.bg-cargo-blue\/10,
+.bg-cargo-navy\/10,
+.bg-cargo-sand\/10,
+[class*="bg-cargo"][class*="\/10"],
+[class*="bg-cargo"][class*="\/15"],
+[class*="bg-cargo"][class*="\/20"] {
+  background: var(--bg-muted) !important;
+  background-color: var(--bg-muted) !important;
+}
+
+/* 彩色图标颜色 → 灰 */
+[class*="text-cargo"] svg,
+.bg-cargo-orange\/10 svg,
+.bg-cargo-teal\/10 svg,
+.bg-cargo-gold\/10 svg {
+  color: var(--text-secondary) !important;
+}
+
+/* =====================================================
+   侧边栏（美式：纯白 + 细边框，无深色）
+   ===================================================== */
+
+aside,
+[class*="sidebar"],
+[class*="Sidebar"],
+nav[class*="side"] {
+  background: var(--bg) !important;
+  border-right: 1px solid var(--border) !important;
+  color: var(--text-secondary) !important;
+}
+
+/* 侧边栏导航项 */
+aside a,
+aside [role="menuitem"],
+[class*="sidebar"] a,
+[class*="nav-item"],
+[class*="NavItem"] {
+  color: var(--text-secondary) !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 8px 12px !important;
+  margin: 2px 8px !important;
+  transition: all var(--dur-fast) var(--ease) !important;
+  font-weight: 500 !important;
+}
+
+aside a:hover,
+aside [role="menuitem"]:hover,
+[class*="sidebar"] a:hover,
+[class*="nav-item"]:hover {
+  background: var(--bg-muted) !important;
+  color: var(--text) !important;
+}
+
+/* 激活态：仅左侧蓝条 + 浅蓝底，无深色块 */
+aside a.active,
+aside [role="menuitem"][aria-current="page"],
+aside a[aria-current="page"],
+[class*="sidebar"] a.active,
+[class*="nav-item"][data-active="true"],
+[class*="nav-item"].active {
+  background: var(--primary-bg) !important;
+  color: var(--primary) !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+
+/* 侧边栏 Logo 区 */
+[class*="logo"],
+[class*="brand"],
+aside [class*="header"] {
+  background: transparent !important;
+  color: var(--text) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+/* =====================================================
+   顶部导航栏
+   ===================================================== */
+
+header,
+[class*="header"],
+[class*="topbar"],
+[class*="TopBar"],
+[class*="navbar"] {
+  background: var(--bg) !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
+
+/* =====================================================
+   卡片（美式：白底 + 1px 边框，无渐变无厚阴影）
+   ===================================================== */
+
+[class*="card"],
+[class*="Card"],
+[class*="panel"],
+[class*="Panel"],
+[class*="widget"],
+[role="region"] {
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: var(--space-5) !important;
+  transition: box-shadow var(--dur) var(--ease), border-color var(--dur) var(--ease) !important;
+}
+
+[class*="card"]:hover,
+[class*="Card"]:hover,
+[class*="panel"]:hover,
+[class*="Panel"]:hover {
+  box-shadow: var(--shadow-md) !important;
+  border-color: var(--border-strong) !important;
+}
+
+/* 统计卡片 */
+[class*="stat"],
+[class*="Stat"],
+[class*="metric"],
+[class*="kpi"] {
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: var(--space-5) !important;
+}
+
+/* 移除统计卡片顶部彩色条 */
+[class*="stat"]::before,
+[class*="Stat"]::before,
+[class*="metric"]::before {
+  display: none !important;
+}
+
+/* 统计数值 */
+[class*="stat"] [class*="value"],
+[class*="Stat"] [class*="value"],
+[class*="metric"] [class*="value"],
+[class*="stat"] > div:last-child {
+  color: var(--text) !important;
+  font-size: 28px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* 统计标签 */
+[class*="stat"] [class*="label"],
+[class*="Stat"] [class*="label"],
+[class*="metric"] [class*="label"],
+[class*="stat"] > div:first-child {
+  color: var(--text-secondary) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+
+/* 统计卡片图标：去除彩色背景 */
+[class*="stat"] [class*="icon"],
+[class*="Stat"] [class*="icon"],
+[class*="metric"] [class*="icon"],
+[class*="stat"] svg {
+  color: var(--text-tertiary) !important;
+  background: transparent !important;
+}
+
+/* =====================================================
+   Hero / 欢迎区（美式：纯白无渐变）
+   ===================================================== */
+
+[class*="hero"],
+[class*="Hero"],
+[class*="welcome"],
+[class*="banner"] {
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow-sm) !important;
+  padding: var(--space-8) !important;
+  color: var(--text) !important;
+}
+
+[class*="hero"] h1,
+[class*="Hero"] h1,
+[class*="welcome"] h1,
+[class*="hero"] h2,
+[class*="Hero"] h2 {
+  color: var(--text) !important;
+  font-size: 24px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+}
+
+[class*="hero"] p,
+[class*="Hero"] p,
+[class*="welcome"] p {
+  color: var(--text-secondary) !important;
+  font-size: 14px !important;
+}
+
+/* =====================================================
+   按钮（美式：扁平为主，主按钮实心蓝）
+   ===================================================== */
+
+button,
+[role="button"],
+[class*="btn"],
+[class*="Btn"] {
+  font-family: var(--font-sans) !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  border-radius: var(--radius-sm) !important;
+  transition: all var(--dur-fast) var(--ease) !important;
+  cursor: pointer !important;
+  border: 1px solid transparent !important;
+}
+
+/* 主按钮：实心蓝 */
+button[class*="primary"],
+[class*="btn-primary"],
+[class*="BtnPrimary"],
+button[type="submit"] {
+  background: var(--primary) !important;
+  color: #FFFFFF !important;
+  border-color: var(--primary) !important;
+  box-shadow: none !important;
+}
+
+button[class*="primary"]:hover,
+[class*="btn-primary"]:hover,
+[class*="BtnPrimary"]:hover,
+button[type="submit"]:hover {
+  background: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+}
+
+/* 次按钮：白底灰边框 */
+button[class*="secondary"],
+[class*="btn-secondary"],
+[class*="BtnSecondary"],
+button[class*="outline"] {
+  background: var(--bg) !important;
+  color: var(--text) !important;
+  border-color: var(--border-strong) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+button[class*="secondary"]:hover,
+[class*="btn-secondary"]:hover,
+button[class*="outline"]:hover {
+  background: var(--bg-muted) !important;
+  border-color: var(--gray-400) !important;
+}
+
+/* 幽灵/文字按钮 */
+button[class*="ghost"],
+[class*="btn-ghost"],
+[class*="BtnGhost"],
+button[class*="text"] {
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+button[class*="ghost"]:hover,
+[class*="btn-ghost"]:hover,
+button[class*="text"]:hover {
+  background: var(--bg-muted) !important;
+  color: var(--text) !important;
+}
+
+/* 禁用态 */
+button:disabled,
+[role="button"][aria-disabled="true"] {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+/* =====================================================
+   输入框（美式：细边框，聚焦蓝边）
+   ===================================================== */
+
+input,
+textarea,
+select {
+  font-family: var(--font-sans) !important;
+  font-size: 14px !important;
+  color: var(--text) !important;
+  background: var(--bg) !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 8px 12px !important;
+  transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease) !important;
+  box-shadow: none !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-tertiary) !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px var(--blue-100) !important;
+}
+
+input:disabled,
+textarea:disabled,
+select:disabled {
+  background: var(--bg-muted) !important;
+  color: var(--text-tertiary) !important;
+  cursor: not-allowed !important;
+}
+
+/* =====================================================
+   表格（美式：细横线，无斑马纹或极淡）
+   ===================================================== */
+
+table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  background: var(--bg) !important;
+}
+
+thead th {
+  background: var(--bg-subtle) !important;
+  color: var(--text-secondary) !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  text-align: left !important;
+  padding: 12px 16px !important;
+  border-bottom: 1px solid var(--border) !important;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+tbody td {
+  padding: 14px 16px !important;
+  border-bottom: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  font-size: 14px !important;
+  vertical-align: middle !important;
+}
+
+tbody tr {
+  transition: background var(--dur-fast) var(--ease) !important;
+}
+
+tbody tr:hover {
+  background: var(--bg-subtle) !important;
+}
+
+tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+/* 选中行：极淡蓝底 */
+tr.selected-row {
+  background: var(--primary-bg) !important;
+}
+tr.selected-row td {
+  color: var(--text) !important;
+  font-weight: 500 !important;
+}
+
+/* =====================================================
+   标签 / Badge
+   ===================================================== */
+
+[class*="badge"],
+[class*="Badge"],
+[class*="tag"],
+[class*="Tag"],
+[class*="chip"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 2px 8px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  border-radius: 9999px !important;
+  border: 1px solid transparent !important;
+  line-height: 1.5 !important;
+}
+
+/* 状态颜色：低饱和 */
+[class*="badge"][class*="success"],
+[class*="badge"][class*="done"],
+[class*="badge"][class*="completed"],
+[class*="status-success"] {
+  background: var(--success-bg) !important;
+  color: var(--success) !important;
+  border-color: #BBF7D0 !important;
+}
+
+[class*="badge"][class*="warning"],
+[class*="badge"][class*="pending"],
+[class*="status-warning"] {
+  background: var(--warning-bg) !important;
+  color: var(--warning) !important;
+  border-color: #FDE68A !important;
+}
+
+[class*="badge"][class*="danger"],
+[class*="badge"][class*="error"],
+[class*="badge"][class*="failed"],
+[class*="status-danger"] {
+  background: var(--danger-bg) !important;
+  color: var(--danger) !important;
+  border-color: #FECACA !important;
+}
+
+[class*="badge"][class*="info"],
+[class*="badge"][class*="processing"],
+[class*="status-info"] {
+  background: var(--info-bg) !important;
+  color: var(--info) !important;
+  border-color: #BFDBFE !important;
+}
+
+[class*="badge"]:not([class*="success"]):not([class*="warning"]):not([class*="danger"]):not([class*="info"]):not([class*="pending"]):not([class*="done"]):not([class*="error"]):not([class*="failed"]):not([class*="completed"]):not([class*="processing"]) {
+  background: var(--bg-muted) !important;
+  color: var(--text-secondary) !important;
+  border-color: var(--border) !important;
+}
+
+/* =====================================================
+   标签页 / Tabs
+   ===================================================== */
+
+[role="tab"],
+[class*="tab"],
+[class*="Tab"] {
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+  padding: 8px 16px !important;
+  border-bottom: 2px solid transparent !important;
+  transition: all var(--dur-fast) var(--ease) !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+}
+
+[role="tab"]:hover,
+[class*="tab"]:hover {
+  color: var(--text) !important;
+  background: transparent !important;
+}
+
+[role="tab"][aria-selected="true"],
+[role="tab"][data-state="active"],
+[class*="tab"].active,
+[class*="tab"][data-active="true"] {
+  color: var(--primary) !important;
+  border-bottom-color: var(--primary) !important;
+  background: transparent !important;
+}
+
+/* =====================================================
+   链接
+   ===================================================== */
+
+a {
+  color: var(--primary) !important;
+  text-decoration: none !important;
+  transition: color var(--dur-fast) var(--ease) !important;
+}
+
+a:hover {
+  color: var(--primary-hover) !important;
+  text-decoration: underline !important;
+}
+
+/* =====================================================
+   图表容器
+   ===================================================== */
+
+[class*="chart"],
+[class*="Chart"],
+[class*="recharts"],
+svg[class*="chart"] {
+  background: transparent !important;
+}
+
+/* =====================================================
+   弹窗 / Modal
+   ===================================================== */
+
+[role="dialog"],
+[class*="modal"],
+[class*="Modal"],
+[class*="dialog"] {
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+[role="dialog"] [class*="header"],
+[class*="modal"] [class*="header"] {
+  border-bottom: 1px solid var(--border) !important;
+  padding: var(--space-5) !important;
+}
+
+[role="dialog"] [class*="footer"],
+[class*="modal"] [class*="footer"] {
+  border-top: 1px solid var(--border) !important;
+  padding: var(--space-4) var(--space-5) !important;
+}
+
+/* 遮罩层 */
+[class*="overlay"],
+[class*="backdrop"],
+[class*="modal-backdrop"] {
+  background: rgba(17, 24, 39, 0.4) !important;
+  backdrop-filter: blur(2px) !important;
+}
+
+/* =====================================================
+   分页
+   ===================================================== */
+
+[class*="pagination"],
+[class*="Pagination"],
+nav[aria-label*="pagination"] {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--space-1) !important;
+}
+
+[class*="pagination"] button,
+[class*="Pagination"] button {
+  min-width: 32px !important;
+  height: 32px !important;
+  padding: 0 8px !important;
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text-secondary) !important;
+  border-radius: var(--radius-sm) !important;
+  font-size: 13px !important;
+}
+
+[class*="pagination"] button:hover:not(:disabled) {
+  background: var(--bg-muted) !important;
+  color: var(--text) !important;
+}
+
+[class*="pagination"] button[aria-current="page"],
+[class*="pagination"] button.active {
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #FFFFFF !important;
+}
+
+/* =====================================================
+   空状态
+   ===================================================== */
+
+[class*="empty"],
+[class*="Empty"],
+[class*="no-data"],
+[class*="noData"] {
+  color: var(--text-tertiary) !important;
+  text-align: center !important;
+  padding: var(--space-10) !important;
+}
+
+[class*="empty"] svg,
+[class*="Empty"] svg {
+  color: var(--gray-300) !important;
+}
+
+/* =====================================================
+   进度条
+   ===================================================== */
+
+[class*="progress"],
+[class*="Progress"] {
+  background: var(--bg-muted) !important;
+  border-radius: 9999px !important;
+  overflow: hidden !important;
+}
+
+[class*="progress"] > div,
+[class*="Progress"] > div,
+[class*="progress-bar"] {
+  background: var(--primary) !important;
+  border-radius: 9999px !important;
+  transition: width var(--dur) var(--ease) !important;
+}
+
+/* =====================================================
+   工具提示
+   ===================================================== */
+
+[role="tooltip"],
+[class*="tooltip"],
+[class*="Tooltip"] {
+  background: var(--gray-800) !important;
+  color: #FFFFFF !important;
+  font-size: 12px !important;
+  padding: 6px 10px !important;
+  border-radius: var(--radius-xs) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* =====================================================
+   滚动条（极细，融入背景）
+   ===================================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gray-300);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gray-400);
+}
+
+/* =====================================================
+   加载骨架
+   ===================================================== */
+
+[class*="skeleton"],
+[class*="Skeleton"] {
+  background: var(--bg-muted) !important;
+  border-radius: var(--radius-xs) !important;
+}
+
+/* =====================================================
+   动画：减少动效强度
+   ===================================================== */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 尊重 reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* =====================================================
+   响应式
+   ===================================================== */
+
+@media (max-width: 768px) {
+  [class*="card"],
+  [class*="Card"],
+  [class*="panel"] {
+    padding: var(--space-4) !important;
+  }
+
+  thead th,
+  tbody td {
+    padding: 10px 12px !important;
+  }
+}

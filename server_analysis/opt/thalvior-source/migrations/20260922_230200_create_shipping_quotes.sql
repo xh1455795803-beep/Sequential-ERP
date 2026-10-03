@@ -1,0 +1,27 @@
+-- 运费试算渠道表：记录各物流渠道的报价信息
+CREATE TABLE IF NOT EXISTS public.shipping_quotes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID,
+  carrier TEXT NOT NULL DEFAULT '',
+  channel TEXT NOT NULL DEFAULT '',
+  price NUMERIC NOT NULL DEFAULT 0,
+  currency TEXT NOT NULL DEFAULT 'USD',
+  days TEXT NOT NULL DEFAULT '',
+  features TEXT NOT NULL DEFAULT '',
+  recommended BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.shipping_quotes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY users_select_own_shipping_quotes ON public.shipping_quotes
+  FOR SELECT USING (user_id = auth.uid());
+
+CREATE POLICY users_insert_own_shipping_quotes ON public.shipping_quotes
+  FOR INSERT WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY users_update_own_shipping_quotes ON public.shipping_quotes
+  FOR UPDATE USING (user_id = auth.uid());
+
+CREATE POLICY users_delete_own_shipping_quotes ON public.shipping_quotes
+  FOR DELETE USING (user_id = auth.uid());

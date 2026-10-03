@@ -1,0 +1,56 @@
+-- ============================================
+-- 开发者后台权限加固：管理员角色隔离
+-- ============================================
+
+-- 1. profiles 表新增 role 字段（默认 tenant，管理员为 admin）
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'tenant';
+
+-- 2. 创建 has_role 权限函数（SECURITY DEFINER，避免 RLS 无限递归）
+CREATE OR REPLACE FUNCTION public.has_role(_user_id UUID, _role TEXT)
+RETURNS BOOLEAN LANGUAGE SQL STABLE SECURITY DEFINER SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles WHERE id = _user_id AND role = _role
+  );
+$$;
+
+-- 3. 收紧开发者后台四张表的 RLS：仅管理员可读写
+-- 公告：所有登录用户可读，仅管理员可写
+DROP POLICY IF EXISTS users_select_announcements ON public.announcements;
+DROP POLICY IF EXISTS users_insert_announcements ON public.announcements;
+DROP POLICY IF EXISTS users_update_announcements ON public.announcements;
+DROP POLICY IF EXISTS users_delete_announcements ON public.announcements;
+
+CREATE POLICY users_select_announcements ON public.announcements FOR SELECT USING (true);
+CREATE POLICY admins_insert_announcements ON public.announcements FOR INSERT WITH CHECK (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_update_announcements ON public.announcements FOR UPDATE USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_delete_announcements ON public.announcements FOR DELETE USING (public.has_role(auth.uid(), 'admin'));
+
+-- 操作日志：仅管理员可读写
+DROP POLICY IF EXISTS users_select_operation_logs ON public.operation_logs;
+DROP POLICY IF EXISTS users_insert_operation_logs ON public.operation_logs;
+
+CREATE POLICY admins_select_operation_logs ON public.operation_logs FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_insert_operation_logs ON public.operation_logs FOR INSERT WITH CHECK (public.has_role(auth.uid(), 'admin'));
+
+-- 平台配置：仅管理员可读写
+DROP POLICY IF EXISTS users_select_platform_configs ON public.platform_configs;
+DROP POLICY IF EXISTS users_insert_platform_configs ON public.platform_configs;
+DROP POLICY IF EXISTS users_update_platform_configs ON public.platform_configs;
+DROP POLICY IF EXISTS users_delete_platform_configs ON public.platform_configs;
+
+CREATE POLICY admins_select_platform_configs ON public.platform_configs FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_insert_platform_configs ON public.platform_configs FOR INSERT WITH CHECK (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_update_platform_configs ON public.platform_configs FOR UPDATE USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_delete_platform_configs ON public.platform_configs FOR DELETE USING (public.has_role(auth.uid(), 'admin'));
+
+-- 增值服务定价：仅管理员可读写
+DROP POLICY IF EXISTS users_select_service_pricing ON public.service_pricing;
+DROP POLICY IF EXISTS users_insert_service_pricing ON public.service_pricing;
+DROP POLICY IF EXISTS users_update_service_pricing ON public.service_pricing;
+DROP POLICY IF EXISTS users_delete_service_pricing ON public.service_pricing;
+
+CREATE POLICY admins_select_service_pricing ON public.service_pricing FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_insert_service_pricing ON public.service_pricing FOR INSERT WITH CHECK (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_update_service_pricing ON public.service_pricing FOR UPDATE USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY admins_delete_service_pricing ON public.service_pricing FOR DELETE USING (public.has_role(auth.uid(), 'admin'));

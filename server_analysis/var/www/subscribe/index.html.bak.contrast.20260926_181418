@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>订阅套餐 · AI 积分中心 | Thalvior 跨境 ERP</title>
+<style>
+  :root{
+    --bg:#f2f8ff; --surface:#ffffff; --border:#e2ecf8;
+    --text:#16233a; --text-2:#5b6b85; --text-3:#8d9ab1;
+    --brand:#2563eb; --cyan:#0891b2; --indigo:#4f46e5; --violet:#7c3aed; --rose:#db2777;
+    --green:#059669; --amber:#d97706; --danger:#dc2626;
+    --radius:16px;
+    --shadow:0 1px 2px rgba(16,40,80,.04),0 8px 28px rgba(16,40,80,.07);
+    --shadow-lg:0 12px 44px rgba(16,40,80,.14);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+  /* ===== 顶部导航 ===== */
+  header{background:rgba(255,255,255,.82);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:62px}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:17px;letter-spacing:-.2px}
+  .logo-mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--brand),var(--indigo) 55%,var(--violet));display:grid;place-items:center;color:#fff;font-size:14px;font-weight:800;box-shadow:0 4px 12px rgba(37,99,235,.32)}
+  .nav-right{display:flex;align-items:center;gap:12px;font-size:13.5px}
+  .credit-chip{
+    display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,#eef4ff,#f3ecff);
+    border:1px solid #d7e3fb;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:600;color:var(--indigo)
+  }
+  .credit-chip b{font-size:15px;color:var(--brand)}
+  .btn-ghost{border:1px solid var(--border);background:#fff;border-radius:9px;padding:7px 14px;font-size:13px;cursor:pointer;color:var(--text-2);transition:.18s}
+  .btn-ghost:hover{border-color:var(--brand);color:var(--brand)}
+
+  /* ===== Hero ===== */
+  .hero{padding:52px 0 30px;text-align:center;position:relative;overflow:hidden}
+  .hero:before{content:"";position:absolute;inset:-40% -10% auto;height:420px;background:radial-gradient(ellipse at 50% 0%,rgba(37,99,235,.13),transparent 62%),radial-gradient(ellipse at 78% 12%,rgba(124,58,237,.10),transparent 55%);pointer-events:none}
+  .hero h1{font-size:36px;font-weight:800;letter-spacing:-.7px;margin-bottom:12px;position:relative}
+  .hero h1 em{font-style:normal;background:linear-gradient(135deg,var(--brand),var(--indigo),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{color:var(--text-2);font-size:15.5px;max-width:660px;margin:0 auto}
+  .hero-note{margin-top:16px;display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:999px;padding:7px 16px;font-size:13px;color:var(--text-2);box-shadow:var(--shadow)}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+
+  /* ===== 区块 ===== */
+  section{padding:34px 0}
+  .sec-head{margin-bottom:22px}
+  .sec-tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--brand);background:#e8f1ff;border-radius:6px;padding:4px 10px;margin-bottom:9px}
+  .sec-head h2{font-size:25px;font-weight:800;letter-spacing:-.4px}
+  .sec-head p{color:var(--text-2);font-size:14.5px;margin-top:5px}
+
+  /* ===== 周期切换 ===== */
+  .switch{display:inline-flex;background:#fff;border:1px solid var(--border);border-radius:11px;padding:4px;gap:3px;box-shadow:var(--shadow);margin-top:14px}
+  .switch button{border:0;background:transparent;padding:8px 20px;border-radius:8px;font-size:13.5px;font-weight:600;cursor:pointer;color:var(--text-2);transition:.18s}
+  .switch button.on{background:var(--brand);color:#fff;box-shadow:0 3px 10px rgba(37,99,235,.3)}
+  .save-badge{font-size:11px;background:#ecfdf5;color:var(--green);border-radius:5px;padding:1px 6px;margin-left:5px;font-weight:700}
+
+  /* ===== 卡片 ===== */
+  .grid{display:grid;gap:18px}
+  .g-3{grid-template-columns:repeat(3,1fr)}
+  .g-4{grid-template-columns:repeat(4,1fr)}
+  /* 套餐卡：4 档按可用宽度自适应列数，避免出现「3+1」断裂排列 */
+  .g-plans{grid-template-columns:repeat(auto-fit,minmax(258px,1fr));padding-top:14px}
+  .card{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:26px 24px;
+    box-shadow:var(--shadow);position:relative;display:flex;flex-direction:column;transition:.22s
+  }
+  .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:#c9dcf8}
+  .card.hot{border:2px solid var(--brand);box-shadow:0 10px 36px rgba(37,99,235,.16)}
+  .ribbon{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--brand),var(--indigo));color:#fff;font-size:11.5px;font-weight:700;padding:4px 14px;border-radius:999px;white-space:nowrap;box-shadow:0 4px 12px rgba(37,99,235,.35);z-index:3;line-height:1.5}
+  .card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .plan-name{font-size:17px;font-weight:800}
+  .pill{font-size:11.5px;font-weight:700;border-radius:6px;padding:3px 9px}
+  .pill.b{background:#eef4ff;color:var(--brand)}
+  .pill.v{background:#f5edff;color:var(--violet)}
+  .pill.m{background:#fff1f7;color:var(--rose)}
+  .pill.f{background:#ecfdf5;color:var(--green)}
+  .price{display:flex;align-items:baseline;gap:4px;margin-bottom:3px}
+  .price .cur{font-size:19px;font-weight:700;color:var(--text)}
+  .price .num{font-size:40px;font-weight:800;letter-spacing:-1.4px;line-height:1.1}
+  .price .per{font-size:13.5px;color:var(--text-3)}
+  .price-sub{font-size:12.5px;color:var(--text-3);margin-bottom:16px;min-height:19px}
+  .quota-box{background:linear-gradient(135deg,#f4f8ff,#f7f4ff);border:1px solid #e1e9fb;border-radius:11px;padding:11px 13px;margin-bottom:16px}
+  .quota-box .lb{font-size:11.5px;color:var(--text-3);font-weight:600}
+  .quota-box .vl{font-size:19px;font-weight:800;color:var(--indigo);letter-spacing:-.3px}
+  .quota-box .vl small{font-size:12px;font-weight:600;color:var(--text-2)}
+  .feats{list-style:none;margin-bottom:20px;flex:1}
+  .feats li{display:flex;gap:9px;font-size:13.5px;color:var(--text-2);padding:4.5px 0;align-items:flex-start}
+  .feats li svg{flex:0 0 auto;margin-top:3.5px}
+  .btn{
+    width:100%;border:0;border-radius:11px;padding:12px;font-size:14.5px;font-weight:700;cursor:pointer;transition:.18s;
+    background:var(--brand);color:#fff;box-shadow:0 5px 16px rgba(37,99,235,.28)
+  }
+  .btn:hover{filter:brightness(1.07);transform:translateY(-1px)}
+  .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+  .btn.sec{background:#fff;color:var(--brand);border:1.5px solid var(--brand);box-shadow:none}
+  .btn.sec:hover{background:#f0f6ff}
+  .btn.violet{background:linear-gradient(135deg,var(--indigo),var(--violet));box-shadow:0 5px 16px rgba(99,102,241,.3)}
+
+  /* ===== 积分包 ===== */
+  .pkg-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:30px 20px 22px;
+    box-shadow:var(--shadow);position:relative;transition:.22s;display:flex;flex-direction:column
+  }
+  .pkg-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+  .pkg-card.hot{border:2px solid var(--indigo)}
+  .pkg-name{font-size:14px;font-weight:700;color:var(--text-2);margin-bottom:8px}
+  .pkg-credits{font-size:30px;font-weight:800;letter-spacing:-1px;background:linear-gradient(135deg,var(--indigo),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1.15}
+  .pkg-credits small{font-size:14px;font-weight:700;color:var(--text-2);-webkit-text-fill-color:var(--text-2)}
+  .pkg-price{margin:10px 0 6px;display:flex;align-items:baseline;gap:7px}
+  .pkg-price .now{font-size:24px;font-weight:800;color:var(--danger);letter-spacing:-.6px}
+  .pkg-price .was{font-size:13px;color:var(--text-3);text-decoration:line-through}
+  .pkg-unit{font-size:12px;color:var(--text-3);margin-bottom:14px}
+  .pkg-unit b{color:var(--green)}
+  .pkg-feats{list-style:none;font-size:12.5px;color:var(--text-2);margin-bottom:15px;flex:1}
+  .pkg-feats li{padding:3px 0}
+
+  /* ===== 表格 ===== */
+  .table-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+  .tbl-scroll{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:13.8px}
+  th,td{padding:13px 16px;text-align:left;border-bottom:1px solid var(--border)}
+  thead th{background:#f7fafd;font-size:12.5px;font-weight:700;color:var(--text-2);white-space:nowrap}
+  thead th.center,td.center{text-align:center}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:#fafbfe}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;background:#f1f5fb;border:1px solid #e2e8f3;border-radius:6px;padding:2px 7px;color:var(--indigo);white-space:nowrap}
+  .credit-tag{display:inline-block;min-width:56px;text-align:center;font-weight:800;border-radius:7px;padding:3px 9px;font-size:13px}
+  .c1{background:#eef4ff;color:var(--brand)}
+  .c2{background:#e6faf7;color:var(--cyan)}
+  .c3{background:#eef0ff;color:var(--indigo)}
+  .c4{background:#f5edff;color:var(--violet)}
+  .c5{background:#fff1f7;color:var(--rose)}
+  .price-cell{font-weight:700;color:var(--green);font-variant-numeric:tabular-nums}
+  .cat-tag{font-size:11.5px;font-weight:700;border-radius:5px;padding:2px 8px;white-space:nowrap}
+  .cat-text{background:#eef4ff;color:var(--brand)}
+  .cat-img{background:#f5edff;color:var(--violet)}
+  .cat-data{background:#ecfdf5;color:var(--green)}
+  .check{color:var(--green);font-weight:700}
+  .dash{color:#c3ccdb}
+
+  /* ===== 说明 ===== */
+  .note-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:18px}
+  .note-card{background:#fff;border:1px solid var(--border);border-radius:13px;padding:18px 20px;box-shadow:var(--shadow)}
+  .note-card h4{font-size:14.5px;font-weight:800;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+  .note-card ul{list-style:none;font-size:13px;color:var(--text-2)}
+  .note-card li{padding:3.5px 0;padding-left:14px;position:relative}
+  .note-card li:before{content:"";position:absolute;left:2px;top:11px;width:5px;height:5px;border-radius:50%;background:var(--brand)}
+  .ic{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:13px}
+  .ic-blue{background:#eef4ff}
+  .ic-green{background:#ecfdf5}
+  .ic-amber{background:#fffbeb}
+
+  footer{border-top:1px solid var(--border);margin-top:44px;padding:26px 0;color:var(--text-3);font-size:12.5px;text-align:center;background:#fff}
+
+  /* ===== 支付弹窗 ===== */
+  .mask{position:fixed;inset:0;background:rgba(14,26,45,.5);backdrop-filter:blur(3px);display:none;place-items:center;z-index:100;padding:20px}
+  .mask.on{display:grid}
+  .modal{background:#fff;border-radius:18px;padding:30px;width:100%;max-width:392px;box-shadow:0 24px 70px rgba(10,25,50,.3);text-align:center;position:relative}
+  .modal h3{font-size:19px;font-weight:800;margin-bottom:5px}
+  .modal .sub{font-size:13px;color:var(--text-2);margin-bottom:18px}
+  .qr-box{width:212px;height:212px;margin:0 auto 14px;border:1px solid var(--border);border-radius:13px;display:grid;place-items:center;background:#fbfcfe;overflow:hidden}
+  .qr-box img{width:192px;height:192px}
+  .qr-box .fallback{font-size:11.5px;color:var(--text-2);padding:14px;word-break:break-all;line-height:1.7}
+  .amt{font-size:26px;font-weight:800;color:var(--danger);letter-spacing:-.6px;margin-bottom:3px}
+  .modal .tip{font-size:12.5px;color:var(--text-3);margin-top:12px;line-height:1.75}
+  .close{position:absolute;top:12px;right:14px;border:0;background:#f1f4f9;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:16px;color:var(--text-2);line-height:1}
+  .btn-mini{margin-top:14px;border:0;background:var(--indigo);color:#fff;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer}
+  .polling{font-size:12.5px;color:var(--text-2);margin-top:10px;display:flex;align-items:center;justify-content:center;gap:7px}
+
+  .alert{border-radius:11px;padding:12px 15px;font-size:13.5px;margin-bottom:16px;display:none}
+  .alert.on{display:block}
+  .alert.err{background:#fef2f2;border:1px solid #fecaca;color:var(--danger)}
+  .alert.warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+
+  @media(max-width:980px){
+    .g-4{grid-template-columns:repeat(2,1fr)}
+    .g-3{grid-template-columns:1fr}
+    .g-plans{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+    .note-grid{grid-template-columns:1fr}
+    .hero h1{font-size:28px}
+  }
+  @media(max-width:560px){
+    .g-4{grid-template-columns:1fr}
+    .g-plans{grid-template-columns:1fr}
+    .hero h1{font-size:24px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="logo"><span class="logo-mark">T</span><span>Thalvior ERP</span></div>
+    <div class="nav-right">
+      <span class="credit-chip" id="creditChip">⚡ AI 积分 <b id="creditVal">—</b></span>
+      <a href="/" class="btn-ghost">返回工作台</a>
+    </div>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <h1>订阅套餐 · <em>AI 积分中心</em></h1>
+    <p>订阅解锁店铺与商品容量，AI 能力统一按「积分」结算。充的是钱，用的是积分，每一笔消耗都能查到明细。</p>
+    <div class="hero-note"><span class="dot"></span> 兑换标准：1 元 = 20 积分　·　逐功能明码标价，绝无隐藏扣费</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ ① 基础订阅 ============ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-tag">01 · 基础订阅</span>
+      <h2>选择你的经营套餐</h2>
+      <p>决定店铺授权数、商品容量与功能范围；套餐内含 AI 积分，按月发放。</p>
+    </div>
+    <div style="text-align:center">
+      <div class="switch">
+        <button data-cycle="month" class="on">按月订阅</button>
+        <button data-cycle="year">按年订阅 <span class="save-badge">省 2 个月</span></button>
+      </div>
+    </div>
+    <div class="grid g-plans" id="planGrid" style="margin-top:22px"></div>
+  </section>
+
+  <!-- ============ ② AI 积分资源包 ============ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-tag">02 · AI 积分资源包</span>
+      <h2>给 AI 能力单独加料</h2>
+      <p>订阅之外按需补充积分，量大价优，最低 0.035 元/积分。积分不过期，用完再买。</p>
+    </div>
+    <div class="grid g-4" id="pkgGrid"></div>
+    <div class="alert warn" id="customTip" style="margin-top:16px">
+      <b>还需要自定义金额充值？</b> 支持在工作台内按金额直充，按 1 元 = 20 积分入账（无阶梯折扣）。购买资源包更划算。
+    </div>
+  </section>
+
+  <!-- ============ ③ AI 功能计费明细 ============ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-tag">03 · AI 计费明细</span>
+      <h2>每个 AI 功能多少钱，先看清再用</h2>
+      <p>功能代号用于账单与用量明细核对；单次消耗为固定积分，不受字数、图片大小影响。</p>
+    </div>
+    <div class="table-card">
+      <div class="tbl-scroll">
+        <table id="rateTable">
+          <thead>
+            <tr>
+              <th style="width:44px" class="center">#</th>
+              <th>AI 功能</th>
+              <th>功能代号 (code)</th>
+              <th>分类</th>
+              <th class="num">单次消耗</th>
+              <th class="num">折合单价</th>
+              <th class="num">200 积分可用</th>
+            </tr>
+          </thead>
+          <tbody><tr><td colspan="7" style="text-align:center;color:#8d9ab1;padding:26px">加载中…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ④ 权益对比 ============ -->
+  <section>
+    <div class="sec-head">
+      <span class="sec-tag">04 · 权益对比</span>
+      <h2>套餐权益一览</h2>
+    </div>
+    <div class="table-card">
+      <div class="tbl-scroll">
+        <table id="cmpTable">
+          <thead><tr id="cmpHead"></tr></thead>
+          <tbody id="cmpBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 规则说明 ============ -->
+  <section>
+    <div class="note-grid">
+      <div class="note-card">
+        <h4><span class="ic ic-blue">⚡</span>积分怎么用</h4>
+        <ul>
+          <li>充值 / 购资源包 → 进入 AI 积分账户</li>
+          <li>调用任意 AI 功能 → 只扣积分</li>
+          <li>现金不会被 AI 消耗二次扣减</li>
+          <li>每次调用在「用量明细」留痕</li>
+        </ul>
+      </div>
+      <div class="note-card">
+        <h4><span class="ic ic-green">🛡</span>扣费规则</h4>
+        <ul>
+          <li>按次固定积分，先看后付</li>
+          <li>积分不足时提前拦截，不产生半成品</li>
+          <li>调用失败不扣积分</li>
+          <li>余量实时可查</li>
+        </ul>
+      </div>
+      <div class="note-card">
+        <h4><span class="ic ic-amber">💳</span>发票与退款</h4>
+        <ul>
+          <li>支持开具电子发票</li>
+          <li>未使用积分包可申请退订</li>
+          <li>订阅期内升级自动折算差价</li>
+          <li>支付渠道：微信支付</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">Thalvior 跨境 ERP · 订阅与 AI 计费中心　|　所有价格均为人民币，AI 消耗以积分为准</div>
+</footer>
+
+<!-- ===== 支付弹窗 ===== -->
+<div class="mask" id="mask">
+  <div class="modal">
+    <button class="close" onclick="closePay()">×</button>
+    <h3 id="payTitle">微信扫码支付</h3>
+    <div class="sub" id="paySub"></div>
+    <div class="amt" id="payAmt"></div>
+    <div class="qr-box" id="qrBox"><div class="fallback">正在生成收款二维码…</div></div>
+    <div class="polling" id="polling"></div>
+    <div class="tip">请使用微信扫描二维码完成支付<br>支付完成后页面将自动刷新积分余额</div>
+    <button class="btn-mini" id="h5Btn" style="display:none" onclick="openH5()">在微信中打开支付</button>
+  </div>
+</div>
+
+<script>
+/* ================= 配置 ================= */
+const SUPABASE_ANON_KEY = 'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJyb2xlIjogImFub24iLCAiaXNzIjogInN1cGFiYXNlIiwgImlhdCI6IDE3OTAyNjgwMTYsICJleHAiOiAyMTA1NjI4MDE2fQ.P3s0YUizo985KezDkYZLOSbJGB0_2EaEzLd23MGSsFw';
+const CREDITS_PER_YUAN = 20;
+
+const state = { plans: [], packages: [], pricing: [], token: null, me: null, cycle: 'month' };
+
+/* ================= 会话 ================= */
+function getToken() {
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('sb-') && k.endsWith('-auth-token')) {
+        const v = JSON.parse(localStorage.getItem(k) || '{}');
+        if (v && v.access_token) return v.access_token;
+      }
+    }
+    // 兜底：扫描任意含 access_token 的记录
+    for (let i = 0; i < localStorage.length; i++) {
+      const raw = localStorage.getItem(localStorage.key(i));
+      if (raw && raw.includes('access_token')) {
+        try { const v = JSON.parse(raw); if (v && v.access_token) return v.access_token; } catch (e) {}
+      }
+    }
+  } catch (e) {}
+  return null;
+}
+
+async function rest(path, opts = {}) {
+  const headers = {
+    'apikey': SUPABASE_ANON_KEY,
+    'Content-Type': 'application/json',
+    ...(opts.headers || {})
+  };
+  if (state.token) headers['Authorization'] = 'Bearer ' + state.token;
+  const res = await fetch('/rest/v1/' + path, { ...opts, headers });
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(t.slice(0, 200) || ('HTTP ' + res.status));
+  }
+  return res.status === 204 ? null : res.json();
+}
+
+/* ================= 数据加载 ================= */
+async function loadAll() {
+  const [plans, packages, pricing] = await Promise.all([
+    rest('subscription_plans?select=*&order=sort_order'),
+    rest('credit_packages?select=*&order=sort_order'),
+    rest('service_pricing?select=service_key,service_name,billing_mode,credits_per_use,unit,status&order=credits_per_use.desc')
+  ]);
+  state.plans = plans.filter(p => p.status === '启用');
+  state.packages = packages.filter(p => p.status === '启用');
+  state.pricing = pricing.filter(p => p.status === '启用');
+  renderPlans(); renderPackages(); renderRate(); renderCompare();
+  await loadMe();
+}
+
+async function loadMe() {
+  if (!state.token) {
+    document.getElementById('creditVal').textContent = '登录查看';
+    return;
+  }
+  try {
+    const rows = await rest('tenant_quotas?select=credits,plan_name&limit=1');
+    const n = rows && rows[0] ? Number(rows[0].credits || 0) : 0;
+    document.getElementById('creditVal').textContent = n.toLocaleString('zh-CN', { maximumFractionDigits: 2 });
+  } catch (e) {
+    document.getElementById('creditVal').textContent = '—';
+  }
+}
+
+/* ================= ① 套餐 ================= */
+const PLAN_STYLE = {
+  free:      { pill: '<span class="pill f">免费起步</span>', btn: 'sec',   hot: false },
+  pro_month: { pill: '<span class="pill b">最受欢迎</span>', btn: '',      hot: true,  ribbon: '性价比首选' },
+  max_month: { pill: '<span class="pill v">旗舰</span>',     btn: 'violet',hot: false },
+  pro_year:  { pill: '<span class="pill b">最受欢迎</span>', btn: '',      hot: true,  ribbon: '省 2 个月' },
+  max_year:  { pill: '<span class="pill v">旗舰</span>',     btn: 'violet',hot: false }
+};
+const FEAT_ICON = '<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="9" fill="#ecfdf5"/><path d="M6 10.4l2.6 2.6L14.5 7.1" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function renderPlans() {
+  const isYear = state.cycle === 'year';
+  const list = state.plans.filter(p => {
+    if (p.plan_key === 'free') return true;
+    const year = String(p.period).includes('年');
+    return isYear ? year : !year;
+  });
+  const grid = document.getElementById('planGrid');
+  grid.innerHTML = list.map((p, i) => {
+    const st = PLAN_STYLE[p.plan_key] || { pill: '', btn: '', hot: false };
+    const price = Number(p.price);
+    const credits = Math.round(Number(p.quota || 0) * CREDITS_PER_YUAN);
+    const feats = Array.isArray(p.features) ? p.features : [];
+    const isFree = price === 0;
+    const periodLabel = isFree ? '永久免费' : (String(p.period).includes('年') ? '/ 年' : '/ 月');
+    const creditLabel = isFree
+      ? '不含 AI 积分，可按需购买资源包'
+      : '含 ' + credits.toLocaleString('zh-CN') + ' AI 积分' + (String(p.period).includes('年') ? ' / 年' : ' / 月');
+    return `
+      <div class="card ${st.hot ? 'hot' : ''}">
+        ${st.ribbon ? '<div class="ribbon">' + st.ribbon + '</div>' : ''}
+        <div class="card-top"><span class="plan-name">${p.name}</span>${st.pill}</div>
+        <div class="price">
+          <span class="cur">¥</span><span class="num">${isFree ? 0 : price.toLocaleString('zh-CN')}</span>
+          <span class="per">${periodLabel}</span>
+        </div>
+        <div class="price-sub">${isFree ? '适合刚起步的个人卖家试水' : (String(p.period).includes('年') ? '一次性付费，折合 ¥' + (price / 12).toFixed(0) + '/月' : '按月付费，随时调整')}</div>
+        <div class="quota-box">
+          <div class="lb">套餐内含 AI 积分</div>
+          <div class="vl">${isFree ? '0' : credits.toLocaleString('zh-CN')} <small>积分</small></div>
+        </div>
+        <ul class="feats">${feats.map(f => '<li>' + FEAT_ICON + '<span>' + f + '</span></li>').join('')}</ul>
+        <button class="btn ${st.btn}" onclick="buyPlan('${p.id}','${p.name.replace(/'/g, '')}',${price})">${isFree ? '免费使用' : '立即订阅'}</button>
+      </div>`;
+  }).join('');
+}
+
+/* ================= ② 资源包 ================= */
+function renderPackages() {
+  const grid = document.getElementById('pkgGrid');
+  if (!state.packages.length) {
+    grid.innerHTML = '<div class="pkg-card" style="grid-column:1/-1;text-align:center;color:#8d9ab1">暂无可购买的 AI 积分资源包</div>';
+    return;
+  }
+  grid.innerHTML = state.packages.map(p => {
+    const credits = Number(p.credits);
+    const price = Number(p.price);
+    const was = Number(p.original_price);
+    const unit = (Number(p.per_credit) || (price / credits));
+    const save = was > price ? Math.round((1 - price / was) * 100) : 0;
+    return `
+      <div class="pkg-card ${p.recommended ? 'hot' : ''}">
+        ${p.recommended ? '<div class="ribbon">推荐入手</div>' : (p.tag ? '<div class="ribbon">' + p.tag + '</div>' : '')}
+        <div class="pkg-name">${p.name}</div>
+        <div class="pkg-credits">${credits.toLocaleString('zh-CN')} <small>积分</small></div>
+        <div class="pkg-price">
+          <span class="now">¥${price.toLocaleString('zh-CN')}</span>
+          ${was > price ? '<span class="was">¥' + was.toLocaleString('zh-CN') + '</span>' : ''}
+        </div>
+        <div class="pkg-unit">
+          折合 <b>¥${unit.toFixed(3)}</b> / 积分${save ? '　已省 ' + save + '%' : ''}
+        </div>
+        <ul class="pkg-feats">
+          <li>· 可调用约 ${Math.floor(credits / 1).toLocaleString('zh-CN')} 次文案优化</li>
+          <li>· 或约 ${Math.floor(credits / 5).toLocaleString('zh-CN')} 次竞品 / 描述分析</li>
+          <li>· 积分不过期，用完为止</li>
+        </ul>
+        <button class="btn ${p.recommended ? 'violet' : 'sec'}" onclick="buyPackage('${p.package_code}','${p.name}',${credits},${price})">购买 ${credits.toLocaleString('zh-CN')} 积分</button>
+      </div>`;
+  }).join('');
+}
+
+/* ================= ③ 费率表 ================= */
+const CAT_MAP = {
+  image_process: ['图片处理', 'cat-img'], ai_select: ['数据洞察', 'cat-data'], ai_market: ['数据洞察', 'cat-data'],
+  ai_competitor: ['数据洞察', 'cat-data'], collect: ['数据采集', 'cat-data'], keyword_mining: ['文本生成', 'cat-text'],
+  copywriting: ['文本生成', 'cat-text'], ai_review: ['文本生成', 'cat-text'], customer_service: ['文本生成', 'cat-text'],
+  image_translate: ['图片处理', 'cat-img']
+};
+function creditClass(c) {
+  if (c >= 15) return 'c5';
+  if (c >= 10) return 'c4';
+  if (c >= 5) return 'c3';
+  if (c >= 3) return 'c2';
+  return 'c1';
+}
+function renderRate() {
+  const tb = document.querySelector('#rateTable tbody');
+  if (!state.pricing.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#8d9ab1;padding:26px">暂无 AI 计费配置</td></tr>'; return; }
+  tb.innerHTML = state.pricing.map((p, i) => {
+    const c = Number(p.credits_per_use || 0);
+    const [catName, catCls] = CAT_MAP[p.service_key] || ['通用能力', 'cat-text'];
+    return `
+      <tr>
+        <td class="center" style="color:#8d9ab1">${i + 1}</td>
+        <td style="font-weight:600">${p.service_name}</td>
+        <td><span class="mono">${p.service_key}</span></td>
+        <td><span class="cat-tag ${catCls}">${catName}</span></td>
+        <td class="num"><span class="credit-tag ${creditClass(c)}">${c} 积分</span></td>
+        <td class="num price-cell">¥${(c / CREDITS_PER_YUAN).toFixed(2)}</td>
+        <td class="num" style="color:#5b6b85">${c > 0 ? Math.floor(200 / c).toLocaleString('zh-CN') + ' 次' : '—'}</td>
+      </tr>`;
+  }).join('');
+}
+
+/* ================= ④ 权益对比 ================= */
+function renderCompare() {
+  const head = document.getElementById('cmpHead');
+  const body = document.getElementById('cmpBody');
+  const list = state.plans;
+  head.innerHTML = '<th style="min-width:170px">权益项</th>' +
+    list.map(p => '<th class="center">' + p.name + '<br><span style="font-weight:600;color:#2563eb">¥' + Number(p.price).toLocaleString('zh-CN') + '</span></th>').join('');
+
+  const rows = [
+    ['年度费用', p => Number(p.price) === 0 ? '¥0' : (String(p.period).includes('年') ? '¥' + Number(p.price).toLocaleString('zh-CN') : '¥' + (Number(p.price) * 12).toLocaleString('zh-CN'))],
+    ['店铺授权数', p => Number(p.max_shops) < 0 ? '不限' : Number(p.max_shops) + ' 个'],
+    ['商品容量', p => Number(p.max_products) < 0 ? '不限' : Number(p.max_products).toLocaleString('zh-CN') + ' 个'],
+    ['内含 AI 积分', p => Math.round(Number(p.quota || 0) * CREDITS_PER_YUAN).toLocaleString('zh-CN') + ' 积分'],
+    ['折合 AI 额度', p => '¥' + Number(p.quota || 0).toLocaleString('zh-CN')],
+    ['订单 / 库存 / 采购', p => Number(p.price) === 0 ? '<span class="dash">部分</span>' : '<span class="check">✓</span>'],
+    ['财务利润报表', p => (p.plan_key === 'max_month' || p.plan_key === 'max_year') ? '<span class="check">✓</span>' : '<span class="dash">—</span>'],
+    ['AI 市场 / 选品', p => (p.plan_key === 'max_month' || p.plan_key === 'max_year') ? '<span class="check">✓</span>' : '<span class="dash">—</span>']
+  ];
+  body.innerHTML = rows.map(([label, fn]) =>
+    '<tr><td style="font-weight:600;color:#5b6b85">' + label + '</td>' +
+    list.map(p => '<td class="center">' + fn(p) + '</td>').join('') + '</tr>'
+  ).join('');
+}
+
+/* ================= 下单支付 ================= */
+let currentCtx = null;
+
+function requireLogin() {
+  if (state.token) return true;
+  alert('请先登录后再订阅或购买积分。');
+  window.location.href = '/login';
+  return false;
+}
+
+async function buyPlan(id, name, price) {
+  if (!requireLogin()) return;
+  if (price === 0) { alert('免费版无需支付，直接在工作台使用即可。'); return; }
+  await doPay({ plan_id: id }, name, price);
+}
+
+async function buyPackage(code, name, credits, price) {
+  if (!requireLogin()) return;
+  await doPay({ package_code: code, amount: price }, 'AI 积分' + name + ' ' + credits.toLocaleString('zh-CN') + ' 积分', price);
+}
+
+async function doPay(payload, title, amount) {
+  openPay(title, amount);
+  try {
+    const res = await fetch('/functions/v1/wechat-pay', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + state.token },
+      body: JSON.stringify({ action: 'create-order', pay_type: 'native', ...payload })
+    });
+    const json = await res.json();
+    const data = json.data || {};
+    if (!res.ok || !data.order_no) throw new Error(json.error || json.msg || ('HTTP ' + res.status));
+    currentCtx = { order_no: data.order_no, amount };
+    window.__h5url = data.h5_url || '';
+    document.getElementById('h5Btn').style.display = window.__h5url ? 'inline-block' : 'none';
+    if (data.code_url) {
+      renderQR(data.code_url);
+    } else {
+      document.getElementById('qrBox').innerHTML = '<div class="fallback">未获取到二维码<br>' + (data.h5_url || '') + '</div>';
+    }
+    startPolling();
+  } catch (e) {
+    document.getElementById('qrBox').innerHTML = '<div class="fallback" style="color:#dc2626">下单失败：' + (e.message || e) + '</div>';
+  }
+}
+
+/* 二维码：多 CDN 降级 */
+function renderQR(text) {
+  const load = src => new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s);
+  });
+  const sources = ['https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js',
+                   'https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js',
+                   'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'];
+  (async () => {
+    for (const src of sources) {
+      try {
+        if (!window.QRCode) await load(src);
+        const box = document.getElementById('qrBox'); box.innerHTML = '';
+        if (src.includes('qrcodejs')) {
+          new QRCode(box, { text, width: 192, height: 192, correctLevel: QRCode.CorrectLevel.M });
+        } else {
+          const url = await QRCode.toDataURL(text, { width: 192, margin: 1 });
+          box.innerHTML = '<img src="' + url + '" alt="收款二维码">';
+        }
+        return;
+      } catch (e) {}
+    }
+    document.getElementById('qrBox').innerHTML = '<div class="fallback">二维码服务不可用，请复制下方链接到微信打开：<br>' + text + '</div>';
+  })();
+}
+
+let pollTimer = null;
+function startPolling() {
+  clearInterval(pollTimer);
+  let n = 0;
+  const el = document.getElementById('polling');
+  pollTimer = setInterval(async () => {
+    n++;
+    if (n > 100) { clearInterval(pollTimer); el.textContent = '支付二维码已超时，请重新下单'; return; }
+    try {
+      const res = await fetch('/functions/v1/wechat-pay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + state.token },
+        body: JSON.stringify({ action: 'query-order', order_no: currentCtx.order_no })
+      });
+      const json = await res.json();
+      const d = json.data || json;
+      if (d && (d.status === 'paid' || d.trade_state === 'SUCCESS')) {
+        clearInterval(pollTimer);
+        el.innerHTML = '<span style="color:#059669;font-weight:700">✓ 支付成功，正在刷新积分…</span>';
+        await loadMe();
+        setTimeout(() => { closePay(); }, 1200);
+      } else {
+        el.textContent = '等待支付结果…（' + n + '）';
+      }
+    } catch (e) { el.textContent = '查询支付状态失败，稍后可在账单页确认'; }
+  }, 3000);
+}
+
+function openPay(title, amount) {
+  currentCtx = null; window.__h5url = '';
+  clearInterval(pollTimer);
+  document.getElementById('payTitle').textContent = '微信扫码支付';
+  document.getElementById('paySub').textContent = title;
+  document.getElementById('payAmt').textContent = '¥' + Number(amount).toLocaleString('zh-CN');
+  document.getElementById('qrBox').innerHTML = '<div class="fallback">正在生成收款二维码…</div>';
+  document.getElementById('polling').textContent = '';
+  document.getElementById('h5Btn').style.display = 'none';
+  document.getElementById('mask').classList.add('on');
+}
+function closePay() { clearInterval(pollTimer); document.getElementById('mask').classList.remove('on'); }
+function openH5() { if (window.__h5url) window.location.href = window.__h5url; }
+document.getElementById('mask').addEventListener('click', e => { if (e.target.id === 'mask') closePay(); });
+
+/* 周期切换 */
+document.querySelectorAll('.switch button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.switch button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    state.cycle = b.dataset.cycle;
+    renderPlans();
+  });
+});
+
+/* 启动 */
+state.token = getToken();
+loadAll().catch(e => {
+  document.querySelector('#rateTable tbody').innerHTML =
+    '<tr><td colspan="7" style="text-align:center;color:#dc2626;padding:26px">数据加载失败：' + (e.message || e) + '</td></tr>';
+});
+</script>
+</body>
+</html>
