@@ -53,14 +53,16 @@ export function toAntdMenuItems(
       const Icon = n.icon as ComponentType;
       return <Icon />;
     })() : undefined;
-    // 国际化：优先用 menu.<key> 翻译；找不到再 fallback 旧映射；最终用原 label
+    // 国际化：优先用 menu.<key> 翻译；找不到再 fallback 旧映射；最终用原 label 兜底（永不裸 key）
     let label: string = n.label;
     if (t) {
-      const byKey = t('menu.' + n.key);
-      if (byKey !== ('menu.' + n.key)) {
+      const byKey = t('menu.' + n.key, undefined, n.label);
+      if (byKey !== n.label) {
+        // byKey 不是原始 label，说明字典里有翻译值
         label = byKey;
       } else if (menuLabelKeys[n.label]) {
-        label = t(menuLabelKeys[n.label]!);
+        // 再试一次旧映射
+        label = t(menuLabelKeys[n.label]!, undefined, n.label);
       }
     }
     if (n.children?.length) {

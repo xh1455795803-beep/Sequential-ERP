@@ -100,10 +100,9 @@ export default function MainLayout() {
   const topItems = useMemo(
     () =>
       filteredMenu.map((n) => {
-        const transLabel = t('menu.' + n.key);
         return {
           key: n.key,
-          label: transLabel !== ('menu.' + n.key) ? transLabel : n.label,
+          label: t('menu.' + n.key, undefined, n.label),
           icon: n.icon ? (() => { const Icon = n.icon!; return <Icon />; })() : undefined,
         };
       }),
@@ -320,7 +319,7 @@ export default function MainLayout() {
                 letterSpacing: 0.5,
               }}
             >
-              {t('menu.' + activeTop.key) !== ('menu.' + activeTop.key) ? t('menu.' + activeTop.key) : activeTop.label}
+              {t('menu.' + activeTop.key, undefined, activeTop.label)}
             </div>
             <Menu
               mode="inline"

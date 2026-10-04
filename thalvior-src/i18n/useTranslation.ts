@@ -20,7 +20,13 @@ export function useTranslation() {
   const fallback = zhCN;
 
   const t = useCallback(
-    (key: string, params?: Record<string, string | number>): string => {
+    /**
+     * @param key 翻译 key，如 'menu.order-list'
+     * @param params 参数插值对象，可选
+     * @param fallback 兜底字符串 — 当所有字典都找不到时返回这个
+     *                 菜单场景传 menuConfig.label（即中文原文），保证永远有值不裸 key
+     */
+    (key: string, params?: Record<string, string | number>, fallback?: string): string => {
       const parts = key.split('.');
       let value: any = dict;
       let fallbackValue: any = fallback;
@@ -36,6 +42,8 @@ export function useTranslation() {
         result = value;
       } else if (typeof fallbackValue === 'string') {
         result = fallbackValue;
+      } else if (fallback) {
+        result = fallback;
       } else {
         result = key;
       }
