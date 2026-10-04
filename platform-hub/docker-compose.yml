@@ -1,0 +1,29 @@
+services:
+  platform-hub:
+    build: .
+    image: platform-hub:latest
+    container_name: platform-hub
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    volumes:
+      - platform-hub-data:/data
+      - ./logs:/logs
+    environment:
+      - APP_ENV=prod
+      - DATABASE_URL=${DATABASE_URL:-sqlite:////data/platform_hub.db}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-please-change-me-32-bytes-minimum!!}
+      # Optional OAuth secrets (set only for platforms you'll use)
+      - SHOPIFY_APP_KEY=${SHOPIFY_APP_KEY:-}
+      - SHOPIFY_APP_SECRET=${SHOPIFY_APP_SECRET:-}
+      - OAUTH_REDIRECT_BASE=${OAUTH_REDIRECT_BASE:-https://yourdomain.com}
+      - TZ=${TZ:-Asia/Shanghai}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8787/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  platform-hub-data:
