@@ -53,8 +53,16 @@ export function toAntdMenuItems(
       const Icon = n.icon as ComponentType;
       return <Icon />;
     })() : undefined;
-    // 支持国际化：若 label 在映射表中有翻译 key，则翻译
-    const label = (t && menuLabelKeys[n.label]) ? t(menuLabelKeys[n.label]!) : n.label;
+    // 国际化：优先用 menu.<key> 翻译；找不到再 fallback 旧映射；最终用原 label
+    let label: string = n.label;
+    if (t) {
+      const byKey = t('menu.' + n.key);
+      if (byKey !== ('menu.' + n.key)) {
+        label = byKey;
+      } else if (menuLabelKeys[n.label]) {
+        label = t(menuLabelKeys[n.label]!);
+      }
+    }
     if (n.children?.length) {
       return {
         key: fullPath,

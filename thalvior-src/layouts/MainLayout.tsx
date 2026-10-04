@@ -96,15 +96,18 @@ export default function MainLayout() {
   // 根据用户权限过滤菜单
   const filteredMenu = useMemo(() => filterMenuByPerm(menuConfig, has), [user, has, locale]);
 
-  // 一级分组 (横向)
+  // 一级分组 (横向) - 用 t('menu.<key>') 翻译
   const topItems = useMemo(
     () =>
-      filteredMenu.map((n) => ({
-        key: n.key,
-        label: n.label,
-        icon: n.icon ? (() => { const Icon = n.icon!; return <Icon />; })() : undefined,
-      })),
-    [filteredMenu, locale],
+      filteredMenu.map((n) => {
+        const transLabel = t('menu.' + n.key);
+        return {
+          key: n.key,
+          label: transLabel !== ('menu.' + n.key) ? transLabel : n.label,
+          icon: n.icon ? (() => { const Icon = n.icon!; return <Icon />; })() : undefined,
+        };
+      }),
+    [filteredMenu, t, locale],
   );
 
   // 当前所在的一级分组
@@ -317,7 +320,7 @@ export default function MainLayout() {
                 letterSpacing: 0.5,
               }}
             >
-              {activeTop.label}
+              {t('menu.' + activeTop.key) !== ('menu.' + activeTop.key) ? t('menu.' + activeTop.key) : activeTop.label}
             </div>
             <Menu
               mode="inline"
