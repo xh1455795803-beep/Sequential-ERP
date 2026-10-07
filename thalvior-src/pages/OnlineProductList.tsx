@@ -11,13 +11,15 @@ import {
 import dayjs from 'dayjs';
 import { productApi, shopApi, syncApi } from '../api';
 import { usePermission } from '../hooks/usePermission';
+import { useTranslation } from '../i18n';
 
 const { Title, Text } = Typography;
 
-const STATUS_MAP: Record<number, { label: string; color: string }> = {
-  1: { label: '在售', color: 'green' },
-  0: { label: '下架', color: 'default' },
-  2: { label: '违规', color: 'red' },
+// 商品状态颜色映射（label 已迁移到字典，组件内通过 t() 取用）
+const STATUS_COLOR: Record<number, string> = {
+  1: 'green',
+  0: 'default',
+  2: 'red',
 };
 
 // ============ 在线商品列表 Tab ============
@@ -26,6 +28,14 @@ function OnlineProductsTab({ initialStatus = 1 }: { initialStatus?: number }) {
   const [selected, setSelected] = useState<any[]>([]);
   const qc = useQueryClient();
   const { has } = usePermission();
+  const { t } = useTranslation();
+
+  // 状态 label 在组件内构造
+  const statusLabel: Record<number, string> = {
+    1: t('pages.onlineProductList.status.onSale'),
+    0: t('pages.onlineProductList.status.offShelf'),
+    2: t('pages.onlineProductList.status.violation'),
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ['online-products', filters],
@@ -40,25 +50,25 @@ function OnlineProductsTab({ initialStatus = 1 }: { initialStatus?: number }) {
   const updateMut = useMutation({
     mutationFn: ({ id, data }: any) => productApi.update(id, data),
     onSuccess: () => {
-      message.success('操作成功');
+      message.success(t('common.operationSuccess'));
       qc.invalidateQueries({ queryKey: ['online-products'] });
     },
   });
 
   const onChangeStatus = (ids: string[], status: number) => {
     if (!ids.length) {
-      message.warning('请先选择商品');
+      message.warning(t('pages.onlineProductList.pleaseSelectProduct'));
       return;
     }
-    const label = STATUS_MAP[status].label;
+    const label = statusLabel[status];
     Modal.confirm({
-      title: `批量${label}`,
-      content: `确认将 ${ids.length} 个商品设为「${label}」?`,
+      title: t('pages.onlineProductList.batchStatusTitle', { label }),
+      content: t('pages.onlineProductList.batchStatusContent', { count: ids.length, label }),
       onOk: async () => {
         for (const id of ids) {
           await productApi.update(id, { status });
         }
-        message.success('批量操作完成');
+        message.success(t('pages.onlineProductList.batchActionDone'));
         qc.invalidateQueries({ queryKey: ['online-products'] });
         setSelected([]);
       },
@@ -96,7 +106,7 @@ function OnlineProductsTab({ initialStatus = 1 }: { initialStatus?: number }) {
       ),
     },
     {
-      title: '商品',
+      title: t('pages.onlineProductList.col.product'),
       width: 260,
       fixed: 'left' as const,
       render: (_: any, r: any) => (
@@ -109,51 +119,52 @@ function OnlineProductsTab({ initialStatus = 1 }: { initialStatus?: number }) {
         </Space>
       ),
     },
-    { title: '类目', dataIndex: 'category', width: 120, render: (v: string) => v || '-' },
+    { title: t('pages.onlineProductList.col.category'), dataIndex: 'category', width: 120, render: (v: string) => v || '-' },
     {
-      title: '售价',
+      title: t('pages.onlineProductList.col.salePrice'),
       dataIndex: 'salePrice',
       width: 100,
       align: 'right' as const,
       render: (v: number, r: any) => `${r.currency} ${(+v).toFixed(2)}`,
     },
     {
-      title: '状态',
+      title: t('common.status'),
       dataIndex: 'status',
       width: 90,
       render: (v: number) => {
-        const s = STATUS_MAP[v] || { label: '未知', color: 'default' };
-        return <Tag color={s.color}>{s.label}</Tag>;
+        const color = STATUS_COLOR[v] || 'default';
+        const label = statusLabel[v] || t('pages.onlineProductList.status.unknown');
+        return <Tag color={color}>{label}</Tag>;
       },
     },
     {
-      title: '更新时间',
+      title: t('pages.onlineProductList.col.updatedAt'),
       dataIndex: 'updatedAt',
       width: 160,
       render: (v: string) => v ? dayjs(v).format('YYYY-MM-DD HH:mm') : '-',
     },
     {
-      title: '操作',
+      title: t('common.operation'),
       width: 200,
       fixed: 'right' as const,
       render: (_: any, r: any) => (
         <Space size="small">
           {has('product:update') && r.status !== 1 && (
             <Button size="small" type="link" onClick={() => updateMut.mutate({ id: r.id, data: { status: 1 } })}>
-              上架
+              {t('pages.onlineProductList.action.putOnSale')}
             </Button>
           )}
           {has('product:update') && r.status === 1 && (
             <Button size="small" type="link" onClick={() => updateMut.mutate({ id: r.id, data: { status: 0 } })}>
-              下架
+              {t('pages.onlineProductList.action.takeOffShelf')}
             </Button>
           )}
           {has('product:update') && r.status !== 2 && (
             <Popconfirm
-              title="标记为违规商品?"
+              title={t('pages.onlineProductList.action.confirmMarkViolation')}
               onConfirm={() => updateMut.mutate({ id: r.id, data: { status: 2 } })}
             >
-              <Button size="small" type="link" danger>违规</Button>
+              <Button size="small" type="link" danger>{t('pages.onlineProductList.action.markViolation')}</Button>
             </Popconfirm>
           )}
         </Space>
@@ -164,10 +175,10 @@ function OnlineProductsTab({ initialStatus = 1 }: { initialStatus?: number }) {
   return (
     <div>
       <Row gutter={16} style={{ marginBottom: 12 }}>
-        <Col span={6}><Card bordered={false}><Statistic title="在售" value={(data?.total || 0)} valueStyle={{ color: '#52c41a' }} prefix={<CheckCircleOutlined />} /></Card></Col>
-        <Col span={6}><Card bordered={false}><Statistic title="已选择" value={selected.length} suffix="项" /></Card></Col>
-        <Col span={6}><Card bordered={false}><Statistic title="店铺" value={(shops?.total || 0)} prefix={<ShopOutlined />} /></Card></Col>
-        <Col span={6}><Card bordered={false}><Statistic title="违规" value={0} valueStyle={{ color: '#f5222d' }} prefix={<WarningOutlined />} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.onlineProductList.stat.onSale')} value={(data?.total || 0)} valueStyle={{ color: '#52c41a' }} prefix={<CheckCircleOutlined />} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.onlineProductList.stat.selected')} value={selected.length} suffix={t('pages.onlineProductList.stat.suffix')} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.onlineProductList.stat.shop')} value={(shops?.total || 0)} prefix={<ShopOutlined />} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.onlineProductList.stat.violation')} value={0} valueStyle={{ color: '#f5222d' }} prefix={<WarningOutlined />} /></Card></Col>
       </Row>
 
       <Card bordered={false}>
@@ -176,19 +187,19 @@ function OnlineProductsTab({ initialStatus = 1 }: { initialStatus?: number }) {
           onFinish={(v) => setFilters((f: any) => ({ ...f, ...v, page: 1 }))}
         >
           <Form.Item name="keyword">
-            <Input placeholder="SKU / 商品名" allowClear prefix={<SearchOutlined />} style={{ width: 240 }} />
+            <Input placeholder={t('pages.onlineProductList.filter.keywordPlaceholder')} allowClear prefix={<SearchOutlined />} style={{ width: 240 }} />
           </Form.Item>
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit">筛选</Button>
-              <Button onClick={() => setFilters({ page: 1, pageSize: 10, status: initialStatus })} icon={<ReloadOutlined />}>重置</Button>
+              <Button type="primary" htmlType="submit">{t('common.filter')}</Button>
+              <Button onClick={() => setFilters({ page: 1, pageSize: 10, status: initialStatus })} icon={<ReloadOutlined />}>{t('common.reset')}</Button>
               {has('product:update') && (
                 <>
                   <Button type="primary" icon={<CloudUploadOutlined />} onClick={() => onChangeStatus(selected.map((s) => s.id), 1)}>
-                    批量上架
+                    {t('pages.onlineProductList.batch.putOnSale')}
                   </Button>
                   <Button onClick={() => onChangeStatus(selected.map((s) => s.id), 0)}>
-                    批量下架
+                    {t('pages.onlineProductList.batch.takeOffShelf')}
                   </Button>
                 </>
               )}
@@ -210,7 +221,7 @@ function OnlineProductsTab({ initialStatus = 1 }: { initialStatus?: number }) {
             pageSize: filters.pageSize,
             total: data?.total || 0,
             showSizeChanger: true,
-            showTotal: (t) => `共 ${t} 条`,
+            showTotal: (count) => t('pages.onlineProductList.paginationTotal', { count }),
             onChange: (page, pageSize) => setFilters((f: any) => ({ ...f, page, pageSize })),
           }}
         />
@@ -225,6 +236,7 @@ function ProductSyncTab() {
   const [pullOpen, setPullOpen] = useState(false);
   const [form] = Form.useForm();
   const qc = useQueryClient();
+  const { t } = useTranslation();
 
   const { data, isLoading } = useQuery({
     queryKey: ['sync-tasks', filters],
@@ -238,7 +250,7 @@ function ProductSyncTab() {
   const runMut = useMutation({
     mutationFn: syncApi.run,
     onSuccess: () => {
-      message.success('同步任务已创建, 稍后查看结果');
+      message.success(t('pages.onlineProductList.sync.taskCreated'));
       setPullOpen(false);
       form.resetFields();
       qc.invalidateQueries({ queryKey: ['sync-tasks'] });
@@ -246,30 +258,30 @@ function ProductSyncTab() {
   });
 
   const statusMap: Record<string, { color: string; text: string }> = {
-    pending: { color: 'default', text: '等待' },
-    running: { color: 'blue', text: '进行中' },
-    success: { color: 'green', text: '成功' },
-    failed: { color: 'red', text: '失败' },
-    partial: { color: 'orange', text: '部分成功' },
+    pending: { color: 'default', text: t('pages.onlineProductList.syncStatus.pending') },
+    running: { color: 'blue', text: t('pages.onlineProductList.syncStatus.running') },
+    success: { color: 'green', text: t('pages.onlineProductList.syncStatus.success') },
+    failed: { color: 'red', text: t('pages.onlineProductList.syncStatus.failed') },
+    partial: { color: 'orange', text: t('pages.onlineProductList.syncStatus.partial') },
   };
 
   const columns = [
-    { title: '店铺', dataIndex: ['shop', 'name'], width: 160, render: (_: any, r: any) => (
+    { title: t('pages.onlineProductList.col.shop'), dataIndex: ['shop', 'name'], width: 160, render: (_: any, r: any) => (
         <div>
           <div>{r.shop?.name || '-'}</div>
           <Text type="secondary" style={{ fontSize: 12 }}>{r.platform}</Text>
         </div>
       )
     },
-    { title: '类型', dataIndex: 'type', width: 100, render: (v: string) => <Tag>{v}</Tag> },
+    { title: t('pages.onlineProductList.col.type'), dataIndex: 'type', width: 100, render: (v: string) => <Tag>{v}</Tag> },
     {
-      title: '状态',
+      title: t('common.status'),
       dataIndex: 'status',
       width: 100,
       render: (v: string) => <Tag color={statusMap[v]?.color}>{statusMap[v]?.text || v}</Tag>,
     },
     {
-      title: '进度',
+      title: t('pages.onlineProductList.col.progress'),
       width: 200,
       render: (_: any, r: any) => {
         const total = r.total || 0;
@@ -285,34 +297,34 @@ function ProductSyncTab() {
         );
       },
     },
-    { title: '成功', dataIndex: 'success', width: 80, align: 'right' as const, render: (v: number) => <span style={{ color: '#52c41a' }}>{v || 0}</span> },
-    { title: '失败', dataIndex: 'failed', width: 80, align: 'right' as const, render: (v: number) => <span style={{ color: '#f5222d' }}>{v || 0}</span> },
+    { title: t('pages.onlineProductList.col.success'), dataIndex: 'success', width: 80, align: 'right' as const, render: (v: number) => <span style={{ color: '#52c41a' }}>{v || 0}</span> },
+    { title: t('pages.onlineProductList.col.failed'), dataIndex: 'failed', width: 80, align: 'right' as const, render: (v: number) => <span style={{ color: '#f5222d' }}>{v || 0}</span> },
     {
-      title: '触发',
+      title: t('pages.onlineProductList.col.trigger'),
       dataIndex: 'trigger',
       width: 80,
-      render: (v: string) => v === 'schedule' ? <Tag color="blue">定时</Tag> : <Tag>手动</Tag>,
+      render: (v: string) => v === 'schedule' ? <Tag color="blue">{t('pages.onlineProductList.sync.trigger.schedule')}</Tag> : <Tag>{t('pages.onlineProductList.sync.trigger.manual')}</Tag>,
     },
     {
-      title: '开始时间',
+      title: t('pages.onlineProductList.col.startedAt'),
       dataIndex: 'startedAt',
       width: 160,
       render: (v: string) => v ? dayjs(v).format('YYYY-MM-DD HH:mm:ss') : '-',
     },
     {
-      title: '操作',
+      title: t('common.operation'),
       width: 120,
       render: (_: any, r: any) => (
         <Button size="small" type="link" onClick={async () => {
           const d = await syncApi.taskDetail(r.id);
           Modal.info({
-            title: `同步任务 ${r.id.slice(0, 8)}`,
+            title: t('pages.onlineProductList.sync.detailTitle', { id: r.id.slice(0, 8) }),
             width: 700,
             content: (
               <div>
-                <p>状态: {statusMap[r.status]?.text}</p>
-                <p>总数: {r.total} 成功: {r.success} 失败: {r.failed}</p>
-                {r.message && <p>消息: {r.message}</p>}
+                <p>{t('common.status')}: {statusMap[r.status]?.text}</p>
+                <p>{t('pages.onlineProductList.sync.total')}: {r.total} {t('pages.onlineProductList.col.success')}: {r.success} {t('pages.onlineProductList.col.failed')}: {r.failed}</p>
+                {r.message && <p>{t('pages.onlineProductList.sync.message')}: {r.message}</p>}
                 {d?.logs && (
                   <Table
                     size="small"
@@ -320,18 +332,18 @@ function ProductSyncTab() {
                     rowKey="id"
                     dataSource={d.logs}
                     columns={[
-                      { title: '动作', dataIndex: 'action', width: 140 },
-                      { title: '类型', dataIndex: 'refType', width: 80 },
-                      { title: '关联', dataIndex: 'refId', width: 140 },
-                      { title: '状态', dataIndex: 'status', width: 80, render: (v: string) => <Tag color={v === 'success' ? 'green' : 'red'}>{v}</Tag> },
-                      { title: '详情', dataIndex: 'detail' },
+                      { title: t('pages.onlineProductList.log.action'), dataIndex: 'action', width: 140 },
+                      { title: t('pages.onlineProductList.log.type'), dataIndex: 'refType', width: 80 },
+                      { title: t('pages.onlineProductList.log.refId'), dataIndex: 'refId', width: 140 },
+                      { title: t('common.status'), dataIndex: 'status', width: 80, render: (v: string) => <Tag color={v === 'success' ? 'green' : 'red'}>{v}</Tag> },
+                      { title: t('pages.onlineProductList.log.detail'), dataIndex: 'detail' },
                     ]}
                   />
                 )}
               </div>
             ),
           });
-        }}>查看</Button>
+        }}>{t('pages.onlineProductList.viewDetail')}</Button>
       ),
     },
   ];
@@ -345,7 +357,7 @@ function ProductSyncTab() {
         >
           <Form.Item name="platform">
             <Select
-              placeholder="平台"
+              placeholder={t('pages.onlineProductList.filter.platformPlaceholder')}
               allowClear
               style={{ width: 160 }}
               options={[
@@ -357,10 +369,10 @@ function ProductSyncTab() {
           </Form.Item>
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit">筛选</Button>
-              <Button onClick={() => setFilters({ page: 1, pageSize: 20, type: 'product' })} icon={<ReloadOutlined />}>重置</Button>
+              <Button type="primary" htmlType="submit">{t('common.filter')}</Button>
+              <Button onClick={() => setFilters({ page: 1, pageSize: 20, type: 'product' })} icon={<ReloadOutlined />}>{t('common.reset')}</Button>
               <Button type="primary" icon={<CloudDownloadOutlined />} onClick={() => setPullOpen(true)}>
-                立即拉取
+                {t('pages.onlineProductList.sync.pullNow')}
               </Button>
             </Space>
           </Form.Item>
@@ -386,16 +398,16 @@ function ProductSyncTab() {
       </Card>
 
       <Modal
-        title="立即拉取商品"
+        title={t('pages.onlineProductList.sync.pullModalTitle')}
         open={pullOpen}
         onCancel={() => setPullOpen(false)}
         onOk={() => form.submit()}
         confirmLoading={runMut.isPending}
       >
         <Form form={form} layout="vertical" onFinish={(v) => runMut.mutate({ ...v, type: 'product' })}>
-          <Form.Item name="shopId" label="选择店铺" rules={[{ required: true }]}>
+          <Form.Item name="shopId" label={t('pages.onlineProductList.sync.selectShop')} rules={[{ required: true, message: t('common.pleaseSelect') + t('pages.onlineProductList.sync.shop') }]}>
             <Select
-              placeholder="选择店铺"
+              placeholder={t('pages.onlineProductList.sync.selectShop')}
               options={(shops?.items || []).map((s: any) => ({
                 label: `${s.name} (${s.platform?.name || s.platformId})`,
                 value: s.id,
@@ -405,7 +417,7 @@ function ProductSyncTab() {
           <div style={{ color: '#999', fontSize: 12 }}>
             <Empty
               image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="将从所选店铺拉取商品到 ERP"
+              description={t('pages.onlineProductList.sync.emptyDescription')}
               style={{ padding: 0 }}
             />
           </div>
@@ -417,18 +429,19 @@ function ProductSyncTab() {
 
 // ============ 入口 ============
 export default function OnlineProductList() {
+  const { t } = useTranslation();
   return (
     <div>
-      <Title level={4} style={{ marginTop: 0 }}>在线商品管理</Title>
-      <Text type="secondary">管理各店铺在售/下架/违规商品 · 同步拉取平台商品</Text>
+      <Title level={4} style={{ marginTop: 0 }}>{t('pages.onlineProductList.title')}</Title>
+      <Text type="secondary">{t('pages.onlineProductList.subtitle')}</Text>
       <Tabs
         style={{ marginTop: 12 }}
         defaultActiveKey="selling"
         items={[
-          { key: 'selling', label: '在售商品', children: <OnlineProductsTab initialStatus={1} /> },
-          { key: 'off', label: '下架商品', children: <OnlineProductsTab initialStatus={0} /> },
-          { key: 'illegal', label: '违规商品', children: <OnlineProductsTab initialStatus={2} /> },
-          { key: 'sync', label: '商品同步记录', children: <ProductSyncTab /> },
+          { key: 'selling', label: t('pages.onlineProductList.tab.selling'), children: <OnlineProductsTab initialStatus={1} /> },
+          { key: 'off', label: t('pages.onlineProductList.tab.off'), children: <OnlineProductsTab initialStatus={0} /> },
+          { key: 'illegal', label: t('pages.onlineProductList.tab.illegal'), children: <OnlineProductsTab initialStatus={2} /> },
+          { key: 'sync', label: t('pages.onlineProductList.tab.sync'), children: <ProductSyncTab /> },
         ]}
       />
     </div>

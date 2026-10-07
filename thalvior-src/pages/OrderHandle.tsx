@@ -42,14 +42,19 @@ import { useConfirmAction } from '../hooks/useConfirmAction.tsx';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import AuthButton from '../components/AuthButton';
 import dayjs from 'dayjs';
+import { useTranslation } from '../i18n';
+import { zhCN } from '../i18n/locales';
 
 const { Title, Text } = Typography;
 
 // 把后端返回的 HTML 写到新窗口, 让用户打印
-function openPrintWindow(html: string, title = '打印') {
+function openPrintWindow(html: string, title: string) {
   const w = window.open('', '_blank', 'width=900,height=700');
   if (!w) {
-    message.error('浏览器拦截了弹窗, 请允许弹窗后重试');
+    // 模块级函数无 hook 可用, 直接用 zhCN 主字典作为 fallback (保证永远有值, 不影响默认语言体验)
+    const msg: string = (zhCN as any).pages?.orderHandle?.msg?.popupBlocked
+      || '浏览器拦截了弹窗, 请允许弹窗后重试';
+    message.error(msg);
     return;
   }
   w.document.open();
@@ -58,35 +63,38 @@ function openPrintWindow(html: string, title = '打印') {
   w.document.title = title;
 }
 
-const TAB_DEFS: Array<{
-  key: string;
-  label: string;
-  icon: any;
-  color: string;
-  statusLabel: string;
-}> = [
-  { key: 'pending', label: '待收款', icon: <PayCircleOutlined />, color: '#fa8c16', statusLabel: 'pending' },
-  { key: 'pay', label: '已付款', icon: <DollarOutlined />, color: '#2db7f5', statusLabel: 'pay' },
-  { key: 'toship', label: '待发货', icon: <SendOutlined />, color: '#1677ff', statusLabel: 'toship' },
-  { key: 'shipped', label: '已发货', icon: <SendOutlined rotate={180} />, color: '#13c2c2', statusLabel: 'shipped' },
-  { key: 'done', label: '已完成', icon: <CheckOutlined />, color: '#52c41a', statusLabel: 'done' },
-  { key: 'cancel', label: '已取消', icon: <CloseCircleOutlined />, color: '#999', statusLabel: 'cancel' },
-  { key: 'abnormal', label: '异常订单', icon: <ExclamationCircleOutlined />, color: '#ff4d4f', statusLabel: 'refund' },
-];
+// TAB_DEFS 工厂: 因为 label 需要 t() 动态翻译
+function makeTabDefs(t: (key: string, params?: Record<string, string | number>) => string) {
+  return [
+    { key: 'pending', label: t('pages.orderHandle.tab.pending'), icon: <PayCircleOutlined />, color: '#fa8c16', statusLabel: 'pending' },
+    { key: 'pay', label: t('pages.orderHandle.tab.pay'), icon: <DollarOutlined />, color: '#2db7f5', statusLabel: 'pay' },
+    { key: 'toship', label: t('pages.orderHandle.tab.toship'), icon: <SendOutlined />, color: '#1677ff', statusLabel: 'toship' },
+    { key: 'shipped', label: t('pages.orderHandle.tab.shipped'), icon: <SendOutlined rotate={180} />, color: '#13c2c2', statusLabel: 'shipped' },
+    { key: 'done', label: t('pages.orderHandle.tab.done'), icon: <CheckOutlined />, color: '#52c41a', statusLabel: 'done' },
+    { key: 'cancel', label: t('pages.orderHandle.tab.cancel'), icon: <CloseCircleOutlined />, color: '#999', statusLabel: 'cancel' },
+    { key: 'abnormal', label: t('pages.orderHandle.tab.abnormal'), icon: <ExclamationCircleOutlined />, color: '#ff4d4f', statusLabel: 'refund' },
+  ];
+}
 
-const STATUS_BADGE: Record<string, { color: string; label: string }> = {
-  pending: { color: 'orange', label: '待付款' },
-  pay: { color: 'gold', label: '已付款' },
-  toship: { color: 'blue', label: '待发货' },
-  shipped: { color: 'cyan', label: '已发货' },
-  done: { color: 'green', label: '已完成' },
-  cancel: { color: 'default', label: '已取消' },
-  refund: { color: 'red', label: '退款中' },
-};
+function makeStatusBadge(t: (key: string, params?: Record<string, string | number>) => string) {
+  return {
+    pending: { color: 'orange', label: t('pages.orderHandle.status.pending') },
+    pay: { color: 'gold', label: t('pages.orderHandle.status.pay') },
+    toship: { color: 'blue', label: t('pages.orderHandle.status.toship') },
+    shipped: { color: 'cyan', label: t('pages.orderHandle.status.shipped') },
+    done: { color: 'green', label: t('pages.orderHandle.status.done') },
+    cancel: { color: 'default', label: t('pages.orderHandle.status.cancel') },
+    refund: { color: 'red', label: t('pages.orderHandle.status.refund') },
+  } as Record<string, { color: string; label: string }>;
+}
 
 export default function OrderHandle() {
+  const { t } = useTranslation();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const TAB_DEFS = useMemo(() => makeTabDefs(t), [t]);
+  const STATUS_BADGE = useMemo(() => makeStatusBadge(t), [t]);
 
   // 根据当前路径推断 active tab
   const pathKey: Record<string, string> = {
@@ -111,7 +119,7 @@ export default function OrderHandle() {
   const qc = useQueryClient();
   const { confirmModal, runWithConfirm } = useConfirmAction();
 
-  const currentTab = TAB_DEFS.find((t) => t.key === activeTab) || TAB_DEFS[1];
+  const currentTab = TAB_DEFS.find((td) => td.key === activeTab) || TAB_DEFS[1];
 
   const apiParams = useMemo(
     () => ({ ...filters, status: currentTab.statusLabel }),
@@ -143,36 +151,36 @@ export default function OrderHandle() {
   const handleShip = async (id: string, values: any) => {
     try {
       await orderApi.ship(id, values);
-      message.success('发货成功, 库存已扣减');
+      message.success(t('pages.orderHandle.msg.shipSuccess'));
       setShipOrder(null);
       qc.invalidateQueries({ queryKey: ['orders'] });
       qc.invalidateQueries({ queryKey: ['order-stats'] });
     } catch (e: any) {
-      message.error(e?.message || '发货失败');
+      message.error(e?.message || t('pages.orderHandle.msg.shipFailed'));
     }
   };
   const handleCancel = async (id: string, reason: string) => {
     runWithConfirm(
       {
         action: 'order.cancel',
-        description: `即将取消订单 (${id.slice(0, 8)}). 已付款订单将自动退款, 请确认。`,
+        description: t('pages.orderHandle.confirm.cancelDescription', { orderId: id.slice(0, 8) }),
         keyword: 'CANCEL',
         payload: { orderId: id, reason },
         highlight: [
-          { label: '订单 ID', value: id.slice(0, 8) + '...' },
-          { label: '原因', value: reason },
+          { label: t('pages.orderHandle.confirm.orderId'), value: id.slice(0, 8) + '...' },
+          { label: t('pages.orderHandle.confirm.reason'), value: reason },
         ],
         countdownSec: 3,
       },
       async (token) => {
         try {
           await orderApi.cancel(id, { reason, confirmToken: token });
-          message.success('订单已取消');
+          message.success(t('pages.orderHandle.msg.cancelSuccess'));
           setCancelOrder(null);
           qc.invalidateQueries({ queryKey: ['orders'] });
           qc.invalidateQueries({ queryKey: ['order-stats'] });
         } catch (e: any) {
-          message.error(e?.message || '取消失败');
+          message.error(e?.message || t('pages.orderHandle.msg.cancelFailed'));
           throw e;
         }
       },
@@ -184,25 +192,29 @@ export default function OrderHandle() {
     runWithConfirm(
       {
         action: 'order.refund',
-        description: `即将为订单 ${orderNo} 退款 ${values.amount} ${order?.currency || ''}。此操作会扣减财务收入并退回库存。`,
+        description: t('pages.orderHandle.confirm.refundDescription', {
+          orderNo,
+          amount: values.amount,
+          currency: order?.currency || '',
+        }),
         keyword: 'REFUND',
         payload: { orderId: id, amount: values.amount, reason: values.reason || '' },
         highlight: [
-          { label: '订单号', value: orderNo },
-          { label: '退款金额', value: `${values.amount} ${order?.currency || ''}`, danger: true },
-          { label: '原因', value: values.reason },
+          { label: t('pages.orderHandle.confirm.orderNo'), value: orderNo },
+          { label: t('pages.orderHandle.confirm.refundAmount'), value: `${values.amount} ${order?.currency || ''}`, danger: true },
+          { label: t('pages.orderHandle.confirm.reason'), value: values.reason },
         ],
         countdownSec: 3,
       },
       async (token) => {
         try {
           await orderApi.refund(id, { amount: values.amount, reason: values.reason, confirmToken: token });
-          message.success('退款已处理');
+          message.success(t('pages.orderHandle.msg.refundSuccess'));
           setRefundOrder(null);
           qc.invalidateQueries({ queryKey: ['orders'] });
           qc.invalidateQueries({ queryKey: ['order-stats'] });
         } catch (e: any) {
-          message.error(e?.message || '退款失败');
+          message.error(e?.message || t('pages.orderHandle.msg.refundFailed'));
           throw e;
         }
       },
@@ -211,29 +223,29 @@ export default function OrderHandle() {
   const handleComplete = async (id: string) => {
     try {
       await orderApi.complete(id);
-      message.success('已标记完成');
+      message.success(t('pages.orderHandle.msg.completeSuccess'));
       qc.invalidateQueries({ queryKey: ['orders'] });
     } catch (e: any) {
-      message.error(e?.message || '操作失败');
+      message.error(e?.message || t('pages.orderHandle.msg.opFailed'));
     }
   };
   const handlePay = async (id: string) => {
     try {
       await orderApi.pay(id);
-      message.success('已确认付款, 库存已锁定');
+      message.success(t('pages.orderHandle.msg.paySuccess'));
       qc.invalidateQueries({ queryKey: ['orders'] });
       qc.invalidateQueries({ queryKey: ['order-stats'] });
     } catch (e: any) {
-      message.error(e?.message || '付款确认失败');
+      message.error(e?.message || t('pages.orderHandle.msg.payFailed'));
     }
   };
   const handleToship = async (id: string) => {
     try {
       await orderApi.toship(id);
-      message.success('已转入待发货');
+      message.success(t('pages.orderHandle.msg.toshipSuccess'));
       qc.invalidateQueries({ queryKey: ['orders'] });
     } catch (e: any) {
-      message.error(e?.message || '操作失败');
+      message.error(e?.message || t('pages.orderHandle.msg.opFailed'));
     }
   };
 
@@ -241,28 +253,32 @@ export default function OrderHandle() {
   const handlePrintLabel = async (order: any) => {
     try {
       const r: any = await printApi.label(order.id);
-      message.success(`面单已生成 (${r.carrier} · ${r.trackingNo})`);
-      openPrintWindow(r.html, `面单 ${order.platformNo}`);
+      message.success(t('pages.orderHandle.msg.labelGenerated', { carrier: r.carrier, trackingNo: r.trackingNo }));
+      openPrintWindow(r.html, t('pages.orderHandle.print.labelTitle', { platformNo: order.platformNo }));
     } catch (e: any) {
-      message.error(e?.message || '生成面单失败');
+      message.error(e?.message || t('pages.orderHandle.msg.labelFailed'));
     }
   };
 
   // 批量打印拣货单
   const handlePrintPicklist = async (ids: string[]) => {
     if (!ids.length) {
-      message.warning('请先勾选要打印的订单');
+      message.warning(t('pages.orderHandle.msg.selectOrderFirst'));
       return;
     }
     setPrintingPick(true);
     try {
       const r: any = await printApi.picklist(ids);
       message.success(
-        `拣货单已生成: ${r.summary.orderCount} 单 / ${r.summary.itemCount} SKU / ${r.summary.warehouseCount} 仓`,
+        t('pages.orderHandle.msg.picklistGenerated', {
+          orderCount: r.summary.orderCount,
+          itemCount: r.summary.itemCount,
+          warehouseCount: r.summary.warehouseCount,
+        }),
       );
-      openPrintWindow(r.html, `拣货单`);
+      openPrintWindow(r.html, t('pages.orderHandle.print.picklistTitle'));
     } catch (e: any) {
-      message.error(e?.message || '生成拣货单失败');
+      message.error(e?.message || t('pages.orderHandle.msg.picklistFailed'));
     } finally {
       setPrintingPick(false);
     }
@@ -270,7 +286,7 @@ export default function OrderHandle() {
 
   const columns: any[] = [
     {
-      title: '平台订单号',
+      title: t('pages.orderHandle.col.platformNo'),
       dataIndex: 'platformNo',
       width: 180,
       fixed: 'left',
@@ -284,20 +300,25 @@ export default function OrderHandle() {
       ),
     },
     {
-      title: '店铺',
+      title: t('pages.orderHandle.col.shop'),
       dataIndex: 'shopId',
       width: 150,
       render: (v: string) => shopMap[v]?.name || v.slice(-6),
     },
-    { title: '买家', dataIndex: 'buyerName', width: 130, render: (v: string) => v || '-' },
     {
-      title: '国家',
+      title: t('pages.orderHandle.col.buyer'),
+      dataIndex: 'buyerName',
+      width: 130,
+      render: (v: string) => v || '-',
+    },
+    {
+      title: t('pages.orderHandle.col.country'),
       dataIndex: 'country',
       width: 80,
       render: (v: string) => <Tag>{v || '-'}</Tag>,
     },
     {
-      title: '金额',
+      title: t('pages.orderHandle.col.amount'),
       dataIndex: 'totalAmount',
       width: 120,
       render: (v: number, r: any) => (
@@ -305,16 +326,19 @@ export default function OrderHandle() {
       ),
     },
     {
-      title: '商品',
+      title: t('pages.orderHandle.col.product'),
       key: 'items',
       render: (_: any, r: any) => (
         <span>
-          {r.items?.length || 0} SKU, {r.items?.reduce((s: number, i: any) => s + i.quantity, 0)} 件
+          {t('pages.orderHandle.col.productRender', {
+            skuCount: r.items?.length || 0,
+            totalQty: r.items?.reduce((s: number, i: any) => s + i.quantity, 0),
+          })}
         </span>
       ),
     },
     {
-      title: '状态',
+      title: t('pages.orderHandle.col.status'),
       dataIndex: 'status',
       width: 100,
       render: (s: string) => {
@@ -323,53 +347,53 @@ export default function OrderHandle() {
       },
     },
     {
-      title: '下单时间',
+      title: t('pages.orderHandle.col.createdAt'),
       dataIndex: 'createdAt',
       width: 140,
       render: (v: string) => dayjs(v).format('MM-DD HH:mm'),
     },
     {
-      title: '操作',
+      title: t('pages.orderHandle.col.actions'),
       key: 'op',
       width: 280,
       fixed: 'right',
       render: (_: any, r: any) => (
         <Space size={4} wrap>
           <Button size="small" type="link" icon={<EyeOutlined />} onClick={() => setDetail(r)}>
-            详情
+            {t('common.detail')}
           </Button>
           {r.status === 'pending' ? (
             <AuthButton size="small" type="link" perm="order:detail" icon={<PayCircleOutlined />} onClick={() => handlePay(r.id)}>
-              确认收款
+              {t('pages.orderHandle.action.confirmPay')}
             </AuthButton>
           ) : null}
           {r.status === 'pay' ? (
             <AuthButton size="small" type="link" perm="order:detail" icon={<SendOutlined />} onClick={() => handleToship(r.id)}>
-              进入待发货
+              {t('pages.orderHandle.action.toToship')}
             </AuthButton>
           ) : null}
           {r.status === 'pay' || r.status === 'toship' ? (
             <AuthButton size="small" type="link" perm="order:ship" icon={<SendOutlined />} onClick={() => setShipOrder(r)}>
-              发货
+              {t('pages.orderHandle.action.ship')}
             </AuthButton>
           ) : null}
           {(r.status === 'pending' || r.status === 'pay' || r.status === 'toship') ? (
             <AuthButton size="small" type="link" danger perm="order:cancel" icon={<CloseCircleOutlined />} onClick={() => setCancelOrder(r)}>
-              取消
+              {t('common.cancel')}
             </AuthButton>
           ) : null}
           {r.status === 'pay' || r.status === 'toship' || r.status === 'shipped' || r.status === 'done' ? (
             <AuthButton size="small" type="link" perm="order:refund" icon={<RollbackOutlined />} onClick={() => setRefundOrder(r)}>
-              退款
+              {t('pages.orderHandle.action.refund')}
             </AuthButton>
           ) : null}
           {r.status === 'shipped' ? (
             <AuthButton size="small" type="link" perm="order:detail" icon={<CheckOutlined />} onClick={() => handleComplete(r.id)}>
-              完成
+              {t('pages.orderHandle.action.complete')}
             </AuthButton>
           ) : null}
           <AuthButton size="small" type="link" perm="order:print" icon={<PrinterOutlined />} onClick={() => handlePrintLabel(r)}>
-            面单
+            {t('pages.orderHandle.action.label')}
           </AuthButton>
         </Space>
       ),
@@ -378,30 +402,30 @@ export default function OrderHandle() {
 
   return (
     <div>
-      <Title level={4} style={{ marginTop: 0 }}>订单处理</Title>
-      <Text type="secondary">按订单状态分桶处理, 支持批量发货/取消/退款</Text>
+      <Title level={4} style={{ marginTop: 0 }}>{t('pages.orderHandle.title')}</Title>
+      <Text type="secondary">{t('pages.orderHandle.subtitle')}</Text>
 
       <Row gutter={16} style={{ marginTop: 12, marginBottom: 16 }}>
-        {TAB_DEFS.map((t) => (
-          <Col span={4} key={t.key}>
+        {TAB_DEFS.map((td) => (
+          <Col span={4} key={td.key}>
             <Card
               hoverable
               size="small"
               onClick={() => {
-                setSearchParams({ tab: t.key });
+                setSearchParams({ tab: td.key });
                 setFilters({ page: 1, pageSize: 15 });
               }}
-              style={activeTab === t.key ? { borderColor: t.color, boxShadow: `0 0 0 1px ${t.color}` } : {}}
+              style={activeTab === td.key ? { borderColor: td.color, boxShadow: `0 0 0 1px ${td.color}` } : {}}
             >
               <Statistic
                 title={
                   <Space>
-                    <span style={{ color: t.color }}>{t.icon}</span>
-                    {t.label}
+                    <span style={{ color: td.color }}>{td.icon}</span>
+                    {td.label}
                   </Space>
                 }
-                value={(stats as any)?.[t.statusLabel] || 0}
-                valueStyle={{ color: t.color, fontSize: 20 }}
+                value={(stats as any)?.[td.statusLabel] || 0}
+                valueStyle={{ color: td.color, fontSize: 20 }}
               />
             </Card>
           </Col>
@@ -421,22 +445,22 @@ export default function OrderHandle() {
           onFinish={(v) => setFilters((f: any) => ({ ...f, ...v, page: 1 }))}
         >
           <Form.Item name="keyword">
-            <Input placeholder="订单号 / 买家名 / 邮箱" allowClear prefix={<SearchOutlined />} style={{ width: 260 }} />
+            <Input placeholder={t('pages.orderHandle.filter.keywordPlaceholder')} allowClear prefix={<SearchOutlined />} style={{ width: 260 }} />
           </Form.Item>
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit">搜索</Button>
-              <Button icon={<ReloadOutlined />} onClick={() => setFilters({ page: 1, pageSize: 15 })}>重置</Button>
+              <Button type="primary" htmlType="submit">{t('common.search')}</Button>
+              <Button icon={<ReloadOutlined />} onClick={() => setFilters({ page: 1, pageSize: 15 })}>{t('common.reset')}</Button>
             </Space>
           </Form.Item>
         </Form>
 
         <div style={{ marginBottom: 12, color: '#999', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>
-            本页金额合计: <span style={{ color: '#cf1322', fontWeight: 600 }}>{totalAmount.toFixed(2)}</span> (含 {items.length} 单)
+            {t('pages.orderHandle.stat.pageTotal', { amount: totalAmount.toFixed(2), count: items.length })}
             {selectedIds.length > 0 && (
               <span style={{ marginLeft: 16, color: '#1677ff' }}>
-                · 已选 <b>{selectedIds.length}</b> 单
+                {t('pages.orderHandle.stat.selected', { count: selectedIds.length })}
               </span>
             )}
           </span>
@@ -447,20 +471,20 @@ export default function OrderHandle() {
               loading={printingPick}
               perm="order:print"
             >
-              打印拣货单 ({selectedIds.length || 0})
+              {t('pages.orderHandle.action.printPicklist', { count: selectedIds.length || 0 })}
             </AuthButton>
             <Button
               size="small"
               onClick={() => setSelectedIds(items.map((i: any) => i.id))}
             >
-              全选当前页
+              {t('pages.orderHandle.action.selectAllCurrent')}
             </Button>
             <Button
               size="small"
               onClick={() => setSelectedIds([])}
               disabled={selectedIds.length === 0}
             >
-              清空选择
+              {t('pages.orderHandle.action.clearSelection')}
             </Button>
           </Space>
         </div>
@@ -482,23 +506,23 @@ export default function OrderHandle() {
               pageSize: filters.pageSize,
               total,
               showSizeChanger: true,
-              showTotal: (t) => `共 ${t} 条`,
+              showTotal: (totalCount) => t('pages.orderHandle.pagination.total', { total: totalCount }),
               onChange: (page, pageSize) => setFilters((f: any) => ({ ...f, page, pageSize })),
             }}
           />
         ) : (
-          !isLoading && <Empty description="暂无订单" />
+          !isLoading && <Empty description={t('pages.orderHandle.empty.noOrders')} />
         )}
       </Card>
 
-      <Drawer title="订单详情" open={!!detail} onClose={() => setDetail(null)} width={720} extra={
+      <Drawer title={t('pages.orderHandle.drawer.title')} open={!!detail} onClose={() => setDetail(null)} width={720} extra={
         detail && (
           <Space>
             <Button icon={<PrinterOutlined />} onClick={() => handlePrintLabel(detail)}>
-              打印面单
+              {t('pages.orderHandle.drawer.printLabel')}
             </Button>
             <Button icon={<FileTextOutlined />} onClick={() => handlePrintPicklist([detail.id])}>
-              拣货单
+              {t('pages.orderHandle.drawer.picklist')}
             </Button>
           </Space>
         )
@@ -506,36 +530,38 @@ export default function OrderHandle() {
         {detail && (
           <>
             <Descriptions bordered size="small" column={2}>
-              <Descriptions.Item label="平台订单号" span={2}>
+              <Descriptions.Item label={t('pages.orderHandle.detail.platformNo')} span={2}>
                 <code>{detail.platformNo}</code>
               </Descriptions.Item>
-              <Descriptions.Item label="店铺">{detail.shop?.name}</Descriptions.Item>
-              <Descriptions.Item label="平台">{detail.shop?.platform?.name}</Descriptions.Item>
-              <Descriptions.Item label="买家">{detail.buyerName || '-'}</Descriptions.Item>
-              <Descriptions.Item label="邮箱">{detail.buyerEmail || '-'}</Descriptions.Item>
-              <Descriptions.Item label="国家">{detail.country || '-'}</Descriptions.Item>
-              <Descriptions.Item label="状态"><Tag color={STATUS_BADGE[detail.status]?.color}>{STATUS_BADGE[detail.status]?.label || detail.status}</Tag></Descriptions.Item>
-              <Descriptions.Item label="订单金额" span={2}>
+              <Descriptions.Item label={t('pages.orderHandle.detail.shop')}>{detail.shop?.name}</Descriptions.Item>
+              <Descriptions.Item label={t('pages.orderHandle.detail.platform')}>{detail.shop?.platform?.name}</Descriptions.Item>
+              <Descriptions.Item label={t('pages.orderHandle.detail.buyer')}>{detail.buyerName || '-'}</Descriptions.Item>
+              <Descriptions.Item label={t('pages.orderHandle.detail.email')}>{detail.buyerEmail || '-'}</Descriptions.Item>
+              <Descriptions.Item label={t('pages.orderHandle.detail.country')}>{detail.country || '-'}</Descriptions.Item>
+              <Descriptions.Item label={t('pages.orderHandle.detail.status')}>
+                <Tag color={STATUS_BADGE[detail.status]?.color}>{STATUS_BADGE[detail.status]?.label || detail.status}</Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label={t('pages.orderHandle.detail.orderAmount')} span={2}>
                 <span style={{ color: '#cf1322', fontWeight: 600, fontSize: 16 }}>{detail.totalAmount} {detail.currency}</span>
               </Descriptions.Item>
-              <Descriptions.Item label="运费">{detail.shipFee}</Descriptions.Item>
-              <Descriptions.Item label="成本">{detail.costAmount}</Descriptions.Item>
-              <Descriptions.Item label="付款时间">{detail.payTime ? dayjs(detail.payTime).format('YYYY-MM-DD HH:mm') : '-'}</Descriptions.Item>
-              <Descriptions.Item label="发货时间">{detail.shipTime ? dayjs(detail.shipTime).format('YYYY-MM-DD HH:mm') : '-'}</Descriptions.Item>
-              {detail.remark && <Descriptions.Item label="备注" span={2}>{detail.remark}</Descriptions.Item>}
+              <Descriptions.Item label={t('pages.orderHandle.detail.shipFee')}>{detail.shipFee}</Descriptions.Item>
+              <Descriptions.Item label={t('pages.orderHandle.detail.cost')}>{detail.costAmount}</Descriptions.Item>
+              <Descriptions.Item label={t('pages.orderHandle.detail.payTime')}>{detail.payTime ? dayjs(detail.payTime).format('YYYY-MM-DD HH:mm') : '-'}</Descriptions.Item>
+              <Descriptions.Item label={t('pages.orderHandle.detail.shipTime')}>{detail.shipTime ? dayjs(detail.shipTime).format('YYYY-MM-DD HH:mm') : '-'}</Descriptions.Item>
+              {detail.remark && <Descriptions.Item label={t('pages.orderHandle.detail.remark')} span={2}>{detail.remark}</Descriptions.Item>}
             </Descriptions>
-            <Divider>商品明细 ({detail.items?.length || 0})</Divider>
+            <Divider>{t('pages.orderHandle.detail.productDivider', { count: detail.items?.length || 0 })}</Divider>
             <Table
               size="small"
               rowKey="id"
               pagination={false}
               dataSource={detail.items || []}
               columns={[
-                { title: 'SKU', dataIndex: 'sku' },
-                { title: '商品', dataIndex: 'productName' },
-                { title: '数量', dataIndex: 'quantity', width: 80 },
-                { title: '单价', dataIndex: 'price', width: 100, render: (v: number) => v?.toFixed(2) },
-                { title: '小计', dataIndex: 'amount', width: 100, render: (v: number) => v?.toFixed(2) },
+                { title: t('pages.orderHandle.detailCol.sku'), dataIndex: 'sku' },
+                { title: t('pages.orderHandle.detailCol.product'), dataIndex: 'productName' },
+                { title: t('pages.orderHandle.detailCol.quantity'), dataIndex: 'quantity', width: 80 },
+                { title: t('pages.orderHandle.detailCol.unitPrice'), dataIndex: 'price', width: 100, render: (v: number) => v?.toFixed(2) },
+                { title: t('pages.orderHandle.detailCol.subtotal'), dataIndex: 'amount', width: 100, render: (v: number) => v?.toFixed(2) },
               ]}
             />
           </>
@@ -552,32 +578,33 @@ export default function OrderHandle() {
 }
 
 function ShipModal({ order, onClose, onSubmit }: { order: any; onClose: () => void; onSubmit: (id: string, v: any) => void }) {
+  const { t } = useTranslation();
   const [form] = Form.useForm();
   if (!order) return null;
   return (
     <Modal
-      title={`发货 - ${order.platformNo}`}
+      title={t('pages.orderHandle.shipModal.title', { platformNo: order.platformNo })}
       open={!!order}
       onCancel={onClose}
       onOk={() => form.submit()}
-      okText="确认发货"
+      okText={t('pages.orderHandle.shipModal.okText')}
     >
       <Form form={form} layout="vertical" onFinish={(v) => onSubmit(order.id, v)} initialValues={{ carrier: 'UPS' }}>
-        <Form.Item label="物流公司" name="carrier" rules={[{ required: true }]}>
+        <Form.Item label={t('pages.orderHandle.shipModal.carrier')} name="carrier" rules={[{ required: true }]}>
           <Select options={[
             { value: 'UPS', label: 'UPS' },
             { value: 'FedEx', label: 'FedEx' },
             { value: 'USPS', label: 'USPS' },
             { value: 'DHL', label: 'DHL' },
-            { value: '顺丰国际', label: '顺丰国际' },
-            { value: 'JNE', label: 'JNE (印尼)' },
+            { value: '顺丰国际', label: t('pages.orderHandle.shipModal.carrierSf') },
+            { value: 'JNE', label: t('pages.orderHandle.shipModal.carrierJne') },
             { value: 'Shopee Express', label: 'Shopee Express' },
           ]} />
         </Form.Item>
-        <Form.Item label="运单号" name="trackingNo" rules={[{ required: true, message: '请输入运单号' }]}>
-          <Input placeholder="物流单号" />
+        <Form.Item label={t('pages.orderHandle.shipModal.trackingNo')} name="trackingNo" rules={[{ required: true, message: t('pages.orderHandle.shipModal.trackingNoRequired') }]}>
+          <Input placeholder={t('pages.orderHandle.shipModal.trackingNoPlaceholder')} />
         </Form.Item>
-        <Form.Item label="备注" name="remark">
+        <Form.Item label={t('pages.orderHandle.shipModal.remark')} name="remark">
           <Input.TextArea rows={2} />
         </Form.Item>
       </Form>
@@ -586,22 +613,23 @@ function ShipModal({ order, onClose, onSubmit }: { order: any; onClose: () => vo
 }
 
 function CancelModal({ order, onClose, onSubmit }: { order: any; onClose: () => void; onSubmit: (id: string, reason: string) => void }) {
+  const { t } = useTranslation();
   const [reason, setReason] = useState('');
   if (!order) return null;
   return (
     <Modal
-      title={`取消订单 - ${order.platformNo}`}
+      title={t('pages.orderHandle.cancelModal.title', { platformNo: order.platformNo })}
       open={!!order}
       onCancel={onClose}
       onOk={() => reason && onSubmit(order.id, reason)}
-      okText="确认取消"
+      okText={t('pages.orderHandle.cancelModal.okText')}
       okButtonProps={{ danger: true, disabled: !reason }}
     >
-      <p>订单金额: <b>{order.totalAmount} {order.currency}</b></p>
+      <p>{t('pages.orderHandle.cancelModal.orderAmount')}: <b>{order.totalAmount} {order.currency}</b></p>
       <Input.TextArea
         value={reason}
         onChange={(e) => setReason(e.target.value)}
-        placeholder="请输入取消原因"
+        placeholder={t('pages.orderHandle.cancelModal.reasonPlaceholder')}
         rows={3}
       />
     </Modal>
@@ -609,18 +637,19 @@ function CancelModal({ order, onClose, onSubmit }: { order: any; onClose: () => 
 }
 
 function RefundModal({ order, onClose, onSubmit }: { order: any; onClose: () => void; onSubmit: (id: string, v: any) => void }) {
+  const { t } = useTranslation();
   const [form] = Form.useForm();
   if (!order) return null;
   return (
     <Modal
-      title={`退款 - ${order.platformNo}`}
+      title={t('pages.orderHandle.refundModal.title', { platformNo: order.platformNo })}
       open={!!order}
       onCancel={onClose}
       onOk={() => form.submit()}
-      okText="确认退款"
+      okText={t('pages.orderHandle.refundModal.okText')}
     >
-      <Form form={form} layout="vertical" onFinish={(v) => onSubmit(order.id, v)} initialValues={{ amount: order.totalAmount, reason: '买家申请' }}>
-        <Form.Item label="退款金额" name="amount" rules={[{ required: true }]}>
+      <Form form={form} layout="vertical" onFinish={(v) => onSubmit(order.id, v)} initialValues={{ amount: order.totalAmount, reason: t('pages.orderHandle.refundModal.defaultReason') }}>
+        <Form.Item label={t('pages.orderHandle.refundModal.amount')} name="amount" rules={[{ required: true }]}>
           <InputNumber
             style={{ width: '100%' }}
             min={0.01}
@@ -628,7 +657,7 @@ function RefundModal({ order, onClose, onSubmit }: { order: any; onClose: () => 
             addonAfter={order.currency}
           />
         </Form.Item>
-        <Form.Item label="退款原因" name="reason" rules={[{ required: true }]}>
+        <Form.Item label={t('pages.orderHandle.refundModal.reason')} name="reason" rules={[{ required: true }]}>
           <Input.TextArea rows={2} />
         </Form.Item>
       </Form>

@@ -15,6 +15,7 @@ import {
 import { useMutation } from '@tanstack/react-query';
 import { post } from '../api/http';
 import { useAuthStore } from '../store/auth';
+import { useTranslation } from '../i18n';
 
 const { Text } = Typography;
 
@@ -49,12 +50,13 @@ export function ExportButton({
   type,
   filters,
   config,
-  text = '导出',
+  text,
   variant = 'default',
   size = 'middle',
   disabled,
   showAllFormats = true,
 }: ExportButtonProps) {
+  const { t } = useTranslation();
   const { token } = useAuthStore();
   const [open, setOpen] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -112,7 +114,7 @@ export function ExportButton({
       setResult({ ok: true, filename: data.filename });
     },
     onError: (e: any) => {
-      setResult({ ok: false, error: e?.message || '导出失败' });
+      setResult({ ok: false, error: e?.message || t('common.export.failed') });
     },
   });
 
@@ -122,6 +124,7 @@ export function ExportButton({
     setResult(null);
   };
 
+  const labelExport = text || t('common.export.default');
   // 仅 Excel
   if (!showAllFormats) {
     return (
@@ -134,7 +137,7 @@ export function ExportButton({
           disabled={disabled}
           onClick={() => exportMut.mutate('excel')}
         >
-          {text}
+          {labelExport}
         </Button>
         {open && <ProgressModal open={open} progress={progress} result={result} onClose={closeModal} />}
       </>
@@ -145,17 +148,17 @@ export function ExportButton({
     {
       key: 'excel',
       icon: <FileExcelOutlined style={{ color: '#52c41a' }} />,
-      label: '导出 Excel (.xlsx)',
+      label: t('common.export.excel'),
     },
     {
       key: 'pdf',
       icon: <FilePdfOutlined style={{ color: '#ff4d4f' }} />,
-      label: '导出 PDF',
+      label: t('common.export.pdf'),
     },
     {
       key: 'csv',
       icon: <FileTextOutlined style={{ color: '#1677ff' }} />,
-      label: '导出 CSV',
+      label: t('common.export.csv'),
     },
   ];
 
@@ -176,7 +179,7 @@ export function ExportButton({
           disabled={disabled}
         >
           <Space>
-            {text}
+            {labelExport}
             <DownOutlined />
           </Space>
         </Button>
@@ -192,10 +195,11 @@ function ProgressModal({ open, progress, result, onClose }: {
   result: { ok: boolean; filename?: string; error?: string } | null;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <Modal
       open={open}
-      title="报表导出"
+      title={t('common.export.title')}
       onCancel={onClose}
       footer={null}
       closable={!!result}
@@ -203,7 +207,7 @@ function ProgressModal({ open, progress, result, onClose }: {
     >
       {!result && (
         <Space direction="vertical" style={{ width: '100%' }}>
-          <Text>正在导出数据, 请稍候...</Text>
+          <Text>{t('common.export.exporting')}</Text>
           <Progress percent={progress} status="active" />
         </Space>
       )}
@@ -214,7 +218,7 @@ function ProgressModal({ open, progress, result, onClose }: {
           icon={<CheckCircleOutlined />}
           message={
             <Space direction="vertical">
-              <Text strong>导出成功!</Text>
+              <Text strong>{t('common.export.success')}</Text>
               <Text type="secondary" style={{ fontSize: 12 }}>{result.filename}</Text>
             </Space>
           }

@@ -9,22 +9,24 @@ import {
 import ReactECharts from 'echarts-for-react';
 import dayjs from 'dayjs';
 import { dashboardApi, orderApi, productApi, shopApi } from '../api';
+import { useTranslation } from '../i18n';
 
 const { Title, Text } = Typography;
 
-const STATUS_MAP: Record<string, { color: string; text: string }> = {
-  pending: { color: 'default', text: '待付款' },
-  pay: { color: 'cyan', text: '已付款' },
-  toship: { color: 'blue', text: '待发货' },
-  shipped: { color: 'green', text: '已发货' },
-  done: { color: 'green', text: '已完成' },
-  cancel: { color: 'red', text: '已取消' },
-  refund: { color: 'orange', text: '退款' },
-  abnormal: { color: 'red', text: '异常' },
+const STATUS_MAP: Record<string, { color: string; textKey: string }> = {
+  pending: { color: 'default', textKey: 'pending' },
+  pay: { color: 'cyan', textKey: 'pay' },
+  toship: { color: 'blue', textKey: 'toship' },
+  shipped: { color: 'green', textKey: 'shipped' },
+  done: { color: 'green', textKey: 'done' },
+  cancel: { color: 'red', textKey: 'cancel' },
+  refund: { color: 'orange', textKey: 'refund' },
+  abnormal: { color: 'red', textKey: 'abnormal' },
 };
 
 // ============ 运营总览 ============
 function OverviewTab() {
+  const { t } = useTranslation();
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard-overview'],
     queryFn: () => dashboardApi.overview(),
@@ -33,24 +35,24 @@ function OverviewTab() {
 
   const lineOption = {
     tooltip: { trigger: 'axis' },
-    legend: { data: ['销售额(USD)', '订单数'], top: 0, right: 10 },
+    legend: { data: [t('pages.dataCenter.chart.salesUsd'), t('pages.dataCenter.chart.orderCount')], top: 0, right: 10 },
     grid: { left: 60, right: 60, top: 40, bottom: 40 },
-    xAxis: { type: 'category', data: (data?.trend || []).map((t: any) => t.date) },
+    xAxis: { type: 'category', data: (data?.trend || []).map((tr: any) => tr.date) },
     yAxis: [
-      { type: 'value', name: '金额', position: 'left' },
-      { type: 'value', name: '订单数', position: 'right' },
+      { type: 'value', name: t('pages.dataCenter.chart.amount'), position: 'left' },
+      { type: 'value', name: t('pages.dataCenter.chart.orderCount'), position: 'right' },
     ],
     series: [
       {
-        name: '销售额(USD)', type: 'line', smooth: true, yAxisIndex: 0,
+        name: t('pages.dataCenter.chart.salesUsd'), type: 'line', smooth: true, yAxisIndex: 0,
         itemStyle: { color: '#1677ff' },
         areaStyle: { color: 'rgba(22,119,255,0.1)' },
-        data: (data?.trend || []).map((t: any) => t.amount),
+        data: (data?.trend || []).map((tr: any) => tr.amount),
       },
       {
-        name: '订单数', type: 'bar', yAxisIndex: 1,
+        name: t('pages.dataCenter.chart.orderCount'), type: 'bar', yAxisIndex: 1,
         itemStyle: { color: '#52c41a', borderRadius: [4, 4, 0, 0] },
-        data: (data?.trend || []).map((t: any) => t.count),
+        data: (data?.trend || []).map((tr: any) => tr.count),
       },
     ],
   };
@@ -69,28 +71,28 @@ function OverviewTab() {
   return (
     <div>
       <Row gutter={16}>
-        <Col xs={12} md={6}><Card bordered={false}><Statistic title="累计订单" value={kpi?.totalOrders || 0} prefix={<AppstoreOutlined />} loading={isLoading} /></Card></Col>
-        <Col xs={12} md={6}><Card bordered={false}><Statistic title="累计销售额" value={kpi?.totalAmount || 0} precision={2} prefix="$" loading={isLoading} /></Card></Col>
-        <Col xs={12} md={6}><Card bordered={false}><Statistic title="在售商品" value={kpi?.activeProducts || 0} prefix={<RiseOutlined />} loading={isLoading} /></Card></Col>
-        <Col xs={12} md={6}><Card bordered={false}><Statistic title="待发货" value={kpi?.pendingShip || 0} valueStyle={{ color: '#fa8c16' }} loading={isLoading} /></Card></Col>
+        <Col xs={12} md={6}><Card bordered={false}><Statistic title={t('pages.dataCenter.kpi.totalOrders')} value={kpi?.totalOrders || 0} prefix={<AppstoreOutlined />} loading={isLoading} /></Card></Col>
+        <Col xs={12} md={6}><Card bordered={false}><Statistic title={t('pages.dataCenter.kpi.totalAmount')} value={kpi?.totalAmount || 0} precision={2} prefix="$" loading={isLoading} /></Card></Col>
+        <Col xs={12} md={6}><Card bordered={false}><Statistic title={t('pages.dataCenter.kpi.activeProducts')} value={kpi?.activeProducts || 0} prefix={<RiseOutlined />} loading={isLoading} /></Card></Col>
+        <Col xs={12} md={6}><Card bordered={false}><Statistic title={t('pages.dataCenter.kpi.pendingShip')} value={kpi?.pendingShip || 0} valueStyle={{ color: '#fa8c16' }} loading={isLoading} /></Card></Col>
       </Row>
       <Row gutter={16} style={{ marginTop: 16 }}>
         <Col xs={24} md={16}>
-          <Card title="近 7 日销售趋势" bordered={false}>
+          <Card title={t('pages.dataCenter.overview.trendTitle')} bordered={false}>
             <ReactECharts option={lineOption} style={{ height: 320 }} />
           </Card>
         </Col>
         <Col xs={24} md={8}>
-          <Card title="平台分布" bordered={false}>
+          <Card title={t('pages.dataCenter.overview.platformDistTitle')} bordered={false}>
             <ReactECharts option={pieOption} style={{ height: 320 }} />
           </Card>
         </Col>
       </Row>
-      <Card title="订单状态分布" bordered={false} style={{ marginTop: 16 }}>
+      <Card title={t('pages.dataCenter.overview.statusTitle')} bordered={false} style={{ marginTop: 16 }}>
         <Space wrap>
           {(data?.statusStats || []).map((s: any) => (
             <Tag key={s.status} color={STATUS_MAP[s.status]?.color || 'default'}>
-              {STATUS_MAP[s.status]?.text || s.status}: {s.count}
+              {STATUS_MAP[s.status] ? t(`pages.dataCenter.status.${STATUS_MAP[s.status].textKey}`) : s.status}: {s.count}
             </Tag>
           ))}
         </Space>
@@ -101,6 +103,7 @@ function OverviewTab() {
 
 // ============ 商品分析 ============
 function ProductAnalysisTab() {
+  const { t } = useTranslation();
   const { data, isLoading } = useQuery({
     queryKey: ['products-all'],
     queryFn: () => productApi.list({ page: 1, pageSize: 100 }),
@@ -117,33 +120,33 @@ function ProductAnalysisTab() {
       radius: '70%',
       label: { formatter: '{b}\n{d}%' },
       data: [
-        { value: onSale, name: '在售', itemStyle: { color: '#52c41a' } },
-        { value: off, name: '下架', itemStyle: { color: '#d9d9d9' } },
-        { value: illegal, name: '违规', itemStyle: { color: '#f5222d' } },
+        { value: onSale, name: t('pages.dataCenter.product.statusOnSale'), itemStyle: { color: '#52c41a' } },
+        { value: off, name: t('pages.dataCenter.product.statusOffShelf'), itemStyle: { color: '#d9d9d9' } },
+        { value: illegal, name: t('pages.dataCenter.product.statusViolation'), itemStyle: { color: '#f5222d' } },
       ],
     }],
   };
 
   const columns = [
     { title: 'SKU', dataIndex: 'sku', width: 140 },
-    { title: '商品', dataIndex: 'name', ellipsis: true },
-    { title: '类目', dataIndex: 'category', width: 120, render: (v: string) => v || '-' },
+    { title: t('pages.dataCenter.product.colProduct'), dataIndex: 'name', ellipsis: true },
+    { title: t('pages.dataCenter.product.colCategory'), dataIndex: 'category', width: 120, render: (v: string) => v || '-' },
     {
-      title: '成本价',
+      title: t('pages.dataCenter.product.colCostPrice'),
       dataIndex: 'costPrice',
       width: 120,
       align: 'right' as const,
       render: (v: number, r: any) => `${r.currency} ${(+v).toFixed(2)}`,
     },
     {
-      title: '售价',
+      title: t('pages.dataCenter.product.colSalePrice'),
       dataIndex: 'salePrice',
       width: 120,
       align: 'right' as const,
       render: (v: number, r: any) => `${r.currency} ${(+v).toFixed(2)}`,
     },
     {
-      title: '毛利率',
+      title: t('pages.dataCenter.product.colMargin'),
       width: 100,
       align: 'right' as const,
       render: (_: any, r: any) => {
@@ -152,12 +155,16 @@ function ProductAnalysisTab() {
       },
     },
     {
-      title: '状态',
+      title: t('pages.dataCenter.product.colStatus'),
       dataIndex: 'status',
       width: 100,
       render: (v: number) => {
-        const m: any = { 1: { color: 'green', text: '在售' }, 0: { color: 'default', text: '下架' }, 2: { color: 'red', text: '违规' } };
-        return <Tag color={m[v]?.color}>{m[v]?.text || v}</Tag>;
+        const statusTexts: Record<number, { color: string; text: string }> = {
+          1: { color: 'green', text: t('pages.dataCenter.product.statusOnSale') },
+          0: { color: 'default', text: t('pages.dataCenter.product.statusOffShelf') },
+          2: { color: 'red', text: t('pages.dataCenter.product.statusViolation') },
+        };
+        return <Tag color={statusTexts[v]?.color}>{statusTexts[v]?.text || v}</Tag>;
       },
     },
   ];
@@ -165,18 +172,18 @@ function ProductAnalysisTab() {
   return (
     <div>
       <Row gutter={16} style={{ marginBottom: 12 }}>
-        <Col span={8}><Card bordered={false}><Statistic title="在售商品" value={onSale} valueStyle={{ color: '#52c41a' }} loading={isLoading} /></Card></Col>
-        <Col span={8}><Card bordered={false}><Statistic title="下架商品" value={off} loading={isLoading} /></Card></Col>
-        <Col span={8}><Card bordered={false}><Statistic title="违规商品" value={illegal} valueStyle={{ color: '#f5222d' }} loading={isLoading} /></Card></Col>
+        <Col span={8}><Card bordered={false}><Statistic title={t('pages.dataCenter.kpi.activeProducts')} value={onSale} valueStyle={{ color: '#52c41a' }} loading={isLoading} /></Card></Col>
+        <Col span={8}><Card bordered={false}><Statistic title={t('pages.dataCenter.product.offShelfCount')} value={off} loading={isLoading} /></Card></Col>
+        <Col span={8}><Card bordered={false}><Statistic title={t('pages.dataCenter.product.violationCount')} value={illegal} valueStyle={{ color: '#f5222d' }} loading={isLoading} /></Card></Col>
       </Row>
       <Row gutter={16}>
         <Col xs={24} md={8}>
-          <Card title="商品状态" bordered={false}>
+          <Card title={t('pages.dataCenter.product.statusChartTitle')} bordered={false}>
             <ReactECharts option={pieOption} style={{ height: 280 }} />
           </Card>
         </Col>
         <Col xs={24} md={16}>
-          <Card title="商品列表" bordered={false}>
+          <Card title={t('pages.dataCenter.product.listTitle')} bordered={false}>
             <Table
               size="middle"
               dataSource={list.slice(0, 20)}
@@ -195,6 +202,7 @@ function ProductAnalysisTab() {
 
 // ============ 店铺统计 ============
 function ShopStatTab() {
+  const { t } = useTranslation();
   const { data, isLoading } = useQuery({
     queryKey: ['shops'],
     queryFn: () => shopApi.list({ page: 1, pageSize: 50 }),
@@ -202,19 +210,19 @@ function ShopStatTab() {
   const list = data?.items || [];
 
   const columns = [
-    { title: '店铺名称', dataIndex: 'name', width: 200 },
-    { title: '店铺 ID', dataIndex: 'shopId', width: 160 },
-    { title: '平台', dataIndex: ['platform', 'name'], width: 120 },
-    { title: '区域', dataIndex: 'region', width: 100, render: (v: string) => v || '-' },
-    { title: '币种', dataIndex: 'currency', width: 100 },
+    { title: t('pages.dataCenter.shop.colName'), dataIndex: 'name', width: 200 },
+    { title: t('pages.dataCenter.shop.colShopId'), dataIndex: 'shopId', width: 160 },
+    { title: t('pages.dataCenter.shop.colPlatform'), dataIndex: ['platform', 'name'], width: 120 },
+    { title: t('pages.dataCenter.shop.colRegion'), dataIndex: 'region', width: 100, render: (v: string) => v || '-' },
+    { title: t('pages.dataCenter.shop.colCurrency'), dataIndex: 'currency', width: 100 },
     {
-      title: '状态',
+      title: t('pages.dataCenter.shop.colStatus'),
       dataIndex: 'status',
       width: 100,
-      render: (v: number) => v === 1 ? <Tag color="green">正常</Tag> : v === 2 ? <Tag color="orange">授权过期</Tag> : <Tag>停用</Tag>,
+      render: (v: number) => v === 1 ? <Tag color="green">{t('pages.dataCenter.shop.statusNormal')}</Tag> : v === 2 ? <Tag color="orange">{t('pages.dataCenter.shop.statusExpired')}</Tag> : <Tag>{t('pages.dataCenter.shop.statusDisabled')}</Tag>,
     },
     {
-      title: '创建时间',
+      title: t('pages.dataCenter.shop.colCreatedAt'),
       dataIndex: 'createdAt',
       width: 160,
       render: (v: string) => v ? dayjs(v).format('YYYY-MM-DD HH:mm') : '-',
@@ -222,7 +230,7 @@ function ShopStatTab() {
   ];
 
   return (
-    <Card bordered={false} title="店铺列表">
+    <Card bordered={false} title={t('pages.dataCenter.shop.listTitle')}>
       <Table
         size="middle"
         dataSource={list}
@@ -237,6 +245,7 @@ function ShopStatTab() {
 
 // ============ 销售报表 ============
 function SalesReportTab() {
+  const { t } = useTranslation();
   const { data, isLoading } = useQuery({
     queryKey: ['orders-sales'],
     queryFn: () => orderApi.list({ page: 1, pageSize: 50 }),
@@ -249,24 +258,24 @@ function SalesReportTab() {
   const profit = totalSales - totalCost - totalShip;
 
   const columns = [
-    { title: '订单号', dataIndex: 'platformNo', width: 200 },
-    { title: '买家', dataIndex: 'buyerName', width: 120 },
-    { title: '国家', dataIndex: 'country', width: 80 },
+    { title: t('pages.dataCenter.sales.colOrderNo'), dataIndex: 'platformNo', width: 200 },
+    { title: t('pages.dataCenter.sales.colBuyer'), dataIndex: 'buyerName', width: 120 },
+    { title: t('pages.dataCenter.sales.colCountry'), dataIndex: 'country', width: 80 },
     {
-      title: '金额',
+      title: t('pages.dataCenter.sales.colAmount'),
       dataIndex: 'totalAmount',
       width: 120,
       align: 'right' as const,
       render: (v: number, r: any) => `${r.currency} ${(+v).toFixed(2)}`,
     },
     {
-      title: '状态',
+      title: t('pages.dataCenter.sales.colStatus'),
       dataIndex: 'status',
       width: 100,
-      render: (v: string) => <Tag color={STATUS_MAP[v]?.color}>{STATUS_MAP[v]?.text || v}</Tag>,
+      render: (v: string) => STATUS_MAP[v] ? <Tag color={STATUS_MAP[v].color}>{t(`pages.dataCenter.status.${STATUS_MAP[v].textKey}`)}</Tag> : <Tag>{v}</Tag>,
     },
     {
-      title: '下单时间',
+      title: t('pages.dataCenter.sales.colCreatedAt'),
       dataIndex: 'createdAt',
       width: 160,
       render: (v: string) => v ? dayjs(v).format('YYYY-MM-DD HH:mm') : '-',
@@ -276,12 +285,12 @@ function SalesReportTab() {
   return (
     <div>
       <Row gutter={16} style={{ marginBottom: 12 }}>
-        <Col span={6}><Card bordered={false}><Statistic title="销售额" value={totalSales} precision={2} prefix="$" loading={isLoading} /></Card></Col>
-        <Col span={6}><Card bordered={false}><Statistic title="成本" value={totalCost} precision={2} prefix="$" /></Card></Col>
-        <Col span={6}><Card bordered={false}><Statistic title="物流费" value={totalShip} precision={2} prefix="$" /></Card></Col>
-        <Col span={6}><Card bordered={false}><Statistic title="毛利" value={profit} precision={2} prefix="$" valueStyle={{ color: profit > 0 ? '#52c41a' : '#f5222d' }} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.dataCenter.sales.totalSales')} value={totalSales} precision={2} prefix="$" loading={isLoading} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.dataCenter.sales.totalCost')} value={totalCost} precision={2} prefix="$" /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.dataCenter.sales.totalShipFee')} value={totalShip} precision={2} prefix="$" /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.dataCenter.sales.profit')} value={profit} precision={2} prefix="$" valueStyle={{ color: profit > 0 ? '#52c41a' : '#f5222d' }} /></Card></Col>
       </Row>
-      <Card bordered={false} title="销售明细">
+      <Card bordered={false} title={t('pages.dataCenter.sales.detailTitle')}>
         <Table
           size="middle"
           dataSource={list}
@@ -297,20 +306,21 @@ function SalesReportTab() {
 
 // ============ 入口 ============
 export default function DataCenter() {
+  const { t } = useTranslation();
   return (
     <div>
-      <Title level={4} style={{ marginTop: 0 }}>数据中心</Title>
-      <Text type="secondary">运营总览 · 商品 · 店铺 · 销售 · 流量分析</Text>
+      <Title level={4} style={{ marginTop: 0 }}>{t('pages.dataCenter.title')}</Title>
+      <Text type="secondary">{t('pages.dataCenter.subtitle')}</Text>
       <Tabs
         style={{ marginTop: 12 }}
         defaultActiveKey="overview"
         items={[
-          { key: 'overview', label: '运营总览', icon: <AppstoreOutlined />, children: <OverviewTab /> },
-          { key: 'product', label: '商品分析', icon: <BarChartOutlined />, children: <ProductAnalysisTab /> },
-          { key: 'shop', label: '店铺统计', icon: <ShopOutlined />, children: <ShopStatTab /> },
-          { key: 'sale', label: '销售报表', icon: <LineChartOutlined />, children: <SalesReportTab /> },
-          { key: 'profit', label: '利润分析', icon: <FundOutlined />, children: <Empty description="请前往 财务管理 → 利润报表 查看" /> },
-          { key: 'traffic', label: '流量分析', icon: <RiseOutlined />, children: <Empty description="流量数据需要广告数据接入" /> },
+          { key: 'overview', label: t('pages.dataCenter.tabs.overview'), icon: <AppstoreOutlined />, children: <OverviewTab /> },
+          { key: 'product', label: t('pages.dataCenter.tabs.product'), icon: <BarChartOutlined />, children: <ProductAnalysisTab /> },
+          { key: 'shop', label: t('pages.dataCenter.tabs.shop'), icon: <ShopOutlined />, children: <ShopStatTab /> },
+          { key: 'sale', label: t('pages.dataCenter.tabs.sales'), icon: <LineChartOutlined />, children: <SalesReportTab /> },
+          { key: 'profit', label: t('pages.dataCenter.tabs.profit'), icon: <FundOutlined />, children: <Empty description={t('pages.dataCenter.comingSoon.profit')} /> },
+          { key: 'traffic', label: t('pages.dataCenter.tabs.traffic'), icon: <RiseOutlined />, children: <Empty description={t('pages.dataCenter.comingSoon.traffic')} /> },
         ]}
       />
     </div>

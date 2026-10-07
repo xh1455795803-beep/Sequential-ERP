@@ -187,12 +187,10 @@ function buildRoutes() {
 
   const topRedirects = [
     { from: '/workbench', to: '/workbench/overview' },
-    { from: '/workbench', to: '/workbench/overview' },
     { from: '/auth', to: '/auth/shop' },
     { from: '/product', to: '/product/sku/list' },
     { from: '/order', to: '/order/list' },
     { from: '/message', to: '/message/all' },
-    { from: '/custody', to: '/custody/prepare' },
     { from: '/purchase', to: '/purchase/supplier' },
     { from: '/warehouse', to: '/warehouse/inventory' },
     { from: '/logistics', to: '/logistics/channel' },

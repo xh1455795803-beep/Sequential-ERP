@@ -22,6 +22,7 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { orderApi, shopApi, productApi } from '../api';
 import AuthButton from '../components/AuthButton';
+import { useTranslation } from '../i18n';
 
 const { Title, Text } = Typography;
 
@@ -32,6 +33,7 @@ interface OrderItem {
 }
 
 export default function ManualOrder() {
+  const { t } = useTranslation();
   const nav = useNavigate();
   const qc = useQueryClient();
   const [form] = Form.useForm();
@@ -58,23 +60,23 @@ export default function ManualOrder() {
   const createMut = useMutation({
     mutationFn: orderApi.createManual,
     onSuccess: (res: any) => {
-      message.success(`订单创建成功: ${res.platformNo}`);
+      message.success(t('pages.manualOrder.createSuccess', { no: res.platformNo }));
       qc.invalidateQueries({ queryKey: ['orders'] });
       qc.invalidateQueries({ queryKey: ['order-stats'] });
       Modal.success({
-        title: '订单创建成功',
+        title: t('pages.manualOrder.modalTitleSuccess'),
         content: (
           <div>
-            <p>订单号: <code>{res.platformNo}</code></p>
-            <p>金额: <b>{res.totalAmount} {res.currency}</b></p>
-            <p>商品数: {res.items?.length || 0} 个 SKU</p>
+            <p>{t('pages.manualOrder.orderNoLabel')}: <code>{res.platformNo}</code></p>
+            <p>{t('pages.manualOrder.amountLabel')}: <b>{res.totalAmount} {res.currency}</b></p>
+            <p>{t('pages.manualOrder.itemCountLabel')}: {res.items?.length || 0} {t('pages.manualOrder.skuUnit')}</p>
           </div>
         ),
         onOk: () => nav('/order/list'),
       });
     },
     onError: (e: any) => {
-      message.error(e?.response?.data?.message || e?.message || '创建失败');
+      message.error(e?.response?.data?.message || e?.message || t('pages.manualOrder.createFailed'));
     },
   });
 
@@ -100,13 +102,13 @@ export default function ManualOrder() {
       const vals = await form.validateFields();
       const validItems = items.filter((it) => it.sku && it.quantity > 0);
       if (!validItems.length) {
-        message.error('请至少添加一个有效商品');
+        message.error(t('pages.manualOrder.needAtLeastOneItem'));
         return;
       }
       // 校验 SKU 全部存在
       const unknownSku = validItems.filter((it) => !productMap[it.sku]);
       if (unknownSku.length) {
-        message.error(`SKU 不存在: ${unknownSku.map((u) => u.sku).join(', ')}`);
+        message.error(t('pages.manualOrder.skuNotFound', { list: unknownSku.map((u) => u.sku).join(', ') }));
         return;
       }
       createMut.mutate({
@@ -123,22 +125,22 @@ export default function ManualOrder() {
       <Title level={4} style={{ marginTop: 0 }}>
         <Space>
           <Button type="link" icon={<ArrowLeftOutlined />} onClick={() => nav('/order/list')}>
-            返回
+            {t('common.back')}
           </Button>
-          手工创建订单
+          {t('pages.manualOrder.title')}
         </Space>
       </Title>
-      <Text type="secondary">用于补单 / 异常处理 / 测试订单, 创建后可在订单列表查看</Text>
+      <Text type="secondary">{t('pages.manualOrder.subtitle')}</Text>
 
       <Row gutter={16} style={{ marginTop: 16 }}>
         <Col span={16}>
-          <Card title="订单信息" bordered={false}>
+          <Card title={t('pages.manualOrder.cardOrderInfo')} bordered={false}>
             <Form form={form} layout="vertical">
               <Row gutter={16}>
                 <Col span={12}>
-                  <Form.Item label="店铺" name="shopId" rules={[{ required: true, message: '请选择店铺' }]}>
+                  <Form.Item label={t('order.shop')} name="shopId" rules={[{ required: true, message: t('pages.manualOrder.pleaseSelectShop') }]}>
                     <Select
-                      placeholder="选择店铺"
+                      placeholder={t('pages.manualOrder.selectShop')}
                       showSearch
                       optionFilterProp="label"
                       options={shops.map((s: any) => ({
@@ -149,60 +151,60 @@ export default function ManualOrder() {
                   </Form.Item>
                 </Col>
                 <Col span={12}>
-                  <Form.Item label="平台订单号" name="platformNo">
-                    <Input placeholder="留空自动生成" />
+                  <Form.Item label={t('order.platformOrderNo')} name="platformNo">
+                    <Input placeholder={t('pages.manualOrder.autoGenerateIfEmpty')} />
                   </Form.Item>
                 </Col>
                 <Col span={8}>
-                  <Form.Item label="买家姓名" name="buyerName" rules={[{ required: true, message: '请填写买家姓名' }]}>
-                    <Input placeholder="买家姓名" />
+                  <Form.Item label={t('pages.manualOrder.buyerName')} name="buyerName" rules={[{ required: true, message: t('pages.manualOrder.pleaseInputBuyerName') }]}>
+                    <Input placeholder={t('pages.manualOrder.buyerName')} />
                   </Form.Item>
                 </Col>
                 <Col span={8}>
-                  <Form.Item label="邮箱" name="buyerEmail">
+                  <Form.Item label={t('auth.email')} name="buyerEmail">
                     <Input placeholder="buyer@example.com" />
                   </Form.Item>
                 </Col>
                 <Col span={8}>
-                  <Form.Item label="国家" name="country">
+                  <Form.Item label={t('pages.manualOrder.country')} name="country">
                     <Input placeholder="US / DE / JP ..." />
                   </Form.Item>
                 </Col>
                 <Col span={8}>
-                  <Form.Item label="货币" name="currency" initialValue="USD">
+                  <Form.Item label={t('common.currency')} name="currency" initialValue="USD">
                     <Select
                       options={['USD', 'EUR', 'JPY', 'GBP', 'CNY', 'MYR', 'SGD', 'THB'].map((c) => ({ value: c, label: c }))}
                     />
                   </Form.Item>
                 </Col>
                 <Col span={8}>
-                  <Form.Item label="运费" name="shipFee" initialValue={0}>
-                    <InputNumber min={0} step={0.01} style={{ width: '100%' }} addonAfter="金额" />
+                  <Form.Item label={t('order.freight')} name="shipFee" initialValue={0}>
+                    <InputNumber min={0} step={0.01} style={{ width: '100%' }} addonAfter={t('pages.manualOrder.amountSuffix')} />
                   </Form.Item>
                 </Col>
                 <Col span={8}>
-                  <Form.Item label="初始状态" name="status" initialValue="pending">
+                  <Form.Item label={t('pages.manualOrder.initialStatus')} name="status" initialValue="pending">
                     <Select
                       options={[
-                        { value: 'pending', label: '待付款' },
-                        { value: 'pay', label: '已付款' },
-                        { value: 'toship', label: '待发货' },
+                        { value: 'pending', label: t('order.statusPending') },
+                        { value: 'pay', label: t('order.statusPaid') },
+                        { value: 'toship', label: t('pages.manualOrder.statusToship') },
                       ]}
                     />
                   </Form.Item>
                 </Col>
                 <Col span={24}>
-                  <Form.Item label="备注" name="remark">
-                    <Input.TextArea rows={2} placeholder="订单备注 / 异常说明" />
+                  <Form.Item label={t('pages.manualOrder.remark')} name="remark">
+                    <Input.TextArea rows={2} placeholder={t('pages.manualOrder.remarkPlaceholder')} />
                   </Form.Item>
                 </Col>
               </Row>
             </Form>
           </Card>
 
-          <Card title="商品明细" bordered={false} style={{ marginTop: 16 }} extra={
+          <Card title={t('pages.manualOrder.cardProductDetail')} bordered={false} style={{ marginTop: 16 }} extra={
             <Button type="dashed" icon={<PlusOutlined />} onClick={addItem}>
-              添加商品
+              {t('pages.manualOrder.addProduct')}
             </Button>
           }>
             <Table
@@ -222,7 +224,7 @@ export default function ManualOrder() {
                   render: (v: string, r: any) => (
                     <Select
                       style={{ width: 220 }}
-                      placeholder="选择 SKU"
+                      placeholder={t('pages.manualOrder.selectSku')}
                       showSearch
                       value={v || undefined}
                       onChange={(val) => updateItem(r.key, 'sku', val)}
@@ -235,12 +237,12 @@ export default function ManualOrder() {
                   ),
                 },
                 {
-                  title: '商品名称',
+                  title: t('order.productName'),
                   width: 280,
                   render: (_: any, r: any) => productMap[r.sku]?.name || <Text type="secondary">-</Text>,
                 },
                 {
-                  title: '数量',
+                  title: t('order.quantity'),
                   dataIndex: 'quantity',
                   width: 120,
                   render: (v: number, r: any) => (
@@ -248,7 +250,7 @@ export default function ManualOrder() {
                   ),
                 },
                 {
-                  title: '单价',
+                  title: t('order.unitPrice'),
                   dataIndex: 'price',
                   width: 160,
                   render: (v: number, r: any) => (
@@ -256,13 +258,13 @@ export default function ManualOrder() {
                   ),
                 },
                 {
-                  title: '小计',
+                  title: t('pages.orderList.subtotal'),
                   width: 120,
                   align: 'right',
                   render: (_: any, r: any) => `${((r.quantity || 0) * (r.price || 0)).toFixed(2)}`,
                 },
                 {
-                  title: '操作',
+                  title: t('common.operation'),
                   width: 60,
                   render: (_: any, r: any) => items.length > 1 ? (
                     <Button type="link" danger size="small" icon={<DeleteOutlined />} onClick={() => removeItem(r.key)} />
@@ -274,12 +276,12 @@ export default function ManualOrder() {
         </Col>
 
         <Col span={8}>
-          <Card title="订单汇总" bordered={false}>
+          <Card title={t('pages.manualOrder.cardSummary')} bordered={false}>
             <Space direction="vertical" style={{ width: '100%' }} size={12}>
-              <Row><Col span={12}>商品件数:</Col><Col span={12} style={{ textAlign: 'right' }}><b>{items.reduce((s, it) => s + (it.quantity || 0), 0)}</b></Col></Row>
-              <Row><Col span={12}>商品总额:</Col><Col span={12} style={{ textAlign: 'right' }}><b>{totalAmount.toFixed(2)}</b></Col></Row>
+              <Row><Col span={12}>{t('pages.manualOrder.itemCount')}:</Col><Col span={12} style={{ textAlign: 'right' }}><b>{items.reduce((s, it) => s + (it.quantity || 0), 0)}</b></Col></Row>
+              <Row><Col span={12}>{t('pages.manualOrder.productTotal')}:</Col><Col span={12} style={{ textAlign: 'right' }}><b>{totalAmount.toFixed(2)}</b></Col></Row>
               <Divider style={{ margin: '8px 0' }} />
-              <Row><Col span={12}>总金额:</Col><Col span={12} style={{ textAlign: 'right' }}>
+              <Row><Col span={12}>{t('pages.manualOrder.totalAmount')}:</Col><Col span={12} style={{ textAlign: 'right' }}>
                 <span style={{ fontSize: 22, color: '#1677ff', fontWeight: 600 }}>{totalAmount.toFixed(2)}</span>
               </Col></Row>
             </Space>
@@ -293,19 +295,19 @@ export default function ManualOrder() {
               loading={createMut.isPending}
               onClick={onSubmit}
             >
-              创建订单
+              {t('pages.manualOrder.createOrder')}
             </AuthButton>
             <Text type="secondary" style={{ display: 'block', marginTop: 8, fontSize: 12 }}>
-              创建后状态: {form.getFieldValue('status') || '待付款'}, 进入相应处理流程
+              {t('pages.manualOrder.createdStatusHint', { status: form.getFieldValue('status') || t('order.statusPending') })}
             </Text>
           </Card>
 
-          <Card title="使用说明" bordered={false} style={{ marginTop: 16 }}>
+          <Card title={t('pages.manualOrder.cardUsageGuide')} bordered={false} style={{ marginTop: 16 }}>
             <ul style={{ paddingLeft: 20, margin: 0, color: '#666' }}>
-              <li>用于补录线下成交订单、测试订单、异常订单</li>
-              <li>SKU 自动补全, 价格自动带出, 可手动调整</li>
-              <li>支持选择初始状态, 立即进入处理流程</li>
-              <li>创建后可在订单列表统一管理</li>
+              <li>{t('pages.manualOrder.guide1')}</li>
+              <li>{t('pages.manualOrder.guide2')}</li>
+              <li>{t('pages.manualOrder.guide3')}</li>
+              <li>{t('pages.manualOrder.guide4')}</li>
             </ul>
           </Card>
         </Col>

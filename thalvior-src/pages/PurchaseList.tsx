@@ -11,11 +11,13 @@ import {
 import dayjs from 'dayjs';
 import { supplierApi, purchaseApi, warehouseApi, productApi } from '../api';
 import { usePermission } from '../hooks/usePermission';
+import { useTranslation } from '../i18n';
 
 const { Title, Text } = Typography;
 
 // ============ 供应商 Tab ============
 function SupplierTab() {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<any>({ page: 1, pageSize: 10 });
   const [editing, setEditing] = useState<any | null>(null);
   const [form] = Form.useForm();
@@ -30,7 +32,7 @@ function SupplierTab() {
   const createMut = useMutation({
     mutationFn: supplierApi.create,
     onSuccess: () => {
-      message.success('创建成功');
+      message.success(t('common.createSuccess'));
       qc.invalidateQueries({ queryKey: ['suppliers'] });
       setEditing(null);
     },
@@ -38,7 +40,7 @@ function SupplierTab() {
   const updateMut = useMutation({
     mutationFn: (vars: any) => supplierApi.update(vars.id, vars.data),
     onSuccess: () => {
-      message.success('更新成功');
+      message.success(t('common.updateSuccess'));
       qc.invalidateQueries({ queryKey: ['suppliers'] });
       setEditing(null);
     },
@@ -46,7 +48,7 @@ function SupplierTab() {
   const removeMut = useMutation({
     mutationFn: supplierApi.remove,
     onSuccess: () => {
-      message.success('已删除');
+      message.success(t('common.deleteSuccess'));
       qc.invalidateQueries({ queryKey: ['suppliers'] });
     },
   });
@@ -58,20 +60,20 @@ function SupplierTab() {
   };
 
   const columns = [
-    { title: '编码', dataIndex: 'code', width: 140 },
-    { title: '名称', dataIndex: 'name', width: 200, ellipsis: true },
-    { title: '联系人', dataIndex: 'contact', width: 100, render: (v: string) => v || '-' },
-    { title: '电话', dataIndex: 'phone', width: 140, render: (v: string) => v || '-' },
-    { title: '邮箱', dataIndex: 'email', width: 180, ellipsis: true },
-    { title: '地址', dataIndex: 'address', ellipsis: true },
+    { title: t('pages.purchaseList.colCode'), dataIndex: 'code', width: 140 },
+    { title: t('pages.purchaseList.colName'), dataIndex: 'name', width: 200, ellipsis: true },
+    { title: t('pages.purchaseList.colContact'), dataIndex: 'contact', width: 100, render: (v: string) => v || '-' },
+    { title: t('pages.purchaseList.colPhone'), dataIndex: 'phone', width: 140, render: (v: string) => v || '-' },
+    { title: t('pages.purchaseList.colEmail'), dataIndex: 'email', width: 180, ellipsis: true },
+    { title: t('pages.purchaseList.colAddress'), dataIndex: 'address', ellipsis: true },
     {
-      title: '状态',
+      title: t('common.status'),
       dataIndex: 'status',
       width: 100,
-      render: (v: number) => v === 1 ? <Tag color="green">启用</Tag> : <Tag>停用</Tag>,
+      render: (v: number) => v === 1 ? <Tag color="green">{t('pages.purchaseList.statusEnabled')}</Tag> : <Tag>{t('pages.purchaseList.statusDisabled')}</Tag>,
     },
     {
-      title: '操作',
+      title: t('common.operation'),
       width: 180,
       fixed: 'right' as const,
       render: (_: any, r: any) => (
@@ -80,11 +82,11 @@ function SupplierTab() {
             <Button size="small" type="link" icon={<EditOutlined />} onClick={() => {
               setEditing(r);
               form.setFieldsValue(r);
-            }}>编辑</Button>
+            }}>{t('common.edit')}</Button>
           )}
           {has('supplier:create') && (
-            <Popconfirm title="确认删除?" onConfirm={() => removeMut.mutate(r.id)}>
-              <Button size="small" type="link" danger icon={<DeleteOutlined />}>删除</Button>
+            <Popconfirm title={t('common.deleteConfirm')} onConfirm={() => removeMut.mutate(r.id)}>
+              <Button size="small" type="link" danger icon={<DeleteOutlined />}>{t('common.delete')}</Button>
             </Popconfirm>
           )}
         </Space>
@@ -100,17 +102,17 @@ function SupplierTab() {
           onFinish={(v) => setFilters((f: any) => ({ ...f, ...v, page: 1 }))}
         >
           <Form.Item name="keyword">
-            <Input placeholder="编码/名称/联系人" allowClear prefix={<SearchOutlined />} style={{ width: 240 }} />
+            <Input placeholder={t('pages.purchaseList.supplierKeywordPlaceholder')} allowClear prefix={<SearchOutlined />} style={{ width: 240 }} />
           </Form.Item>
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit">筛选</Button>
-              <Button onClick={() => setFilters({ page: 1, pageSize: 10 })} icon={<ReloadOutlined />}>重置</Button>
+              <Button type="primary" htmlType="submit">{t('common.filter')}</Button>
+              <Button onClick={() => setFilters({ page: 1, pageSize: 10 })} icon={<ReloadOutlined />}>{t('common.reset')}</Button>
               {has('supplier:create') && (
                 <Button type="primary" icon={<PlusOutlined />} onClick={() => {
                   setEditing({});
                   form.resetFields();
-                }}>新增供应商</Button>
+                }}>{t('pages.purchaseList.addSupplier')}</Button>
               )}
             </Space>
           </Form.Item>
@@ -134,7 +136,7 @@ function SupplierTab() {
         />
       </Card>
       <Modal
-        title={editing?.id ? '编辑供应商' : '新增供应商'}
+        title={editing?.id ? t('pages.purchaseList.editSupplier') : t('pages.purchaseList.addSupplier')}
         open={!!editing}
         onCancel={() => setEditing(null)}
         onOk={onSubmit}
@@ -143,13 +145,13 @@ function SupplierTab() {
       >
         <Form form={form} layout="vertical" preserve={false}>
           <Row gutter={12}>
-            <Col span={12}><Form.Item name="code" label="编码" rules={[{ required: true }]}><Input disabled={!!editing?.id} /></Form.Item></Col>
-            <Col span={12}><Form.Item name="name" label="名称" rules={[{ required: true }]}><Input /></Form.Item></Col>
-            <Col span={12}><Form.Item name="contact" label="联系人"><Input /></Form.Item></Col>
-            <Col span={12}><Form.Item name="phone" label="电话"><Input /></Form.Item></Col>
-            <Col span={24}><Form.Item name="email" label="邮箱"><Input /></Form.Item></Col>
-            <Col span={24}><Form.Item name="address" label="地址"><Input.TextArea rows={2} /></Form.Item></Col>
-            <Col span={12}><Form.Item name="status" label="状态" initialValue={1}><Select options={[{ label: '启用', value: 1 }, { label: '停用', value: 0 }]} /></Form.Item></Col>
+            <Col span={12}><Form.Item name="code" label={t('pages.purchaseList.colCode')} rules={[{ required: true }]}><Input disabled={!!editing?.id} /></Form.Item></Col>
+            <Col span={12}><Form.Item name="name" label={t('pages.purchaseList.colName')} rules={[{ required: true }]}><Input /></Form.Item></Col>
+            <Col span={12}><Form.Item name="contact" label={t('pages.purchaseList.colContact')}><Input /></Form.Item></Col>
+            <Col span={12}><Form.Item name="phone" label={t('pages.purchaseList.colPhone')}><Input /></Form.Item></Col>
+            <Col span={24}><Form.Item name="email" label={t('pages.purchaseList.colEmail')}><Input /></Form.Item></Col>
+            <Col span={24}><Form.Item name="address" label={t('pages.purchaseList.colAddress')}><Input.TextArea rows={2} /></Form.Item></Col>
+            <Col span={12}><Form.Item name="status" label={t('common.status')} initialValue={1}><Select options={[{ label: t('pages.purchaseList.statusEnabled'), value: 1 }, { label: t('pages.purchaseList.statusDisabled'), value: 0 }]} /></Form.Item></Col>
           </Row>
         </Form>
       </Modal>
@@ -159,6 +161,7 @@ function SupplierTab() {
 
 // ============ 采购单 Tab ============
 function PurchaseTab() {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<any>({ page: 1, pageSize: 10 });
   const [createOpen, setCreateOpen] = useState(false);
   const [detail, setDetail] = useState<any>(null);
@@ -186,7 +189,7 @@ function PurchaseTab() {
   const createMut = useMutation({
     mutationFn: purchaseApi.create,
     onSuccess: () => {
-      message.success('采购单已创建');
+      message.success(t('pages.purchaseList.purchaseCreated'));
       setCreateOpen(false);
       form.resetFields();
       qc.invalidateQueries({ queryKey: ['purchases'] });
@@ -195,7 +198,7 @@ function PurchaseTab() {
   const approveMut = useMutation({
     mutationFn: purchaseApi.approve,
     onSuccess: () => {
-      message.success('已审核');
+      message.success(t('pages.purchaseList.approved'));
       qc.invalidateQueries({ queryKey: ['purchases'] });
     },
   });
@@ -203,7 +206,7 @@ function PurchaseTab() {
     mutationFn: (vars: { id: string; data: { warehouseId: string } }) =>
       purchaseApi.receive(vars.id, vars.data),
     onSuccess: () => {
-      message.success('入库成功, 库存已更新');
+      message.success(t('pages.purchaseList.receivedSuccess'));
       qc.invalidateQueries({ queryKey: ['purchases'] });
       qc.invalidateQueries({ queryKey: ['inventory'] });
       qc.invalidateQueries({ queryKey: ['inventory-logs'] });
@@ -212,48 +215,48 @@ function PurchaseTab() {
   const cancelMut = useMutation({
     mutationFn: purchaseApi.cancel,
     onSuccess: () => {
-      message.success('已取消');
+      message.success(t('pages.purchaseList.cancelled'));
       qc.invalidateQueries({ queryKey: ['purchases'] });
     },
   });
 
   const statusMap: Record<string, { color: string; text: string }> = {
-    draft: { color: 'default', text: '草稿' },
-    approved: { color: 'blue', text: '已审核' },
-    arrived: { color: 'green', text: '已入库' },
-    cancel: { color: 'red', text: '已取消' },
+    draft: { color: 'default', text: t('pages.purchaseList.statusDraft') },
+    approved: { color: 'blue', text: t('pages.purchaseList.statusApproved') },
+    arrived: { color: 'green', text: t('pages.purchaseList.statusArrived') },
+    cancel: { color: 'red', text: t('pages.purchaseList.statusCancelled') },
   };
 
   const columns = [
-    { title: '采购单号', dataIndex: 'purchaseNo', width: 180 },
-    { title: '供应商', dataIndex: ['supplier', 'name'], width: 160 },
-    { title: '入库仓', dataIndex: ['warehouse', 'name'], width: 140 },
+    { title: t('pages.purchaseList.colPurchaseNo'), dataIndex: 'purchaseNo', width: 180 },
+    { title: t('pages.purchaseList.colSupplier'), dataIndex: ['supplier', 'name'], width: 160 },
+    { title: t('pages.purchaseList.colInboundWarehouse'), dataIndex: ['warehouse', 'name'], width: 140 },
     {
-      title: '商品数',
+      title: t('pages.purchaseList.colProductCount'),
       width: 90,
-      render: (_: any, r: any) => `${r.items?.length || 0} 种`,
+      render: (_: any, r: any) => t('pages.purchaseList.productCountValue', { count: r.items?.length || 0 }),
     },
     {
-      title: '总金额',
+      title: t('pages.purchaseList.colTotalAmount'),
       dataIndex: 'totalAmount',
       width: 120,
       align: 'right' as const,
       render: (v: number, r: any) => `${r.currency} ${(+v).toFixed(2)}`,
     },
     {
-      title: '状态',
+      title: t('common.status'),
       dataIndex: 'status',
       width: 100,
       render: (v: string) => <Tag color={statusMap[v]?.color}>{statusMap[v]?.text || v}</Tag>,
     },
     {
-      title: '创建时间',
+      title: t('pages.purchaseList.colCreatedAt'),
       dataIndex: 'createdAt',
       width: 160,
       render: (v: string) => v ? dayjs(v).format('YYYY-MM-DD HH:mm') : '-',
     },
     {
-      title: '操作',
+      title: t('common.operation'),
       width: 260,
       fixed: 'right' as const,
       render: (_: any, r: any) => (
@@ -261,15 +264,15 @@ function PurchaseTab() {
           <Button size="small" type="link" onClick={async () => {
             const d = await purchaseApi.detail(r.id);
             setDetail(d);
-          }}>详情</Button>
+          }}>{t('common.detail')}</Button>
           {has('purchase:approve') && r.status === 'draft' && (
             <>
-              <Button size="small" type="link" icon={<CheckOutlined />} onClick={() => approveMut.mutate(r.id)}>审核</Button>
-              <Button size="small" type="link" danger onClick={() => cancelMut.mutate(r.id)}>取消</Button>
+              <Button size="small" type="link" icon={<CheckOutlined />} onClick={() => approveMut.mutate(r.id)}>{t('pages.purchaseList.actionApprove')}</Button>
+              <Button size="small" type="link" danger onClick={() => cancelMut.mutate(r.id)}>{t('common.cancel')}</Button>
             </>
           )}
           {has('inventory:adjust') && r.status === 'approved' && (
-            <Button size="small" type="link" icon={<ImportOutlined />} onClick={() => receiveMut.mutate({ id: r.id, data: { warehouseId: r.warehouseId } })}>入库</Button>
+            <Button size="small" type="link" icon={<ImportOutlined />} onClick={() => receiveMut.mutate({ id: r.id, data: { warehouseId: r.warehouseId } })}>{t('pages.purchaseList.actionReceive')}</Button>
           )}
         </Space>
       ),
@@ -279,10 +282,10 @@ function PurchaseTab() {
   return (
     <div>
       <Row gutter={16} style={{ marginBottom: 12 }}>
-        <Col span={6}><Card bordered={false}><Statistic title="采购单总数" value={data?.total || 0} prefix={<TeamOutlined />} /></Card></Col>
-        <Col span={6}><Card bordered={false}><Statistic title="供应商" value={(suppliers || []).length} /></Card></Col>
-        <Col span={6}><Card bordered={false}><Statistic title="仓库" value={(warehouses || []).length} /></Card></Col>
-        <Col span={6}><Card bordered={false}><Statistic title="商品SKU" value={(products?.total || 0)} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.purchaseList.statPurchaseTotal')} value={data?.total || 0} prefix={<TeamOutlined />} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.purchaseList.statSuppliers')} value={(suppliers || []).length} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.purchaseList.statWarehouses')} value={(warehouses || []).length} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.purchaseList.statSku')} value={(products?.total || 0)} /></Card></Col>
       </Row>
       <Card bordered={false}>
         <Form
@@ -291,25 +294,25 @@ function PurchaseTab() {
         >
           <Form.Item name="status">
             <Select
-              placeholder="状态" allowClear style={{ width: 140 }}
+              placeholder={t('common.status')} allowClear style={{ width: 140 }}
               options={Object.entries(statusMap).map(([k, v]) => ({ label: v.text, value: k }))}
             />
           </Form.Item>
           <Form.Item name="supplierId">
             <Select
-              placeholder="供应商" allowClear style={{ width: 180 }}
+              placeholder={t('pages.purchaseList.colSupplier')} allowClear style={{ width: 180 }}
               options={(suppliers || []).map((s: any) => ({ label: s.name, value: s.id }))}
             />
           </Form.Item>
           <Form.Item name="keyword">
-            <Input placeholder="采购单号" allowClear style={{ width: 180 }} />
+            <Input placeholder={t('pages.purchaseList.colPurchaseNo')} allowClear style={{ width: 180 }} />
           </Form.Item>
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit">筛选</Button>
-              <Button onClick={() => setFilters({ page: 1, pageSize: 10 })} icon={<ReloadOutlined />}>重置</Button>
+              <Button type="primary" htmlType="submit">{t('common.filter')}</Button>
+              <Button onClick={() => setFilters({ page: 1, pageSize: 10 })} icon={<ReloadOutlined />}>{t('common.reset')}</Button>
               {has('purchase:create') && (
-                <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>新建采购单</Button>
+                <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>{t('pages.purchaseList.createPurchase')}</Button>
               )}
             </Space>
           </Form.Item>
@@ -334,7 +337,7 @@ function PurchaseTab() {
       </Card>
 
       <Modal
-        title="新建采购单"
+        title={t('pages.purchaseList.createPurchase')}
         open={createOpen}
         onCancel={() => setCreateOpen(false)}
         onOk={() => form.submit()}
@@ -344,28 +347,28 @@ function PurchaseTab() {
         <Form form={form} layout="vertical" onFinish={(v) => createMut.mutate(v)}>
           <Row gutter={12}>
             <Col span={12}>
-              <Form.Item name="supplierId" label="供应商" rules={[{ required: true }]}>
+              <Form.Item name="supplierId" label={t('pages.purchaseList.colSupplier')} rules={[{ required: true }]}>
                 <Select
-                  placeholder="选择供应商"
+                  placeholder={t('pages.purchaseList.selectSupplier')}
                   options={(suppliers || []).map((s: any) => ({ label: s.name, value: s.id }))}
                 />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="warehouseId" label="入库仓库" rules={[{ required: true }]}>
+              <Form.Item name="warehouseId" label={t('pages.purchaseList.colInboundWarehouse')} rules={[{ required: true }]}>
                 <Select
-                  placeholder="选择仓库"
+                  placeholder={t('pages.purchaseList.selectWarehouse')}
                   options={(warehouses || []).map((w: any) => ({ label: w.name, value: w.id }))}
                 />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="currency" label="币种" initialValue="CNY">
+              <Form.Item name="currency" label={t('common.currency')} initialValue="CNY">
                 <Select options={[{ label: 'CNY', value: 'CNY' }, { label: 'USD', value: 'USD' }, { label: 'EUR', value: 'EUR' }]} />
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item label="采购明细" required>
+          <Form.Item label={t('pages.purchaseList.labelPurchaseItems')} required>
             <Form.List name="items">
               {(fields, { add, remove }) => (
                 <>
@@ -375,7 +378,7 @@ function PurchaseTab() {
                         <Form.Item {...f} name={[f.name, 'productId']} rules={[{ required: true }]} noStyle>
                           <Select
                             showSearch
-                            placeholder="商品"
+                            placeholder={t('pages.purchaseList.colProduct')}
                             optionFilterProp="label"
                             options={(products?.items || []).map((p: any) => ({
                               label: `${p.sku} - ${p.name}`,
@@ -386,28 +389,28 @@ function PurchaseTab() {
                       </Col>
                       <Col span={5}>
                         <Form.Item {...f} name={[f.name, 'quantity']} rules={[{ required: true }]} noStyle>
-                          <InputNumber min={1} style={{ width: '100%' }} placeholder="数量" />
+                          <InputNumber min={1} style={{ width: '100%' }} placeholder={t('pages.purchaseList.colQuantity')} />
                         </Form.Item>
                       </Col>
                       <Col span={7}>
                         <Form.Item {...f} name={[f.name, 'unitPrice']} rules={[{ required: true }]} noStyle>
-                          <InputNumber min={0} step={0.01} style={{ width: '100%' }} placeholder="单价" />
+                          <InputNumber min={0} step={0.01} style={{ width: '100%' }} placeholder={t('pages.purchaseList.colUnitPrice')} />
                         </Form.Item>
                       </Col>
-                      <Col span={2}><Button danger onClick={() => remove(f.name)}>删</Button></Col>
+                      <Col span={2}><Button danger onClick={() => remove(f.name)}>{t('pages.purchaseList.actionRemoveItem')}</Button></Col>
                     </Row>
                   ))}
-                  <Button type="dashed" block icon={<PlusOutlined />} onClick={() => add({ quantity: 1, unitPrice: 0 })}>添加商品</Button>
+                  <Button type="dashed" block icon={<PlusOutlined />} onClick={() => add({ quantity: 1, unitPrice: 0 })}>{t('pages.purchaseList.addProduct')}</Button>
                 </>
               )}
             </Form.List>
           </Form.Item>
-          <Form.Item name="remark" label="备注"><Input.TextArea rows={2} /></Form.Item>
+          <Form.Item name="remark" label={t('pages.purchaseList.labelRemark')}><Input.TextArea rows={2} /></Form.Item>
         </Form>
       </Modal>
 
       <Modal
-        title={`采购单详情 ${detail?.purchaseNo || ''}`}
+        title={t('pages.purchaseList.detailTitleWithNo', { no: detail?.purchaseNo || '' })}
         open={!!detail}
         onCancel={() => setDetail(null)}
         footer={null}
@@ -416,14 +419,14 @@ function PurchaseTab() {
         {detail && (
           <>
             <Descriptions column={2} bordered size="small">
-              <Descriptions.Item label="供应商">{detail.supplier?.name}</Descriptions.Item>
-              <Descriptions.Item label="入库仓">{detail.warehouse?.name}</Descriptions.Item>
-              <Descriptions.Item label="总金额">{detail.currency} {(+detail.totalAmount).toFixed(2)}</Descriptions.Item>
-              <Descriptions.Item label="状态">
+              <Descriptions.Item label={t('pages.purchaseList.colSupplier')}>{detail.supplier?.name}</Descriptions.Item>
+              <Descriptions.Item label={t('pages.purchaseList.colInboundWarehouse')}>{detail.warehouse?.name}</Descriptions.Item>
+              <Descriptions.Item label={t('pages.purchaseList.colTotalAmount')}>{detail.currency} {(+detail.totalAmount).toFixed(2)}</Descriptions.Item>
+              <Descriptions.Item label={t('common.status')}>
                 <Tag color={statusMap[detail.status]?.color}>{statusMap[detail.status]?.text}</Tag>
               </Descriptions.Item>
-              <Descriptions.Item label="创建时间">{dayjs(detail.createdAt).format('YYYY-MM-DD HH:mm')}</Descriptions.Item>
-              <Descriptions.Item label="备注" span={2}>{detail.remark || '-'}</Descriptions.Item>
+              <Descriptions.Item label={t('pages.purchaseList.colCreatedAt')}>{dayjs(detail.createdAt).format('YYYY-MM-DD HH:mm')}</Descriptions.Item>
+              <Descriptions.Item label={t('pages.purchaseList.labelRemark')} span={2}>{detail.remark || '-'}</Descriptions.Item>
             </Descriptions>
             <Table
               size="small"
@@ -433,10 +436,10 @@ function PurchaseTab() {
               pagination={false}
               columns={[
                 { title: 'SKU', dataIndex: ['product', 'sku'], width: 160 },
-                { title: '商品', dataIndex: ['product', 'name'] },
-                { title: '数量', dataIndex: 'quantity', width: 100, align: 'right' as const },
-                { title: '单价', dataIndex: 'unitPrice', width: 100, align: 'right' as const, render: (v: number) => (+v).toFixed(2) },
-                { title: '金额', dataIndex: 'amount', width: 120, align: 'right' as const, render: (v: number) => (+v).toFixed(2) },
+                { title: t('pages.purchaseList.colProduct'), dataIndex: ['product', 'name'] },
+                { title: t('pages.purchaseList.colQuantity'), dataIndex: 'quantity', width: 100, align: 'right' as const },
+                { title: t('pages.purchaseList.colUnitPrice'), dataIndex: 'unitPrice', width: 100, align: 'right' as const, render: (v: number) => (+v).toFixed(2) },
+                { title: t('pages.purchaseList.colItemAmount'), dataIndex: 'amount', width: 120, align: 'right' as const, render: (v: number) => (+v).toFixed(2) },
               ]}
             />
           </>
@@ -448,16 +451,17 @@ function PurchaseTab() {
 
 // ============ 入口 ============
 export default function PurchaseList() {
+  const { t } = useTranslation();
   return (
     <div>
-      <Title level={4} style={{ marginTop: 0 }}>采购管理</Title>
-      <Text type="secondary">供应商管理 · 采购单 · 入库</Text>
+      <Title level={4} style={{ marginTop: 0 }}>{t('pages.purchaseList.pageTitle')}</Title>
+      <Text type="secondary">{t('pages.purchaseList.pageSubtitle')}</Text>
       <Tabs
         style={{ marginTop: 12 }}
         defaultActiveKey="supplier"
         items={[
-          { key: 'supplier', label: '供应商', children: <SupplierTab /> },
-          { key: 'order', label: '采购单', children: <PurchaseTab /> },
+          { key: 'supplier', label: t('pages.purchaseList.tabSupplier'), children: <SupplierTab /> },
+          { key: 'order', label: t('pages.purchaseList.tabPurchaseOrder'), children: <PurchaseTab /> },
         ]}
       />
     </div>

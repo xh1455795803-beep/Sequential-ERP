@@ -6,6 +6,7 @@ import { Result, Button, Space, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
 import { usePermission } from '../hooks/usePermission';
+import { useTranslation } from '../i18n';
 
 const { Text } = Typography;
 
@@ -21,6 +22,7 @@ export default function PermissionRoute({
   redirectOnDeny = false,
   children,
 }: PermissionRouteProps) {
+  const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const { has, hasAny } = usePermission();
   const navigate = useNavigate();
@@ -46,15 +48,15 @@ export default function PermissionRoute({
         title="403"
         subTitle={
           <Space direction="vertical" size={4}>
-            <Text>您当前角色无权访问该页面</Text>
+            <Text>{t('common.noPermission')}</Text>
             <Text type="secondary" style={{ fontSize: 12 }}>
-              所需权限: {codes.join(' / ')}
+              {t('common.requiredPermission')}: {codes.join(' / ')}
             </Text>
           </Space>
         }
         extra={
           <Button type="primary" onClick={() => navigate('/workbench/overview', { replace: true })}>
-            返回工作台
+            {t('common.backToWorkbench')}
           </Button>
         }
       />

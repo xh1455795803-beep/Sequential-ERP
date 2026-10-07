@@ -5,6 +5,7 @@
 import { Space, Tag, Tooltip, Typography } from 'antd';
 import { SwapOutlined } from '@ant-design/icons';
 import { useCurrencyConverter, formatMoney, getCurrencyMeta } from '../hooks/useCurrency';
+import { useTranslation } from '../i18n';
 
 const { Text } = Typography;
 
@@ -60,12 +61,13 @@ interface ConvertedMoneyProps {
 }
 
 function ConvertedMoney({ amount, from, to, locale, showOriginal }: ConvertedMoneyProps) {
+  const { t } = useTranslation();
   const { data, isLoading, error } = useCurrencyConverter(amount, from, to);
 
   if (isLoading) {
     return (
       <Text type="secondary" style={{ fontSize: 12 }}>
-        换算中...
+        {t('common.money.converting')}
       </Text>
     );
   }
@@ -79,7 +81,6 @@ function ConvertedMoney({ amount, from, to, locale, showOriginal }: ConvertedMon
   }
 
   const fromMeta = getCurrencyMeta(from);
-  const toMeta = getCurrencyMeta(to);
 
   return (
     <Space size={4} wrap>
@@ -90,9 +91,9 @@ function ConvertedMoney({ amount, from, to, locale, showOriginal }: ConvertedMon
         <Tooltip
           title={
             <Space size={4} direction="vertical" style={{ fontSize: 12 }}>
-              <span>原币种: {amount.toFixed(2)} {from}</span>
-              <span>汇率: ×{data.rate.toFixed(4)}</span>
-              <span>路径: {data.path.join(' → ')}</span>
+              <span>{t('common.money.original')}: {amount.toFixed(2)} {from}</span>
+              <span>{t('common.money.rate')}: ×{data.rate.toFixed(4)}</span>
+              <span>{t('common.money.path')}: {data.path.join(' → ')}</span>
             </Space>
           }
         >

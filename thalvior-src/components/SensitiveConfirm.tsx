@@ -2,9 +2,10 @@
 // 用法:
 //   1. 把原 onClick 改成 onClick={() => setOpen(true)}
 //   2. <SensitiveConfirm open={open} config={...} onOk={...} onClose={...} />
-import { Alert, Input, Modal, Space, Typography, message } from 'antd';
+import { Alert, Input, Modal, Space, Typography } from 'antd';
 import { useEffect, useMemo, useState } from 'react';
 import { confirmApi } from '../api';
+import { useTranslation } from '../i18n';
 
 const { Text } = Typography;
 
@@ -30,6 +31,7 @@ interface Props {
 }
 
 export default function SensitiveConfirm({ open, config, onClose, onOk }: Props) {
+  const { t } = useTranslation();
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState<string | null>(null);
@@ -75,7 +77,7 @@ export default function SensitiveConfirm({ open, config, onClose, onOk }: Props)
       });
       setToken(r.token);
     } catch (e: any) {
-      setError(e?.message || '申请确认 token 失败');
+      setError(e?.message || t('common.sensitiveConfirm.tokenApplyFailed'));
     } finally {
       setLoading(false);
     }
@@ -94,11 +96,11 @@ export default function SensitiveConfirm({ open, config, onClose, onOk }: Props)
 
   const handleOk = async () => {
     if (!token) {
-      setError('确认 token 未就绪');
+      setError(t('common.sensitiveConfirm.tokenNotReady'));
       return;
     }
     if (!inputOk) {
-      setError(`请输入确认文字: ${keyword}`);
+      setError(t('common.sensitiveConfirm.pleaseTypeKeyword', { keyword }));
       return;
     }
     setLoading(true);
@@ -106,7 +108,7 @@ export default function SensitiveConfirm({ open, config, onClose, onOk }: Props)
       await onOk(token);
       // 成功后 onClose
     } catch (e: any) {
-      setError(e?.message || '操作失败');
+      setError(e?.message || t('common.sensitiveConfirm.opFailed'));
     } finally {
       setLoading(false);
     }
@@ -117,13 +119,13 @@ export default function SensitiveConfirm({ open, config, onClose, onOk }: Props)
       title={
         <Space>
           <span style={{ color: '#ff4d4f' }}>⚠</span>
-          <span>敏感操作二次确认</span>
+          <span>{t('common.sensitiveConfirm.title')}</span>
         </Space>
       }
       open={open}
       onCancel={onClose}
-      okText={countdown > 0 ? `请等待 ${countdown}s` : '确认执行'}
-      cancelText="取消"
+      okText={countdown > 0 ? t('common.sensitiveConfirm.waitSec', { count: countdown }) : t('common.sensitiveConfirm.confirmExec')}
+      cancelText={t('common.cancel')}
       okButtonProps={{
         danger: true,
         disabled: !canSubmit,
@@ -164,11 +166,11 @@ export default function SensitiveConfirm({ open, config, onClose, onOk }: Props)
       )}
 
       <div style={{ marginBottom: 12 }}>
-        <Text>请输入 <Text strong code>{keyword}</Text> 以确认此操作：</Text>
+        <Text>{t('common.sensitiveConfirm.typeKeyword', { keyword })}</Text>
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder={`输入 ${keyword}`}
+          placeholder={t('common.sensitiveConfirm.inputKeyword', { keyword })}
           style={{ marginTop: 8 }}
           autoFocus
           // 不让用户按回车直接提交
@@ -182,11 +184,11 @@ export default function SensitiveConfirm({ open, config, onClose, onOk }: Props)
 
       <div style={{ fontSize: 12, color: '#999' }}>
         {token ? (
-          <span style={{ color: '#52c41a' }}>● 确认 token 已申请 (5 分钟内有效)</span>
+          <span style={{ color: '#52c41a' }}>● {t('common.sensitiveConfirm.tokenReady')}</span>
         ) : loading ? (
-          <span>● 正在申请确认 token...</span>
+          <span>● {t('common.sensitiveConfirm.tokenApplying')}</span>
         ) : (
-          <span style={{ color: '#ff4d4f' }}>● 确认 token 申请失败</span>
+          <span style={{ color: '#ff4d4f' }}>● {t('common.sensitiveConfirm.tokenFailed')}</span>
         )}
       </div>
     </Modal>

@@ -11,26 +11,24 @@ import {
 import dayjs from 'dayjs';
 import { logisticsApi, orderApi } from '../api';
 import { usePermission } from '../hooks/usePermission';
+import { useTranslation } from '../i18n';
 
 const { Title, Text } = Typography;
 
-const CARRIERS = [
-  { value: 'yuantong', label: '圆通国际' },
-  { value: 'shunfeng', label: '顺丰国际' },
-  { value: 'ems', label: 'EMS' },
-  { value: 'dhl', label: 'DHL' },
-  { value: 'ups', label: 'UPS' },
-  { value: 'fedex', label: 'FedEx' },
-  { value: 'yanwen', label: '燕文物流' },
-  { value: 'yunexpress', label: '云途物流' },
-];
+const CARRIER_VALUES = ['yuantong', 'shunfeng', 'ems', 'dhl', 'ups', 'fedex', 'yanwen', 'yunexpress'];
 
 // ============ 渠道管理 Tab ============
 function ChannelTab() {
+  const { t } = useTranslation();
   const [editing, setEditing] = useState<any | null>(null);
   const [form] = Form.useForm();
   const qc = useQueryClient();
   const { has } = usePermission();
+
+  const CARRIERS = CARRIER_VALUES.map((v) => ({
+    value: v,
+    label: t(`pages.logisticsList.carrier.${v}`),
+  }));
 
   const { data, isLoading } = useQuery({
     queryKey: ['logistics-channels'],
@@ -40,35 +38,39 @@ function ChannelTab() {
   const createMut = useMutation({
     mutationFn: logisticsApi.createChannel,
     onSuccess: () => {
-      message.success('已创建');
+      message.success(t('pages.logisticsList.channelTab.createSuccess'));
       setEditing(null);
       qc.invalidateQueries({ queryKey: ['logistics-channels'] });
     },
   });
 
   const columns = [
-    { title: '渠道编码', dataIndex: 'code', width: 140 },
-    { title: '渠道名称', dataIndex: 'name', width: 200 },
+    { title: t('pages.logisticsList.channelTab.colCode'), dataIndex: 'code', width: 140 },
+    { title: t('pages.logisticsList.channelTab.colName'), dataIndex: 'name', width: 200 },
     {
-      title: '承运商',
+      title: t('pages.logisticsList.channelTab.colCarrier'),
       dataIndex: 'carrier',
       width: 160,
       render: (v: string) => CARRIERS.find((c) => c.value === v)?.label || v,
     },
     {
-      title: '类型',
+      title: t('pages.logisticsList.channelTab.colType'),
       dataIndex: 'type',
       width: 100,
-      render: (v: number) => v === 1 ? <Tag color="blue">自营</Tag> : <Tag>三方</Tag>,
+      render: (v: number) => v === 1
+        ? <Tag color="blue">{t('pages.logisticsList.type.self')}</Tag>
+        : <Tag>{t('pages.logisticsList.type.third')}</Tag>,
     },
     {
-      title: '状态',
+      title: t('pages.logisticsList.channelTab.colStatus'),
       dataIndex: 'enabled',
       width: 100,
-      render: (v: number) => v === 1 ? <Tag color="green">启用</Tag> : <Tag>停用</Tag>,
+      render: (v: number) => v === 1
+        ? <Tag color="green">{t('pages.logisticsList.enabled.on')}</Tag>
+        : <Tag>{t('pages.logisticsList.enabled.off')}</Tag>,
     },
     {
-      title: '创建时间',
+      title: t('pages.logisticsList.channelTab.colCreatedAt'),
       dataIndex: 'createdAt',
       width: 160,
       render: (v: string) => v ? dayjs(v).format('YYYY-MM-DD HH:mm') : '-',
@@ -78,16 +80,16 @@ function ChannelTab() {
   return (
     <div>
       <Row gutter={16} style={{ marginBottom: 12 }}>
-        <Col span={6}><Card bordered={false}><Statistic title="渠道总数" value={(data || []).length} prefix={<SendOutlined />} /></Card></Col>
-        <Col span={6}><Card bordered={false}><Statistic title="启用" value={(data || []).filter((d: any) => d.enabled === 1).length} valueStyle={{ color: '#52c41a' }} /></Card></Col>
-        <Col span={6}><Card bordered={false}><Statistic title="自营" value={(data || []).filter((d: any) => d.type === 1).length} /></Card></Col>
-        <Col span={6}><Card bordered={false}><Statistic title="第三方" value={(data || []).filter((d: any) => d.type !== 1).length} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.logisticsList.channelTab.statTotal')} value={(data || []).length} prefix={<SendOutlined />} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.logisticsList.channelTab.statEnabled')} value={(data || []).filter((d: any) => d.enabled === 1).length} valueStyle={{ color: '#52c41a' }} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.logisticsList.channelTab.statSelf')} value={(data || []).filter((d: any) => d.type === 1).length} /></Card></Col>
+        <Col span={6}><Card bordered={false}><Statistic title={t('pages.logisticsList.channelTab.statThird')} value={(data || []).filter((d: any) => d.type !== 1).length} /></Card></Col>
       </Row>
       <Card bordered={false} extra={has('logistics:channel') && (
         <Button type="primary" icon={<PlusOutlined />} onClick={() => {
           setEditing({});
           form.resetFields();
-        }}>新增渠道</Button>
+        }}>{t('pages.logisticsList.channelTab.createButton')}</Button>
       )}>
         <Table
           size="middle"
@@ -99,7 +101,7 @@ function ChannelTab() {
         />
       </Card>
       <Modal
-        title={editing?.id ? '编辑渠道' : '新增渠道'}
+        title={editing?.id ? t('pages.logisticsList.channelTab.editTitle') : t('pages.logisticsList.channelTab.addTitle')}
         open={!!editing}
         onCancel={() => setEditing(null)}
         onOk={async () => {
@@ -110,19 +112,26 @@ function ChannelTab() {
       >
         <Form form={form} layout="vertical" preserve={false}>
           <Row gutter={12}>
-            <Col span={12}><Form.Item name="code" label="编码" rules={[{ required: true }]}><Input /></Form.Item></Col>
-            <Col span={12}><Form.Item name="name" label="名称" rules={[{ required: true }]}><Input /></Form.Item></Col>
+            <Col span={12}><Form.Item name="code" label={t('pages.logisticsList.channelTab.labelCode')} rules={[{ required: true }]}><Input /></Form.Item></Col>
+            <Col span={12}><Form.Item name="name" label={t('pages.logisticsList.channelTab.labelName')} rules={[{ required: true }]}><Input /></Form.Item></Col>
             <Col span={12}>
-              <Form.Item name="carrier" label="承运商" rules={[{ required: true }]}>
+              <Form.Item name="carrier" label={t('pages.logisticsList.channelTab.labelCarrier')} rules={[{ required: true }]}>
                 <Select options={CARRIERS} />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="type" label="类型" initialValue={1}>
-                <Select options={[{ label: '自营', value: 1 }, { label: '三方', value: 2 }]} />
+              <Form.Item name="type" label={t('pages.logisticsList.channelTab.labelType')} initialValue={1}>
+                <Select options={[
+                  { label: t('pages.logisticsList.type.self'), value: 1 },
+                  { label: t('pages.logisticsList.type.third'), value: 2 },
+                ]} />
               </Form.Item>
             </Col>
-            <Col span={24}><Form.Item name="apiKey" label="API Key"><Input.Password placeholder="渠道 API 凭证" /></Form.Item></Col>
+            <Col span={24}>
+              <Form.Item name="apiKey" label={t('pages.logisticsList.channelTab.labelApiKey')}>
+                <Input.Password placeholder={t('pages.logisticsList.channelTab.placeholderApiKey')} />
+              </Form.Item>
+            </Col>
           </Row>
         </Form>
       </Modal>
@@ -132,13 +141,14 @@ function ChannelTab() {
 
 // ============ 物流轨迹 Tab ============
 function TrackTab() {
+  const { t } = useTranslation();
   const [trackingNo, setTrackingNo] = useState('');
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
 
   const onTrack = async () => {
     if (!trackingNo) {
-      message.warning('请输入运单号');
+      message.warning(t('pages.logisticsList.trackTab.warningEmpty'));
       return;
     }
     setLoading(true);
@@ -152,41 +162,47 @@ function TrackTab() {
     }
   };
 
+  const statusText = (s: string) => {
+    if (s === 'delivered') return t('pages.logisticsList.trackStatus.delivered');
+    if (s === 'in_transit') return t('pages.logisticsList.trackStatus.in_transit');
+    return t('pages.logisticsList.trackStatus.shipped');
+  };
+
   return (
     <div>
       <Card bordered={false}>
         <Space.Compact style={{ width: '100%', maxWidth: 600 }}>
           <Input
             size="large"
-            placeholder="请输入运单号"
+            placeholder={t('pages.logisticsList.trackTab.placeholderTrackNo')}
             value={trackingNo}
             onChange={(e) => setTrackingNo(e.target.value)}
             onPressEnter={onTrack}
             prefix={<CompassOutlined />}
           />
-          <Button size="large" type="primary" loading={loading} onClick={onTrack}>查询</Button>
+          <Button size="large" type="primary" loading={loading} onClick={onTrack}>{t('pages.logisticsList.trackTab.buttonQuery')}</Button>
         </Space.Compact>
         <div style={{ marginTop: 12, color: '#999', fontSize: 12 }}>
-          支持国际快递 (DHL/UPS/FedEx/EMS) 及国内快递 (顺丰/圆通/燕文/云途)
+          {t('pages.logisticsList.trackTab.supportHint')}
         </div>
       </Card>
 
       {result && (
         <Card style={{ marginTop: 16 }} bordered={false}
-          title={<Space><span>运单号 {result.trackingNo}</span><Tag color="blue">{result.carrier}</Tag></Space>}
+          title={<Space><span>{t('pages.logisticsList.trackTab.trackingNoLabel')} {result.trackingNo}</span><Tag color="blue">{result.carrier}</Tag></Space>}
         >
           <Row gutter={16} style={{ marginBottom: 16 }}>
             <Col span={6}>
               <Statistic
-                title="状态"
-                value={result.status === 'delivered' ? '已签收' : result.status === 'in_transit' ? '运输中' : '已发出'}
+                title={t('pages.logisticsList.trackTab.colStatus')}
+                value={statusText(result.status)}
                 valueStyle={{ color: result.status === 'delivered' ? '#52c41a' : '#1890ff' }}
                 prefix={result.status === 'delivered' ? <CheckCircleOutlined /> : <CompassOutlined />}
               />
             </Col>
             <Col span={18}>
               <Card size="small">
-                <div style={{ fontWeight: 'bold', marginBottom: 4 }}>最新动态</div>
+                <div style={{ fontWeight: 'bold', marginBottom: 4 }}>{t('pages.logisticsList.trackTab.latestUpdate')}</div>
                 <div style={{ color: '#666' }}>
                   {result.lastEvent?.time ? dayjs(result.lastEvent.time).format('YYYY-MM-DD HH:mm') : '-'}
                   {' '}{result.lastEvent?.location} - {result.lastEvent?.action}
@@ -195,7 +211,7 @@ function TrackTab() {
               </Card>
             </Col>
           </Row>
-          <Title level={5}>物流轨迹</Title>
+          <Title level={5}>{t('pages.logisticsList.trackTab.timelineTitle')}</Title>
           <Timeline
             items={(result.events || []).map((e: any) => ({
               color: 'blue',
@@ -216,6 +232,7 @@ function TrackTab() {
 
 // ============ 面单打印 Tab ============
 function WaybillTab() {
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<any>({ page: 1, pageSize: 20, status: 'toship' });
   const { data, isLoading } = useQuery({
     queryKey: ['orders', filters],
@@ -226,56 +243,57 @@ function WaybillTab() {
     queryFn: () => logisticsApi.channels(),
   });
 
+  const orderStatusMap: Record<string, { color: string; text: string }> = {
+    pending: { color: 'default', text: t('pages.logisticsList.orderStatus.pending') },
+    pay: { color: 'cyan', text: t('pages.logisticsList.orderStatus.pay') },
+    toship: { color: 'blue', text: t('pages.logisticsList.orderStatus.toship') },
+    shipped: { color: 'green', text: t('pages.logisticsList.orderStatus.shipped') },
+    done: { color: 'green', text: t('pages.logisticsList.orderStatus.done') },
+    cancel: { color: 'red', text: t('pages.logisticsList.orderStatus.cancel') },
+  };
+
   const onPrint = (record: any) => {
     Modal.info({
-      title: '面单已生成',
+      title: t('pages.logisticsList.waybillTab.generatedTitle'),
       width: 500,
       content: (
         <div>
-          <p>订单号: {record.platformNo}</p>
-          <p>收件人: {record.buyerName}</p>
-          <p>国家: {record.country}</p>
-          <p>推荐渠道: {(channels || [])[0]?.name || '请先配置渠道'}</p>
-          <p style={{ color: '#999' }}>实际打印请到对应物流服务商后台操作</p>
+          <p>{t('pages.logisticsList.waybillTab.orderNoLabel')}: {record.platformNo}</p>
+          <p>{t('pages.logisticsList.waybillTab.buyerLabel')}: {record.buyerName}</p>
+          <p>{t('pages.logisticsList.waybillTab.countryLabel')}: {record.country}</p>
+          <p>{t('pages.logisticsList.waybillTab.carrierRecommendLabel')}: {(channels || [])[0]?.name || t('pages.logisticsList.waybillTab.noChannelConfig')}</p>
+          <p style={{ color: '#999' }}>{t('pages.logisticsList.waybillTab.printHint')}</p>
         </div>
       ),
     });
   };
 
   const columns = [
-    { title: '订单号', dataIndex: 'platformNo', width: 200 },
-    { title: '收件人', dataIndex: 'buyerName', width: 120 },
-    { title: '国家', dataIndex: 'country', width: 80 },
+    { title: t('pages.logisticsList.waybillTab.colOrderNo'), dataIndex: 'platformNo', width: 200 },
+    { title: t('pages.logisticsList.waybillTab.colBuyer'), dataIndex: 'buyerName', width: 120 },
+    { title: t('pages.logisticsList.waybillTab.colCountry'), dataIndex: 'country', width: 80 },
     {
-      title: '金额',
+      title: t('pages.logisticsList.waybillTab.colAmount'),
       dataIndex: 'totalAmount',
       width: 120,
       align: 'right' as const,
       render: (v: number, r: any) => `${r.currency} ${(+v).toFixed(2)}`,
     },
     {
-      title: '状态',
+      title: t('pages.logisticsList.waybillTab.colStatus'),
       dataIndex: 'status',
       width: 100,
       render: (v: string) => {
-        const map: Record<string, { color: string; text: string }> = {
-          pending: { color: 'default', text: '待付款' },
-          pay: { color: 'cyan', text: '已付款' },
-          toship: { color: 'blue', text: '待发货' },
-          shipped: { color: 'green', text: '已发货' },
-          done: { color: 'green', text: '已完成' },
-          cancel: { color: 'red', text: '已取消' },
-        };
-        return <Tag color={map[v]?.color}>{map[v]?.text || v}</Tag>;
+        return <Tag color={orderStatusMap[v]?.color}>{orderStatusMap[v]?.text || v}</Tag>;
       },
     },
     {
-      title: '操作',
+      title: t('pages.logisticsList.waybillTab.colActions'),
       width: 160,
       fixed: 'right' as const,
       render: (_: any, r: any) => (
         <Button size="small" type="primary" onClick={() => onPrint(r)} disabled={r.status !== 'toship'}>
-          打印面单
+          {t('pages.logisticsList.waybillTab.btnPrint')}
         </Button>
       ),
     },
@@ -289,17 +307,17 @@ function WaybillTab() {
           onFinish={(v) => setFilters((f: any) => ({ ...f, ...v, page: 1 }))}
         >
           <Form.Item name="platformNo">
-            <Input placeholder="订单号" allowClear style={{ width: 200 }} />
+            <Input placeholder={t('pages.logisticsList.waybillTab.placeholderOrderNo')} allowClear style={{ width: 200 }} />
           </Form.Item>
           <Form.Item>
             <Space>
-              <Button type="primary" htmlType="submit">查询</Button>
-              <Button onClick={() => setFilters({ page: 1, pageSize: 20, status: 'toship' })} icon={<ReloadOutlined />}>重置</Button>
+              <Button type="primary" htmlType="submit">{t('pages.logisticsList.waybillTab.btnQuery')}</Button>
+              <Button onClick={() => setFilters({ page: 1, pageSize: 20, status: 'toship' })} icon={<ReloadOutlined />}>{t('pages.logisticsList.waybillTab.btnReset')}</Button>
             </Space>
           </Form.Item>
         </Form>
       </Card>
-      <Card style={{ marginTop: 16 }} bordered={false} title="待打印面单 (待发货订单)">
+      <Card style={{ marginTop: 16 }} bordered={false} title={t('pages.logisticsList.waybillTab.cardTitle')}>
         <Table
           size="middle"
           columns={columns as any}
@@ -322,17 +340,18 @@ function WaybillTab() {
 
 // ============ 入口 ============
 export default function LogisticsList() {
+  const { t } = useTranslation();
   return (
     <div>
-      <Title level={4} style={{ marginTop: 0 }}>物流分拨</Title>
-      <Text type="secondary">物流渠道管理 · 轨迹查询 · 面单打印</Text>
+      <Title level={4} style={{ marginTop: 0 }}>{t('pages.logisticsList.title')}</Title>
+      <Text type="secondary">{t('pages.logisticsList.subtitle')}</Text>
       <Tabs
         style={{ marginTop: 12 }}
         defaultActiveKey="channel"
         items={[
-          { key: 'channel', label: '物流渠道', children: <ChannelTab /> },
-          { key: 'waybill', label: '面单打印', children: <WaybillTab /> },
-          { key: 'track', label: '物流轨迹查询', children: <TrackTab /> },
+          { key: 'channel', label: t('pages.logisticsList.tab.channel'), children: <ChannelTab /> },
+          { key: 'waybill', label: t('pages.logisticsList.tab.waybill'), children: <WaybillTab /> },
+          { key: 'track', label: t('pages.logisticsList.tab.track'), children: <TrackTab /> },
         ]}
       />
     </div>

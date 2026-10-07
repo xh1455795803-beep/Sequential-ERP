@@ -1,6 +1,6 @@
 // AI 智能客服 - 浮动聊天组件
 import { useEffect, useRef, useState } from 'react';
-import { Button, Input, Badge, Spin, Tag, message as antdMessage } from 'antd';
+import { Button, Input, Badge, Spin, Tag } from 'antd';
 import {
   CustomerServiceOutlined,
   SendOutlined,
@@ -9,6 +9,7 @@ import {
 } from '@ant-design/icons';
 import { aiSupportApi } from '../api';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from '../i18n';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -19,6 +20,7 @@ interface Message {
 }
 
 export default function AiSupportWidget() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -30,7 +32,7 @@ export default function AiSupportWidget() {
   useEffect(() => {
     if (open && messages.length === 0) {
       // 首次打开, 拉一次欢迎
-      send('你好');
+      send(t('common.aiSupport.firstMessage'));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -60,7 +62,11 @@ export default function AiSupportWidget() {
         },
       ]);
     } catch (e: any) {
-      antdMessage.error(e?.message || '客服暂时不可用, 请稍后重试');
+      // 简单提示 (不引入 antdMessage 避免额外依赖)
+      setMessages((m) => [
+        ...m,
+        { role: 'assistant', content: e?.message || t('common.aiSupport.unavailable'), ts: Date.now() },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -69,7 +75,7 @@ export default function AiSupportWidget() {
   function reset() {
     sessionIdRef.current = `web-${Date.now()}`;
     setMessages([]);
-    setTimeout(() => send('你好'), 100);
+    setTimeout(() => send(t('common.aiSupport.firstMessage')), 100);
   }
 
   return (
@@ -91,7 +97,7 @@ export default function AiSupportWidget() {
             height: 56,
             boxShadow: '0 6px 20px rgba(0,0,0,0.15)',
           }}
-          title="AI 智能客服"
+          title={t('common.aiSupport.title')}
         />
       )}
 
@@ -129,10 +135,10 @@ export default function AiSupportWidget() {
             <div>
               <div style={{ fontWeight: 600, fontSize: 15 }}>
                 <CustomerServiceOutlined style={{ marginRight: 6 }} />
-                AI 智能客服
+                {t('common.aiSupport.title')}
               </div>
               <div style={{ fontSize: 11, opacity: 0.85, marginTop: 2 }}>
-                <Badge status="success" text="在线" /> 7×24 智能回复
+                <Badge status="success" text={t('common.aiSupport.online')} /> {t('common.aiSupport.online24h')}
               </div>
             </div>
             <div>
@@ -142,7 +148,7 @@ export default function AiSupportWidget() {
                 icon={<ReloadOutlined />}
                 onClick={reset}
                 style={{ color: '#fff' }}
-                title="重新开始"
+                title={t('common.aiSupport.restart')}
               />
               <Button
                 type="text"
@@ -178,7 +184,7 @@ export default function AiSupportWidget() {
             {loading && (
               <div style={{ textAlign: 'left', margin: '8px 0' }}>
                 <Tag color="processing" icon={<Spin size="small" />}>
-                  客服正在思考...
+                  {t('common.aiSupport.thinking')}
                 </Tag>
               </div>
             )}
@@ -195,7 +201,7 @@ export default function AiSupportWidget() {
                   send(input);
                 }
               }}
-              placeholder="输入您的问题, Enter 发送"
+              placeholder={t('common.aiSupport.inputPlaceholder')}
               autoSize={{ minRows: 1, maxRows: 3 }}
               maxLength={500}
             />

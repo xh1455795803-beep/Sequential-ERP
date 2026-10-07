@@ -13,8 +13,7 @@
     "isolatedModules": true,
     "allowImportingTsExtensions": false,
     "noEmit": true,
-    "baseUrl": ".",
-    "paths": { "@/*": ["src/*"] }
+    "ignoreDeprecations": "6.0"
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
