@@ -60,20 +60,20 @@ export function DashboardPage() {
       // 1. 查库存（简单 select，避免 inner join 的 400 错误）
       const { data: inv } = await supabase
         .from('wms_inventory')
-        .select('sku, location_id, qty_on_hand, qty_available, warehouse_id')
+        .select('sku, bin_id, qty_on_hand, qty_available, warehouse_id')
         .eq('sku', code)
         .limit(10);
 
       // 如果有库存，额外查对应的库位 code（如果需要）
       let invWithLoc: any[] = inv || [];
       if (invWithLoc.length > 0) {
-        const locIds = [...new Set(invWithLoc.map((r: any) => r.location_id))];
+        const locIds = [...new Set(invWithLoc.map((r: any) => r.bin_id))];
         const { data: locs } = await supabase
           .from('wms_bins')
           .select('id, code')
           .in('id', locIds);
         const locMap = Object.fromEntries((locs || []).map((l: any) => [l.id, l.code]));
-        invWithLoc = invWithLoc.map((r: any) => ({ ...r, code: locMap[r.location_id] }));
+        invWithLoc = invWithLoc.map((r: any) => ({ ...r, code: locMap[r.bin_id] }));
       }
 
       // 2. 查待上架 ASN（用 RPC 或分开查 SKU 和 barcode）

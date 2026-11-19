@@ -39,7 +39,7 @@ export function CarriersPage() {
           <tbody>
             {data?.map((c: any) => (
               <tr key={c.id} className="border-t border-gray-50 hover:bg-gray-50/50">
-                <td className="px-5 py-3 font-mono text-brand-600">{c.code}</td>
+                <td className="px-5 py-3 font-mono text-brand-600">{cbin_code}</td>
                 <td className="px-5 py-3 font-medium">{c.name}</td>
                 <td className="px-5 py-3 text-gray-500 text-xs">{c.tracking_url || '-'}</td>
                 <td className="px-5 py-3">{c.status === 'active' ? <span className="px-2 py-0.5 rounded text-xs bg-green-50 text-green-600">启用</span> : <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-500">停用</span>}</td>
@@ -61,7 +61,7 @@ export function CarriersPage() {
 }
 
 function CarrierForm({ initial, onClose, onSaved }: any) {
-  const [f, setF] = useState(initial || { code: '', name: '', tracking_url: '', contact_name: '', contact_phone: '', status: 'active' });
+  const [f, setF] = useState(initial || { bin_code: '', name: '', tracking_url: '', contact_name: '', contact_phone: '', status: 'active' });
   async function save() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!initial) {
@@ -76,7 +76,7 @@ function CarrierForm({ initial, onClose, onSaved }: any) {
   return (
     <Modal title={initial ? '编辑承运商' : '新增承运商'} onClose={onClose}>
       <Grid>
-        <Field label="编码 *"><input className="inp" value={f.code} onChange={(e) => setF({ ...f, code: e.target.value })} /></Field>
+        <Field label="编码 *"><input className="inp" value={fbin_code} onChange={(e) => setF({ ...f, bin_code: e.target.value })} /></Field>
         <Field label="名称 *"><input className="inp" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></Field>
         <Field label="追踪网址" full><input className="inp" value={f.tracking_url} onChange={(e) => setF({ ...f, tracking_url: e.target.value })} placeholder="https://...?no=" /></Field>
         <Field label="联系人"><input className="inp" value={f.contact_name} onChange={(e) => setF({ ...f, contact_name: e.target.value })} /></Field>

@@ -63,7 +63,7 @@ export default function PdaReceive() {
     const loc = locations.find((l) => l.code === code);
     if (loc) {
       setTargetLocation(loc);
-      setMsg(`库位: ${loc.code} — 现在扫商品`);
+      setMsg(`库位: ${locbin_code} — 现在扫商品`);
       setStatus('idle');
     } else {
       setMsg(`✗ 未找到库位: ${code}`);
@@ -88,7 +88,7 @@ export default function PdaReceive() {
         .from('wms_inventory')
         .select('id, qty_on_hand')
         .eq('product_id', matchedProduct.id)
-        .eq('location_id', targetLocation.id)
+        .eq('bin_id', targetLocation.id)
         .eq('user_id', user!.id)
         .maybeSingle();
 
@@ -101,7 +101,7 @@ export default function PdaReceive() {
         await supabase.from('wms_inventory').insert({
           user_id: user!.id,
           warehouse_id: wh!.id,
-          location_id: targetLocation.id,
+          bin_id: targetLocation.id,
           product_id: matchedProduct.id,
           sku: matchedProduct.sku,
           qty_on_hand: scanQty,
@@ -116,19 +116,19 @@ export default function PdaReceive() {
         warehouse_id: wh!.id,
         product_id: matchedProduct.id,
         sku: matchedProduct.sku,
-        location_id: targetLocation.id,
+        bin_id: targetLocation.id,
         qty_change: scanQty,
         qty_after: (inv?.qty_on_hand || 0) + scanQty,
         type: 'receive',
         ref_type: 'pda_receive',
-        remark: `PDA 扫码收货 ${matchedProduct.sku} @ ${targetLocation.code}`,
+        remark: `PDA 扫码收货 ${matchedProduct.sku} @ ${targetLocationbin_code}`,
       });
 
       // 震动反馈
       if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
 
       setStatus('received');
-      setMsg(`✓ 入库成功！${matchedProduct.sku} +${scanQty} @ ${targetLocation.code}`);
+      setMsg(`✓ 入库成功！${matchedProduct.sku} +${scanQty} @ ${targetLocationbin_code}`);
       setMatchedProduct(null);
       setScanQty(1);
     } catch (e: any) {
@@ -187,7 +187,7 @@ export default function PdaReceive() {
               const loc = locations.find((l) => l.id === e.target.value);
               if (loc) {
                 setTargetLocation(loc);
-                setMsg(`库位: ${loc.code}`);
+                setMsg(`库位: ${locbin_code}`);
                 setStatus('idle');
               }
             }}
@@ -195,7 +195,7 @@ export default function PdaReceive() {
           >
             <option value="">选择库位...</option>
             {locations.map((l) => (
-              <option key={l.id} value={l.id}>{l.code}</option>
+              <option key={l.id} value={l.id}>{lbin_code}</option>
             ))}
           </select>
           <QrScanner onDetected={handleLocationScan} placeholder="扫描库位条码" />
@@ -207,7 +207,7 @@ export default function PdaReceive() {
         <div className="mb-4 p-3 bg-gray-100 rounded-xl flex items-center justify-between">
           <div>
             <div className="text-[10px] text-gray-500">当前库位</div>
-            <div className="font-semibold text-gray-800">{targetLocation.code}</div>
+            <div className="font-semibold text-gray-800">{targetLocationbin_code}</div>
           </div>
           <button
             onClick={() => setTargetLocation(null)}

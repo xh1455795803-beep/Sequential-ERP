@@ -89,7 +89,7 @@ export function StocktakingPage() {
     if (!items?.length && inv?.length) {
       const rows = inv.map((r: any) => ({
         stocktaking_id: s.id, user_id: s.user_id,
-        location_id: r.location_id, product_id: r.product_id, sku: r.sku,
+        bin_id: r.bin_id, product_id: r.product_id, sku: r.sku,
         system_qty: r.qty_on_hand, actual_qty: r.qty_on_hand,
       }));
       await supabase.from('wms_stocktaking_items').insert(rows);
@@ -146,7 +146,7 @@ function SheetPanel({ sheet, inputs, setInputs, onSaved }: any) {
           if (d.diff > 0) {
             await supabase.from('wms_inventory_txn').insert({
               user_id: user!.id, warehouse_id: sheet.warehouse_id,
-              sku: d.it.sku, location_id: d.it.location_id,
+              sku: d.it.sku, bin_id: d.it.bin_id,
               qty_change: d.diff, qty_after: d.actual, type: 'adjust_in',
               ref_type: 'stocktaking', ref_id: sheet.id, operator: user?.email,
               remark: `盘点盘盈 ${d.diff}`,
@@ -154,7 +154,7 @@ function SheetPanel({ sheet, inputs, setInputs, onSaved }: any) {
           } else {
             await supabase.from('wms_inventory_txn').insert({
               user_id: user!.id, warehouse_id: sheet.warehouse_id,
-              sku: d.it.sku, location_id: d.it.location_id,
+              sku: d.it.sku, bin_id: d.it.bin_id,
               qty_change: d.diff, qty_after: d.actual, type: 'adjust_out',
               ref_type: 'stocktaking', ref_id: sheet.id, operator: user?.email,
               remark: `盘点盘亏 ${-d.diff}`,
@@ -187,12 +187,12 @@ function SheetPanel({ sheet, inputs, setInputs, onSaved }: any) {
         </thead>
         <tbody>
           {items?.map((it: any) => {
-            const loc = (locations as any[])?.find((l: any) => l.id === it.location_id);
+            const loc = (locations as any[])?.find((l: any) => l.id === it.bin_id);
             const actual = inputs[it.id] ?? it.actual_qty;
             const diff = actual - it.system_qty;
             return (
               <tr key={it.id} className={`border-t border-gray-50 ${diff !== 0 ? 'bg-red-50/40' : ''}`}>
-                <td className="px-4 py-2 font-mono text-xs">{loc?.code || '-'}</td>
+                <td className="px-4 py-2 font-mono text-xs">{loc?.bin_code || '-'}</td>
                 <td className="px-4 py-2 font-mono text-brand-600">{it.sku}</td>
                 <td className="px-4 py-2 text-right">{it.system_qty}</td>
                 <td className="px-4 py-2 text-right w-24">
@@ -232,7 +232,7 @@ function StocktakingForm({ warehouses, onClose, onSaved }: any) {
       <Grid>
         <Field label="仓库 *">
           <select className="inp" value={f.warehouse_id} onChange={(e) => setF({ ...f, warehouse_id: e.target.value })}>
-            {warehouses?.map((w: any) => <option key={w.id} value={w.id}>{w.code} · {w.name}</option>)}
+            {warehouses?.map((w: any) => <option key={w.id} value={w.id}>{wbin_code} · {w.name}</option>)}
           </select>
         </Field>
         <Field label="盘点单号 *"><input className="inp" value={f.stocktaking_no} onChange={(e) => setF({ ...f, stocktaking_no: e.target.value })} /></Field>

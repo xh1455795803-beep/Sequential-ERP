@@ -103,7 +103,7 @@ function ShipmentForm({ warehouses, carriers, onClose, onSaved }: any) {
     carrier_id: '', tracking_no: '',
     shipment_no: 'SH' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + Math.floor(Math.random() * 9000 + 1000),
     receiver_name: '', receiver_phone: '', receiver_country: '', receiver_state: '',
-    receiver_city: '', receiver_address: '', receiver_postcode: '',
+    receiver_city: '', receiver_address: '', receiver_postbin_code: '',
     weight_kg: 0, shipping_cost: 0, remark: '',
   });
   const [items, setItems] = useState<any[]>([{ sku: '', sku_name: '', qty: 1 }]);
@@ -131,14 +131,14 @@ function ShipmentForm({ warehouses, carriers, onClose, onSaved }: any) {
       <Grid>
         <Field label="仓库 *">
           <select className="inp" value={f.warehouse_id} onChange={(e) => setF({ ...f, warehouse_id: e.target.value })}>
-            {warehouses?.map((w: any) => <option key={w.id} value={w.id}>{w.code} · {w.name}</option>)}
+            {warehouses?.map((w: any) => <option key={w.id} value={w.id}>{wbin_code} · {w.name}</option>)}
           </select>
         </Field>
         <Field label="发货单号 *"><input className="inp" value={f.shipment_no} onChange={(e) => setF({ ...f, shipment_no: e.target.value })} /></Field>
         <Field label="承运商">
           <select className="inp" value={f.carrier_id} onChange={(e) => setF({ ...f, carrier_id: e.target.value })}>
             <option value="">请选择</option>
-            {carriers?.map((c: any) => <option key={c.id} value={c.id}>{c.code} · {c.name}</option>)}
+            {carriers?.map((c: any) => <option key={c.id} value={c.id}>{cbin_code} · {c.name}</option>)}
           </select>
         </Field>
         <Field label="追踪号"><input className="inp" value={f.tracking_no} onChange={(e) => setF({ ...f, tracking_no: e.target.value })} /></Field>
@@ -147,7 +147,7 @@ function ShipmentForm({ warehouses, carriers, onClose, onSaved }: any) {
         <Field label="国家"><input className="inp" value={f.receiver_country} onChange={(e) => setF({ ...f, receiver_country: e.target.value })} placeholder="US / DE / CN" /></Field>
         <Field label="省/州"><input className="inp" value={f.receiver_state} onChange={(e) => setF({ ...f, receiver_state: e.target.value })} /></Field>
         <Field label="城市"><input className="inp" value={f.receiver_city} onChange={(e) => setF({ ...f, receiver_city: e.target.value })} /></Field>
-        <Field label="邮编"><input className="inp" value={f.receiver_postcode} onChange={(e) => setF({ ...f, receiver_postcode: e.target.value })} /></Field>
+        <Field label="邮编"><input className="inp" value={f.receiver_postcode} onChange={(e) => setF({ ...f, receiver_postbin_code: e.target.value })} /></Field>
         <Field label="详细地址" full><input className="inp" value={f.receiver_address} onChange={(e) => setF({ ...f, receiver_address: e.target.value })} /></Field>
         <Field label="重量 kg"><input className="inp" type="number" step="0.01" value={f.weight_kg} onChange={(e) => setF({ ...f, weight_kg: +e.target.value })} /></Field>
         <Field label="运费"><input className="inp" type="number" step="0.01" value={f.shipping_cost} onChange={(e) => setF({ ...f, shipping_cost: +e.target.value })} /></Field>
@@ -217,16 +217,16 @@ export function ShipmentDetailPage() {
       // 更新库存
       await supabase.from('wms_inventory').update({ qty_on_hand: newQty }).eq('id', available.id);
       // 库位如果扣完置 empty
-      if (newQty === 0) await supabase.from('wms_bins').update({ status: 'empty' }).eq('id', available.location_id);
+      if (newQty === 0) await supabase.from('wms_bins').update({ status: 'empty' }).eq('id', available.bin_id);
       // 写拣货任务 + 日志
       await supabase.from('wms_work_tasks').insert({
         user_id: user!.id, shipment_id: id, shipment_item_id: it.id,
-        sku: it.sku, from_location_id: available.location_id, qty: it.qty,
+        sku: it.sku, from_bin_id: available.bin_id, qty: it.qty,
         status: 'done', operator: user?.email, done_at: new Date().toISOString(),
       });
       await supabase.from('wms_inventory_txn').insert({
         user_id: user!.id, warehouse_id: s.warehouse_id, sku: it.sku,
-        location_id: available.location_id, qty_change: -it.qty, qty_after: newQty,
+        bin_id: available.bin_id, qty_change: -it.qty, qty_after: newQty,
         type: 'outbound_pick', ref_type: 'shipment', ref_id: id,
         operator: user?.email, remark: `发货单 ${s.shipment_no} 拣货出库`,
       });

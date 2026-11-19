@@ -24,7 +24,7 @@ interface InventoryItem {
   product_id: string;
   sku: string;
   qty_on_hand: number;
-  location_id: string;
+  bin_id: string;
   location_code: string;
 }
 
@@ -62,7 +62,7 @@ export default function PdaPick() {
         .eq('order_id', order.id),
       supabase
         .from('wms_inventory')
-        .select('id, product_id, sku, qty_on_hand, location_id, locations!inner(code)')
+        .select('id, product_id, sku, qty_on_hand, bin_id, locations!inner(code)')
         .eq('user_id', order.id.startsWith('6f') ? order.id.substring(0, 0) : '')
         .limit(1),
     ]);
@@ -71,7 +71,7 @@ export default function PdaPick() {
     const { data: fullInv } = await supabase
       .from('wms_inventory')
       .select(`
-        id, product_id, sku, qty_on_hand, location_id,
+        id, product_id, sku, qty_on_hand, bin_id,
         locations!inner ( code )
       `);
 
@@ -80,7 +80,7 @@ export default function PdaPick() {
       product_id: row.product_id,
       sku: row.sku,
       qty_on_hand: row.qty_on_hand,
-      location_id: row.location_id,
+      bin_id: row.bin_id,
       location_code: row.locations?.code || '-',
     }));
 
@@ -151,7 +151,7 @@ export default function PdaPick() {
         warehouse_id: (await supabase.from('wms_warehouses').select('id').eq('user_id', user!.id).limit(1)).data?.[0]?.id,
         product_id: matchProd.id,
         sku: matchProd.sku,
-        location_id: stock.location_id,
+        bin_id: stock.bin_id,
         qty_change: -pickQty,
         qty_after: inv!.qty_on_hand - pickQty,
         type: 'pick',

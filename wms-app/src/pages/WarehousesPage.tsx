@@ -54,7 +54,7 @@ export function WarehousesPage() {
           <tbody>
             {data?.map((w: Warehouse) => (
               <tr key={w.id} className="border-t border-gray-50 hover:bg-gray-50/50">
-                <td className="px-5 py-3 font-mono text-brand-600">{w.code}</td>
+                <td className="px-5 py-3 font-mono text-brand-600">{wbin_code}</td>
                 <td className="px-5 py-3 font-medium">{w.name}</td>
                 <td className="px-5 py-3">{typeLabel(w.type)}</td>
                 <td className="px-5 py-3 text-gray-500">{w.country || '-'}</td>
@@ -91,7 +91,7 @@ export function WarehousesPage() {
 
 function WarehouseForm({ initial, onClose, onSaved }: { initial: Warehouse | null; onClose: () => void; onSaved: () => void }) {
   const [f, setF] = useState(initial || {
-    code: '', name: '', type: 'self', country: '', province: '', city: '', address: '',
+    bin_code: '', name: '', type: 'self', country: '', province: '', city: '', address: '',
     contact_name: '', contact_phone: '', status: 'active', remark: '', capacity_pallets: 0,
   });
 
@@ -114,7 +114,7 @@ function WarehouseForm({ initial, onClose, onSaved }: { initial: Warehouse | nul
       <div className="bg-white rounded-xl w-full max-w-lg p-6 shadow-2xl">
         <h3 className="text-lg font-bold mb-4">{initial ? '编辑仓库' : '新增仓库'}</h3>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="编码 *"><input className="inp" value={f.code} onChange={(e) => setF({ ...f, code: e.target.value })} /></Field>
+          <Field label="编码 *"><input className="inp" value={fbin_code} onChange={(e) => setF({ ...f, bin_code: e.target.value })} /></Field>
           <Field label="名称 *"><input className="inp" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></Field>
           <Field label="类型">
             <select className="inp" value={f.type} onChange={(e) => setF({ ...f, type: e.target.value })}>

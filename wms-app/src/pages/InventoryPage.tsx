@@ -28,7 +28,7 @@ export function InventoryPage() {
   const filtered = rows.filter((r) => {
     if (!kw) return true;
     const sku = (r.sku || '').toLowerCase();
-    const code = ((locations as any[])?.find((l: any) => l.id === r.location_id)?.code || '').toLowerCase();
+    const code = ((locations as any[])?.find((l: any) => l.id === r.bin_id)?.code || '').toLowerCase();
     return sku.includes(kw) || code.includes(kw);
   });
 
@@ -73,14 +73,14 @@ export function InventoryPage() {
           </thead>
           <tbody>
             {filtered?.map((r: any) => {
-              const loc = (locations as any[])?.find((l: any) => l.id === r.location_id);
+              const loc = (locations as any[])?.find((l: any) => l.id === r.bin_id);
               const wh = (warehouses as any[])?.find((w: any) => w.id === r.warehouse_id);
               const available = r.qty_on_hand - (r.qty_reserved || 0);
               return (
                 <tr key={r.id} className={`border-t border-gray-50 hover:bg-gray-50/50 ${r.qty_on_hand <= 2 ? 'bg-red-50/30' : ''}`}>
                   <td className="px-5 py-2.5">{wh?.name || '-'}</td>
                   <td className="px-5 py-2.5 font-mono text-brand-600">{r.sku}</td>
-                  <td className="px-5 py-2.5 font-mono text-xs">{loc?.code || '-'}</td>
+                  <td className="px-5 py-2.5 font-mono text-xs">{loc?.bin_code || '-'}</td>
                   <td className={`px-5 py-2.5 text-right font-medium ${r.qty_on_hand <= 2 ? 'text-red-600' : ''}`}>{r.qty_on_hand}</td>
                   <td className="px-5 py-2.5 text-right text-gray-400">{r.qty_reserved || 0}</td>
                   <td className="px-5 py-2.5 text-right text-green-600">{available}</td>

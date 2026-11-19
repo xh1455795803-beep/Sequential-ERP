@@ -27,7 +27,7 @@ export function LocationsPage() {
     queryKey: ['wms_zones', selectedWarehouse],
     enabled: !!selectedWarehouse,
     queryFn: async () => {
-      const { data } = await supabase.from('wms_zones').select('*').eq('warehouse_id', selectedWarehouse!).order('code');
+      const { data } = await supabase.from('wms_zones').select('*').eq('warehouse_id');
       return data || [];
     },
   });
@@ -57,7 +57,7 @@ export function LocationsPage() {
         for (let l = 1; l <= levelCount; l++) {
           rows.push({
             user_id: user!.id, warehouse_id: selectedWarehouse, zone_id: zone.id,
-            code: `${zone.code}-${String(a).padStart(2, '0')}-${String(r).padStart(2, '0')}-${String(l).padStart(2, '0')}`,
+            code: `${zonebin_code}-${String(a).padStart(2, '0')}-${String(r).padStart(2, '0')}-${String(l).padStart(2, '0')}`,
             aisle: String(a), rack: String(r), level: String(Math.floor((l - 1) / 4) + 1), position: String(l),
           });
         }
@@ -79,7 +79,7 @@ export function LocationsPage() {
           className="px-3 py-2 border border-gray-200 rounded-lg text-sm"
         >
           <option value="">选择仓库</option>
-          {warehouses?.map((w: any) => <option key={w.id} value={w.id}>{w.code} · {w.name}</option>)}
+          {warehouses?.map((w: any) => <option key={w.id} value={w.id}>{wbin_code} · {w.name}</option>)}
         </select>
       </div>
 
@@ -101,7 +101,7 @@ export function LocationsPage() {
             <div className="flex flex-wrap gap-2">
               {zones?.map((z: Zone) => (
                 <span key={z.id} className="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-50 rounded-lg text-sm border border-gray-100">
-                  <b className="text-brand-600">{z.code}</b> · {z.name} · <span className="text-xs text-gray-400">{z.type}</span>
+                  <b className="text-brand-600">{zbin_code}</b> · {z.name} · <span className="text-xs text-gray-400">{z.type}</span>
                   <button onClick={() => { setEditingZone(z); setShowZoneForm(true); }} className="ml-1 text-gray-400 hover:text-gray-600"><Pencil className="w-3 h-3" /></button>
                 </span>
               ))}
@@ -137,7 +137,7 @@ export function LocationsPage() {
                 {locations?.slice(0, 100).map((l: Location) => (
                   <tr key={l.id} className="border-t border-gray-50 hover:bg-gray-50/50">
                     <td className="px-5 py-2 font-mono text-xs text-brand-600">{(zones as Zone[]).find(z => z.id === l.zone_id)?.code || '-'}</td>
-                    <td className="px-5 py-2 font-mono">{l.code}</td>
+                    <td className="px-5 py-2 font-mono">{lbin_code}</td>
                     <td className="px-5 py-2 text-gray-500">{l.aisle}/{l.rack}/{l.level}/{l.position}</td>
                     <td className="px-5 py-2">
                       <span className={`px-2 py-0.5 rounded text-xs ${({
@@ -145,8 +145,8 @@ export function LocationsPage() {
                         occupied: 'bg-red-50 text-red-600',
                         partial: 'bg-amber-50 text-amber-600',
                         disabled: 'bg-gray-100 text-gray-400',
-                      } as any)[l.status] || 'bg-gray-100'}`}>
-                        {({ empty: '空', occupied: '占用', partial: '部分', disabled: '停用' } as any)[l.status] || l.status}
+                      } as any)[l.bin_type] || 'bg-gray-100'}`}>
+                        {({ empty: '空', occupied: '占用', partial: '部分', disabled: '停用' } as any)[l.bin_type] || l.bin_type}
                       </span>
                     </td>
                     <td className="px-5 py-2 text-right">
@@ -177,7 +177,7 @@ export function LocationsPage() {
 }
 
 function ZoneModal({ zones, warehouseId, initial, onClose, onSaved }: any) {
-  const [f, setF] = useState(initial || { code: '', name: '', type: 'storage', remark: '' });
+  const [f, setF] = useState(initial || { bin_code: '', name: '', type: 'storage', remark: '' });
   async function save() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!initial) {
@@ -192,7 +192,7 @@ function ZoneModal({ zones, warehouseId, initial, onClose, onSaved }: any) {
   return (
     <Modal title={initial ? '编辑库区' : '新增库区'} onClose={onClose}>
       <Grid>
-        <Field label="编码 *"><input className="inp" value={f.code} onChange={(e) => setF({ ...f, code: e.target.value })} /></Field>
+        <Field label="编码 *"><input className="inp" value={fbin_code} onChange={(e) => setF({ ...f, bin_code: e.target.value })} /></Field>
         <Field label="名称 *"><input className="inp" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></Field>
         <Field label="类型">
           <select className="inp" value={f.type} onChange={(e) => setF({ ...f, type: e.target.value })}>
@@ -208,7 +208,7 @@ function ZoneModal({ zones, warehouseId, initial, onClose, onSaved }: any) {
 }
 
 function LocationModal({ zones, warehouseId, initial, onClose, onSaved }: any) {
-  const [f, setF] = useState(initial || { zone_id: zones?.[0]?.id || '', code: '', remark: '' });
+  const [f, setF] = useState(initial || { zone_id: zones?.[0]?.id || '', bin_code: '', remark: '' });
   async function save() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!initial) {
@@ -225,10 +225,10 @@ function LocationModal({ zones, warehouseId, initial, onClose, onSaved }: any) {
       <Grid>
         <Field label="库区 *">
           <select className="inp" value={f.zone_id} onChange={(e) => setF({ ...f, zone_id: e.target.value })}>
-            {zones?.map((z: Zone) => <option key={z.id} value={z.id}>{z.code} · {z.name}</option>)}
+            {zones?.map((z: Zone) => <option key={z.id} value={z.id}>{zbin_code} · {z.name}</option>)}
           </select>
         </Field>
-        <Field label="库位编码 *"><input className="inp" value={f.code} onChange={(e) => setF({ ...f, code: e.target.value })} placeholder="A-01-02-03" /></Field>
+        <Field label="库位编码 *"><input className="inp" value={fbin_code} onChange={(e) => setF({ ...f, bin_code: e.target.value })} placeholder="A-01-02-03" /></Field>
         <Field label="备注" full><textarea className="inp" rows={2} value={f.remark} onChange={(e) => setF({ ...f, remark: e.target.value })} /></Field>
       </Grid>
       <Footer onClose={onClose} onSave={save} />

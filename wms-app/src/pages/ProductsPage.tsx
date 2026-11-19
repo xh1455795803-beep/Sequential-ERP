@@ -122,12 +122,12 @@ function ProductForm({ initial, warehouses, onClose, onSaved }: any) {
         <Field label="商品名称 *"><input className="inp" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></Field>
         <Field label="所属仓库 *">
           <select className="inp" value={f.warehouse_id} onChange={(e) => setF({ ...f, warehouse_id: e.target.value })}>
-            {warehouses?.map((w: any) => <option key={w.id} value={w.id}>{w.code} · {w.name}</option>)}
+            {warehouses?.map((w: any) => <option key={w.id} value={w.id}>{wbin_code} · {w.name}</option>)}
           </select>
         </Field>
         <Field label="条码（多个用逗号分隔）">
           <input className="inp" value={(f.barcode || []).join(',')}
-            onChange={(e) => setF({ ...f, barcode: e.target.value.split(',').map((s: string) => s.trim()).filter(Boolean) })}
+            onChange={(e) => setF({ ...f, barbin_code: e.target.value.split(',').map((s: string) => s.trim()).filter(Boolean) })}
             placeholder="BC-10001,BC-10002" />
         </Field>
         <Field label="重量 kg"><input className="inp" type="number" step="0.01" value={f.weight_kg} onChange={(e) => setF({ ...f, weight_kg: +e.target.value })} /></Field>

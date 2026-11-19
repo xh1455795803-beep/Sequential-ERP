@@ -55,7 +55,7 @@ export function ChannelsPage() {
           <tbody>
             {data?.map((c: any) => (
               <tr key={c.id} className="border-t border-gray-50 hover:bg-gray-50/50">
-                <td className="px-5 py-3 font-mono text-brand-600">{c.code}</td>
+                <td className="px-5 py-3 font-mono text-brand-600">{cbin_code}</td>
                 <td className="px-5 py-3 font-medium">{c.name}</td>
                 <td className="px-5 py-3">
                   <span className="px-2 py-0.5 rounded text-xs bg-purple-50 text-purple-600 font-mono">{c.adapter}</span>
@@ -89,7 +89,7 @@ export function ChannelsPage() {
 
 function ChannelForm({ initial, onClose, onSaved }: any) {
   const [f, setF] = useState(initial || {
-    code: '', name: '', adapter: 'manual',
+    bin_code: '', name: '', adapter: 'manual',
     supports_tracking: false, supports_label_pdf: false,
     config: {}, rate_card: {},
     status: 'active', remark: '',
@@ -110,7 +110,7 @@ function ChannelForm({ initial, onClose, onSaved }: any) {
   return (
     <Modal title={initial ? '编辑渠道' : '新增渠道'} onClose={onClose}>
       <Grid>
-        <Field label="渠道编码 *"><input className="inp" value={f.code} onChange={(e) => setF({ ...f, code: e.target.value })} placeholder="4PX-ECONOMY" /></Field>
+        <Field label="渠道编码 *"><input className="inp" value={fbin_code} onChange={(e) => setF({ ...f, bin_code: e.target.value })} placeholder="4PX-ECONOMY" /></Field>
         <Field label="渠道名称 *"><input className="inp" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} placeholder="递四方 经济小包" /></Field>
         <Field label="适配器 *">
           <select className="inp" value={f.adapter} onChange={(e) => setF({ ...f, adapter: e.target.value })}>

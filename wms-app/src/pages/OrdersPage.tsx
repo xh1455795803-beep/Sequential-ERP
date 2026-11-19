@@ -148,7 +148,7 @@ function OrderForm({ warehouses, channels, onClose, onSaved }: any) {
     channel_id: channels?.find((c: any) => c.code === 'MANUAL')?.id || channels?.[0]?.id || '',
     receiver_name: '', receiver_phone: '', receiver_email: '',
     receiver_country: 'US', receiver_state: '', receiver_city: '',
-    receiver_address: '', receiver_postcode: '',
+    receiver_address: '', receiver_postbin_code: '',
     weight_kg: 0, package_count: 1,
   });
   const [items, setItems] = useState<any[]>([{ sku: '', sku_name: '', qty: 1 }]);
@@ -207,13 +207,13 @@ function OrderForm({ warehouses, channels, onClose, onSaved }: any) {
         </Field>
         <Field label="仓库 *">
           <select className="inp" value={f.warehouse_id} onChange={(e) => setF({ ...f, warehouse_id: e.target.value })}>
-            {warehouses?.map((w: any) => <option key={w.id} value={w.id}>{w.code} · {w.name}</option>)}
+            {warehouses?.map((w: any) => <option key={w.id} value={w.id}>{wbin_code} · {w.name}</option>)}
           </select>
         </Field>
         <Field label="渠道">
           <select className="inp" value={f.channel_id} onChange={(e) => setF({ ...f, channel_id: e.target.value })}>
             <option value="">不指定</option>
-            {channels?.map((c: any) => <option key={c.id} value={c.id}>{c.code} · {c.name}</option>)}
+            {channels?.map((c: any) => <option key={c.id} value={c.id}>{cbin_code} · {c.name}</option>)}
           </select>
         </Field>
         <Field label="收件人"><input className="inp" value={f.receiver_name} onChange={(e) => setF({ ...f, receiver_name: e.target.value })} /></Field>
@@ -221,7 +221,7 @@ function OrderForm({ warehouses, channels, onClose, onSaved }: any) {
         <Field label="国家"><input className="inp" value={f.receiver_country} onChange={(e) => setF({ ...f, receiver_country: e.target.value })} placeholder="US" /></Field>
         <Field label="省/州"><input className="inp" value={f.receiver_state} onChange={(e) => setF({ ...f, receiver_state: e.target.value })} /></Field>
         <Field label="城市"><input className="inp" value={f.receiver_city} onChange={(e) => setF({ ...f, receiver_city: e.target.value })} /></Field>
-        <Field label="邮编"><input className="inp" value={f.receiver_postcode} onChange={(e) => setF({ ...f, receiver_postcode: e.target.value })} /></Field>
+        <Field label="邮编"><input className="inp" value={f.receiver_postcode} onChange={(e) => setF({ ...f, receiver_postbin_code: e.target.value })} /></Field>
         <Field label="详细地址" full><input className="inp" value={f.receiver_address} onChange={(e) => setF({ ...f, receiver_address: e.target.value })} /></Field>
         <Field label="重量 kg"><input className="inp" type="number" step="0.01" value={f.weight_kg} onChange={(e) => setF({ ...f, weight_kg: +e.target.value })} /></Field>
       </Grid>
@@ -366,15 +366,15 @@ export function OrderDetailPage() {
       const newQty = stock.qty_on_hand - qtyToPick;
       await supabase.from('wms_inventory').update({ qty_on_hand: newQty }).eq('id', stock.id);
 
-      // 如果有 location_id 关联
-      if (stock.location_id && newQty === 0) {
-        await supabase.from('wms_bins').update({ status: 'empty' }).eq('id', stock.location_id);
+      // 如果有 bin_id 关联
+      if (stock.bin_id && newQty === 0) {
+        await supabase.from('wms_bins').update({ status: 'empty' }).eq('id', stock.bin_id);
       }
 
       // 写流水
       await supabase.from('wms_inventory_txn').insert({
         user_id: user!.id, warehouse_id: order!.warehouse_id,
-        sku: it.sku, location_id: stock.location_id,
+        sku: it.sku, bin_id: stock.bin_id,
         qty_change: -qtyToPick, qty_after: newQty,
         type: 'pack', ref_type: 'erp_order', ref_id: id,
         operator: user?.email, remark: `订单 ${order!.erp_order_no} 打包出库`,
@@ -479,7 +479,7 @@ export function OrderDetailPage() {
           <div>
             <div className="text-lg font-bold">{order.erp_order_no}</div>
             <div className="text-xs text-gray-500">
-              {PLATFORM_LABEL[order.platform] || order.platform} · {order.warehouse?.code} · {order.channel?.name || '未指定渠道'}
+              {PLATFORM_LABEL[order.platform] || order.platform} · {order.warehouse?.warehouse_code} · {order.channel?.name || '未指定渠道'}
             </div>
           </div>
           <div className="ml-auto flex items-center gap-2">
@@ -559,7 +559,7 @@ export function OrderDetailPage() {
           {order.tracking_no ? (
             <div>
               <div className="font-mono text-brand-600">{order.tracking_no}</div>
-              {order.channel?.code && <div className="text-xs text-gray-500 mt-0.5">{order.channel.code}</div>}
+              {order.channel?.code && <div className="text-xs text-gray-500 mt-0.5">{order.channelbin_code}</div>}
             </div>
           ) : (
             <div className="text-gray-400 text-xs">等待申请运单号...</div>

@@ -28,8 +28,8 @@ export function AsnsPage() {
       const { data: { user } } = await supabase.auth.getUser();
 
       // 尝试识别 warehouse_id（支持 code 或直接传 id）
-      const { data: warehouses } = await supabase.from('wms_warehouses').select('id, code');
-      const byCode = Object.fromEntries((warehouses || []).map(w => [w.code, w.id]));
+      const { data: warehouses } = await supabase.from('wms_warehouses').select('id, warehouse_code');
+      const byCode = Object.fromEntries((warehouses || []).map(w => [w.warehouse_code, w.id]));
 
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
@@ -191,7 +191,7 @@ function AsnForm({ warehouses, onClose, onSaved }: any) {
     asn_no: 'ASN' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + Math.floor(Math.random() * 9000 + 1000),
     expected_date: '', po_no: '', supplier_id: '', tracking_no: '', remark: '',
   });
-  const [items, setItems] = useState<any[]>([{ sku: '', sku_name: '', expected_qty: 1, unit_cost: 0, barcode: '' }]);
+  const [items, setItems] = useState<any[]>([{ sku: '', sku_name: '', expected_qty: 1, unit_cost: 0, barbin_code: '' }]);
 
   async function save() {
     if (!f.warehouse_id) return alert('请选择仓库');
@@ -217,7 +217,7 @@ function AsnForm({ warehouses, onClose, onSaved }: any) {
       <Grid>
         <Field label="仓库 *">
           <select className="inp" value={f.warehouse_id} onChange={(e) => setF({ ...f, warehouse_id: e.target.value })}>
-            {warehouses?.map((w: any) => <option key={w.id} value={w.id}>{w.code} · {w.name}</option>)}
+            {warehouses?.map((w: any) => <option key={w.id} value={w.id}>{wbin_code} · {w.name}</option>)}
           </select>
         </Field>
         <Field label="ASN 单号 *"><input className="inp" value={f.asn_no} onChange={(e) => setF({ ...f, asn_no: e.target.value })} /></Field>
@@ -230,7 +230,7 @@ function AsnForm({ warehouses, onClose, onSaved }: any) {
       <div className="mt-5 border-t pt-4">
         <div className="flex items-center justify-between mb-2">
           <span className="font-medium text-sm">ASN 明细</span>
-          <button onClick={() => setItems([...items, { sku: '', sku_name: '', expected_qty: 1, unit_cost: 0, barcode: '' }])}
+          <button onClick={() => setItems([...items, { sku: '', sku_name: '', expected_qty: 1, unit_cost: 0, barbin_code: '' }])}
             className="text-xs text-brand-500 hover:text-brand-600">+ 添加一行</button>
         </div>
         <table className="w-full text-xs">
@@ -293,13 +293,13 @@ export function AsnDetailPage() {
   const { data: locations } = useQuery({
     queryKey: ['wms_bins_simple'],
     queryFn: async () => {
-      const { data } = await supabase.from('wms_bins').select('id,code,warehouse_id,status').eq('status', 'empty');
+      const { data } = await supabase.from('wms_bins').select('id,code,warehouse_id,status').eq('is_pickable', 1);
       return data || [];
     },
   });
 
   const [receivedMap, setReceivedMap] = useState<Record<string, number>>({});
-  const [putawayMap, setPutawayMap] = useState<Record<string, any>>({}); // item_id -> { location_id, qty }
+  const [putawayMap, setPutawayMap] = useState<Record<string, any>>({}); // item_id -> { bin_id, qty }
 
   async function receiveAll() {
     const { data: { user } } = await supabase.auth.getUser();
@@ -325,10 +325,10 @@ export function AsnDetailPage() {
 
     for (const it of items!) {
       const target = putawayMap[it.id];
-      if (!target || !target.location_id || !target.qty) continue;
-      const loc = (locations as any[])?.find(l => l.id === target.location_id);
+      if (!target || !target.bin_id || !target.qty) continue;
+      const loc = (locations as any[])?.find(l => l.id === target.bin_id);
       const sku = it.sku;
-      const locId = target.location_id;
+      const locId = target.bin_id;
       const addQty = target.qty;
 
       // 🔧 修复：先查后累加（原来直接 upsert 会覆盖库存）
@@ -336,7 +336,7 @@ export function AsnDetailPage() {
         .from('wms_inventory')
         .select('id, qty_on_hand, qty_reserved')
         .eq('warehouse_id', asn.warehouse_id)
-        .eq('location_id', locId)
+        .eq('bin_id', locId)
         .eq('sku', sku)
         .maybeSingle();
 
@@ -353,7 +353,7 @@ export function AsnDetailPage() {
         await supabase.from('wms_inventory').insert({
           user_id: user!.id,
           warehouse_id: asn.warehouse_id,
-          location_id: locId,
+          bin_id: locId,
           product_id: it.product_id,
           sku,
           qty_on_hand: addQty,
@@ -363,12 +363,12 @@ export function AsnDetailPage() {
       // 写库存日志
       await supabase.from('wms_inventory_txn').insert({
         user_id: user!.id, warehouse_id: asn.warehouse_id, product_id: it.product_id,
-        sku, location_id: locId,
+        sku, bin_id: locId,
         qty_change: addQty,
         qty_after: (existing?.qty_on_hand || 0) + addQty,
         type: 'inbound_putaway',
         ref_type: 'asn', ref_id: id, operator: user?.email,
-        remark: `ASN ${asn.asn_no} 上架至 ${loc?.code}`,
+        remark: `ASN ${asn.asn_no} 上架至 ${loc?.bin_code}`,
       });
 
       // 更新 ASN item putaway_qty
@@ -378,7 +378,7 @@ export function AsnDetailPage() {
       await supabase.from('wms_work_tasks').insert({
         user_id: user!.id, asn_id: id, asn_item_id: it.id,
         product_id: it.product_id, sku, qty: addQty,
-        target_location_id: locId, status: 'done', operator: user?.email,
+        target_bin_id: locId, status: 'done', operator: user?.email,
         done_at: new Date().toISOString(),
       });
 
@@ -398,7 +398,7 @@ export function AsnDetailPage() {
     const allDone = items!.every((it: any) => {
       const target = putawayMap[it.id];
       const remaining = (it.expected_qty || 0) - (it.putaway_qty || 0);
-      return remaining <= 0 || (target && target.location_id && target.qty >= remaining);
+      return remaining <= 0 || (target && target.bin_id && target.qty >= remaining);
     });
 
     await supabase.from('wms_inbound_receipts').update({
@@ -470,13 +470,13 @@ export function AsnDetailPage() {
                 <td className="px-4 py-2">
                   <select
                     className="inp text-xs py-1 px-2"
-                    value={putawayMap[it.id]?.location_id || ''}
-                    onChange={(e) => setPutawayMap({ ...putawayMap, [it.id]: { ...(putawayMap[it.id] || {}), location_id: e.target.value } })}
+                    value={putawayMap[it.id]?.bin_id || ''}
+                    onChange={(e) => setPutawayMap({ ...putawayMap, [it.id]: { ...(putawayMap[it.id] || {}), bin_id: e.target.value } })}
                     disabled={asn.status === 'completed'}
                   >
                     <option value="">选择库位</option>
                     {(locations as any[])?.filter(l => l.warehouse_id === asn.warehouse_id).map((l: any) =>
-                      <option key={l.id} value={l.id}>{l.code}</option>)}
+                      <option key={l.id} value={l.id}>{lbin_code}</option>)}
                   </select>
                 </td>
                 <td className="px-4 py-2 text-right w-20">
