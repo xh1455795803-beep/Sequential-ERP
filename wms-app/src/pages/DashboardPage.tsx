@@ -57,26 +57,56 @@ export function DashboardPage() {
     setScanResult(null);
 
     try {
-      // 1. 先查库存（SKU 或 barcode 匹配）
+      // 1. 查库存（简单 select，避免 inner join 的 400 错误）
       const { data: inv } = await supabase
         .from('wms_inventory')
-        .select('sku, location_id, qty_on_hand, warehouse_id, wms_locations!inner(code)')
-        .or(`sku.eq.${code},barcode.eq.${code}`)
+        .select('sku, location_id, qty_on_hand, qty_available, warehouse_id')
+        .eq('sku', code)
         .limit(10);
 
-      // 2. 再查正在处理该 SKU 的 ASN（待上架）
-      const { data: pendingAsns } = await supabase
-        .from('wms_asns')
-        .select('id, asn_no, status, wms_asn_items!inner(sku, putaway_qty, qty)')
-        .eq('wms_asn_items.sku', code)
-        .in('status', ['submitted', 'in_transit', 'arrived', 'receiving', 'putaway'])
-        .limit(5);
+      // 如果有库存，额外查对应的库位 code（如果需要）
+      let invWithLoc: any[] = inv || [];
+      if (invWithLoc.length > 0) {
+        const locIds = [...new Set(invWithLoc.map((r: any) => r.location_id))];
+        const { data: locs } = await supabase
+          .from('wms_locations')
+          .select('id, code')
+          .in('id', locIds);
+        const locMap = Object.fromEntries((locs || []).map((l: any) => [l.id, l.code]));
+        invWithLoc = invWithLoc.map((r: any) => ({ ...r, code: locMap[r.location_id] }));
+      }
+
+      // 2. 查待上架 ASN（用 RPC 或分开查 SKU 和 barcode）
+      const [{ data: bySku }, { data: byBarcode }] = await Promise.all([
+        supabase.from('wms_asns')
+          .select('id, asn_no, status, wms_asn_items!inner(sku, putaway_qty, expected_qty)')
+          .eq('wms_asn_items.sku', code)
+          .in('status', ['submitted', 'in_transit', 'arrived', 'receiving', 'putaway'])
+          .limit(5),
+        supabase.from('wms_asns')
+          .select('id, asn_no, status, wms_asn_items!inner(sku, putaway_qty, expected_qty)')
+          .eq('wms_asn_items.barcode', code)
+          .in('status', ['submitted', 'in_transit', 'arrived', 'receiving', 'putaway'])
+          .limit(5),
+      ]);
+
+      // 合并去重
+      const seen = new Set();
+      const allAsns = [];
+      for (const src of [bySku, byBarcode]) {
+        for (const a of (src || [])) {
+          if (!seen.has(a.id)) {
+            seen.add(a.id);
+            allAsns.push(a);
+          }
+        }
+      }
 
       setScanResult({
         query: code,
-        inventory: inv || [],
-        pendingAsns: (pendingAsns || []).filter(a =>
-          (a.wms_asn_items || []).some((it: any) => (it.putaway_qty || 0) < (it.qty || 0))
+        inventory: invWithLoc,
+        pendingAsns: allAsns.filter((a: any) =>
+          (a.wms_asn_items || []).some((it: any) => (it.putaway_qty || 0) < (it.expected_qty || 0))
         ),
       });
     } catch (e: any) {

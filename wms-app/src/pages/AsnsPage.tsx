@@ -388,12 +388,25 @@ export function AsnDetailPage() {
       putawayCount += addQty;
     }
 
+    if (putawayCount === 0) {
+      qc.invalidateQueries();
+      alert('⚠️ 未选择任何上架库位或数量，请先为需要上架的 SKU 选择库位和数量');
+      return;
+    }
+
+    // 检查是否所有 item 都已上架完成
+    const allDone = items!.every((it: any) => {
+      const target = putawayMap[it.id];
+      const remaining = (it.expected_qty || 0) - (it.putaway_qty || 0);
+      return remaining <= 0 || (target && target.location_id && target.qty >= remaining);
+    });
+
     await supabase.from('wms_asns').update({
-      status: 'completed',
+      status: allDone ? 'completed' : 'putaway',
       putaway_qty: (asn?.putaway_qty || 0) + putawayCount,
     }).eq('id', id);
     qc.invalidateQueries();
-    alert(`✅ 上架完成：${putawayCount} 件`);
+    alert(`✅ 上架完成：${putawayCount} 件${allDone ? '，ASN 已完成' : ''}`);
   }
 
   if (!asn) return <div className="p-8 text-center text-gray-400">加载中...</div>;
@@ -412,7 +425,7 @@ export function AsnDetailPage() {
             <div className="text-xs text-gray-500">状态：<span className={asnStatusBadge(asn.status)}>{asn.status}</span> · 仓库 {asn.warehouse_id}</div>
           </div>
           <div className="ml-auto flex gap-2">
-            {(asn.status === 'submitted' || asn.status === 'in_transit' || asn.status === 'arrived') && (
+            {(asn.status === 'submitted' || asn.status === 'in_transit' || asn.status === 'arrived' || asn.status === 'receiving') && (
               <button onClick={receiveAll} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm hover:bg-amber-600">
                 一键到货并收货
               </button>
