@@ -1,44 +1,304 @@
 @import "tailwindcss";
 
-@theme {
-  --color-brand-50: #fff8f1;
-  --color-brand-100: #ffe9d4;
-  --color-brand-500: #f97316;
-  --color-brand-600: #ea580c;
-  --color-brand-700: #c2410c;
-  --color-sea-500: #0ea5a4;
-  --color-sea-600: #0d9488;
-  --color-deep-700: #1e3a5f;
-  --color-deep-800: #152a45;
+/* ========================================================
+   Thalvior WMS — 对齐 meoo (货小易) 完整设计系统
+   所有 CSS 变量从 meoo 生产环境 1:1 映射过来
+   Tailwind v4 的 @theme 直接消费下面这些 CSS 变量
+   ======================================================== */
+
+/* --- 品牌字体栈（和 meoo 一致，零外链） --- */
+:root {
+  --font-sans: "Inter", "PingFang SC", "Source Han Sans SC", "思源黑体",
+               "HarmonyOS Sans SC", "Microsoft YaHei",
+               "Noto Sans CJK SC", sans-serif;
+  --font-display: var(--font-sans);
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
 }
 
-html, body, #root { height: 100%; margin: 0; }
+html, body, #root { height: 100%; margin: 0; padding: 0; }
 body {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
-  background-color: #f5f6f8;
-  color: #1f2937;
+  font-family: var(--font-sans);
+  background-color: var(--surface);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* 简易滚动条美化 */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+/* ============ 设计 token ============ */
+:root, html.light {
+  /* Surface */
+  --surface: #f5f7fa;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f5f7fa;
+  --surface-overlay: #ffffff;
+  --surface-hover: #f0f4f8;
+  --surface-inset: #ebeef5;
 
-/* ========== 全局表单样式 .inp（原先散落在各页面内联 style 里，现在统一到这里）========== */
+  /* Text */
+  --text: #303133;
+  --text-body: #41464b;
+  --text-muted: #606266;
+  --text-subtle: #909399;
+
+  /* Border */
+  --border: #ebeef5;
+  --border-strong: #dcdfe6;
+  --input: #dcdfe6;
+
+  /* Brand（Thalvior 蓝） */
+  --brand: #1a63e8;
+  --brand-hover: #1550c4;
+  --brand-active: #11429f;
+  --brand-ink: #ffffff;
+  --brand-subtle: #eaf1fd;
+  --brand-ink-text: #1550c4;
+
+  /* CTA（货运橙） */
+  --cta: #c2410c;
+  --cta-hover: #a8360a;
+  --cta-active: #8f2d07;
+  --cta-subtle: #fdf0e7;
+
+  /* Semantic */
+  --success: #67c23a;
+  --success-subtle: #f0f9eb;
+  --success-ink: #3d7a1f;
+  --warn: #e6a23c;
+  --warn-subtle: #fdf6ec;
+  --warn-ink: #96621a;
+  --danger: #f56c6c;
+  --danger-subtle: #fef0f0;
+  --danger-hover: #f78989;
+  --danger-active: #c45656;
+  --danger-ink: #b04545;
+  --info: #909399;
+  --info-subtle: #f4f4f5;
+  --info-ink: #5f6268;
+
+  /* shadcn 别名映射 */
+  --background: var(--surface);
+  --foreground: var(--text);
+  --card: var(--surface-raised);
+  --card-foreground: var(--text);
+  --popover: var(--surface-overlay);
+  --popover-foreground: var(--text);
+  --primary: var(--brand);
+  --primary-foreground: var(--brand-ink);
+  --secondary: var(--surface-sunken);
+  --secondary-foreground: var(--text);
+  --muted: var(--surface-sunken);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--brand-subtle);
+  --accent-foreground: var(--brand);
+  --destructive: var(--danger);
+  --destructive-foreground: #ffffff;
+  --ring: #1a63e847;
+
+  /* Chart 色系 */
+  --chart-1: #1a63e8;
+  --chart-2: #3fbf9f;
+  --chart-3: #e6a23c;
+  --chart-4: #f56c6c;
+  --chart-5: #8b7cc8;
+
+  /* WMS 专属 cargo 色 */
+  --cargo-orange: oklch(54% .121 52);
+  --cargo-teal: oklch(55% .112 165);
+  --cargo-gold: oklch(56.5% .106 88);
+  --cargo-violet: oklch(56% .145 282);
+  --cargo-blue: oklch(55% .144 248);
+
+  /* Sidebar（深色，和 meoo 一致） */
+  --sidebar: #1f2733;
+  --sidebar-foreground: #dce3ee;
+  --sidebar-muted: #8b98ab;
+  --sidebar-primary: #4d8aff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1a63e847;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #141a22;
+  --sidebar-ring: #1a63e866;
+
+  /* Elevation / Shadow */
+  --elev-none: none;
+  --elev-lift: 0 12px 32px 4px #0000000a, 0 8px 20px #00000014;
+  --elev-card: 0 1px 2px 0 #0f172a08, 0 1px 3px 0 #0f172a0a;
+  --elev-card-hover: 0 4px 12px -2px #0f172a10, 0 2px 4px -2px #0f172a08;
+  --shadow-soft: 0 1px 2px 0 #0f172a08, 0 1px 3px 0 #0f172a0a;
+
+  /* Scrollbar */
+  --scrollbar-thumb: #c9cdd4;
+  --scrollbar-thumb-hover: #a9aeb8;
+}
+
+/* --- 深色主题（预留，和 meoo 对齐） --- */
+html.dark {
+  --surface: #0f1115;
+  --surface-raised: #1a1d23;
+  --surface-sunken: #14171c;
+  --surface-overlay: #1a1d23;
+  --surface-hover: #22262e;
+  --surface-inset: #1a1d23;
+
+  --text: #e5e7eb;
+  --text-body: #d1d5db;
+  --text-muted: #9ca3af;
+  --text-subtle: #6b7280;
+
+  --border: #272b34;
+  --border-strong: #3a3f4b;
+  --input: #3a3f4b;
+
+  --brand: #4d8aff;
+  --brand-hover: #6ea2ff;
+  --brand-active: #3a72e6;
+  --brand-subtle: #1a2b4a;
+}
+
+/* ============ Tailwind v4 @theme ============ */
+@theme {
+  /* 颜色 — 全部走 CSS 变量 */
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-hover: var(--surface-hover);
+
+  --color-text: var(--text);
+  --color-text-body: var(--text-body);
+  --color-text-muted: var(--text-muted);
+  --color-text-subtle: var(--text-subtle);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-active: var(--brand-active);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-subtle: var(--brand-subtle);
+
+  --color-cta: var(--cta);
+  --color-cta-hover: var(--cta-hover);
+  --color-cta-active: var(--cta-active);
+  --color-cta-subtle: var(--cta-subtle);
+
+  --color-success: var(--success);
+  --color-success-subtle: var(--success-subtle);
+  --color-warn: var(--warn);
+  --color-warn-subtle: var(--warn-subtle);
+  --color-danger: var(--danger);
+  --color-danger-subtle: var(--danger-subtle);
+  --color-info: var(--info);
+  --color-info-subtle: var(--info-subtle);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-cargo-orange: var(--cargo-orange);
+  --color-cargo-teal: var(--cargo-teal);
+  --color-cargo-gold: var(--cargo-gold);
+  --color-cargo-violet: var(--cargo-violet);
+  --color-cargo-blue: var(--cargo-blue);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+
+  /* 字体 */
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+
+  /* 圆角（和 meoo 一致 — 小尺寸但精致） */
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 4px;
+  --radius-xl: 8px;
+  --radius-2xl: 12px;
+  --radius-pill: 999px;
+
+  /* 阴影（和 meoo 一致） */
+  --shadow-soft: var(--shadow-soft);
+  --shadow-lift: var(--elev-lift);
+  --shadow-card: var(--elev-card);
+  --shadow-card-hover: var(--elev-card-hover);
+}
+
+/* ============ 基础样式重置 ============ */
+* { box-sizing: border-box; }
+
+/* 滚动条（和 meoo 一致） */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: var(--radius-pill); }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* 表单全局样式 — .inp 保留但升级 */
 .inp {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  font-size: 14px;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-sm);
+  font-family: var(--font-sans);
   outline: none;
-  background: #fff;
-  color: #1f2937;
+  background: var(--surface-raised);
+  color: var(--text);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .inp:focus {
-  border-color: #f97316;
-  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px var(--brand-subtle);
 }
-.inp.text-xs { padding: 4px 8px; font-size: 12px; border-radius: 6px; }
+.inp.text-xs { padding: 4px 8px; font-size: var(--fs-xs); border-radius: var(--radius-sm); }
 .inp.text-right { text-align: right; }
+
+/* 阴影工具类（和 meoo 一致） */
+.shadow-soft { box-shadow: var(--shadow-soft); }
+.shadow-lift { box-shadow: var(--elev-lift); }
+.shadow-card { box-shadow: var(--elev-card); }
+.shadow-card-hover { box-shadow: var(--elev-card-hover); }
+
+/* ============ WMS 专属增强 ============ */
+/* 货物状态 chip（cargo color） */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 500;
+}
+.chip-orange { background: oklch(95.8% .026 55); color: var(--cta); }
+.chip-teal { background: oklch(95.8% .024 165); color: var(--cargo-teal); }
+.chip-gold { background: oklch(96.2% .028 90); color: var(--cargo-gold); }
+.chip-violet { background: oklch(95.8% .018 282); color: var(--cargo-violet); }
