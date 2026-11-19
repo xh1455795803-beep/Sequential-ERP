@@ -43,10 +43,10 @@ export function AsnsPage() {
         const asn_no = row['ASN单号'] || row['asn_no'] || row['PO'] || ('ASN' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + Math.floor(Math.random() * 9000 + 1000));
 
         // 找或创建 ASN
-        let { data: exist }: any = await supabase.from('wms_asns').select('id').eq('asn_no', asn_no).maybeSingle();
+        let { data: exist }: any = await supabase.from('wms_inbound_receipts').select('id').eq('asn_no', asn_no).maybeSingle();
         let asnId = exist?.id;
         if (!asnId) {
-          const { data: ins }: any = await supabase.from('wms_asns').insert({
+          const { data: ins }: any = await supabase.from('wms_inbound_receipts').insert({
             user_id: user!.id, warehouse_id: whId, asn_no,
             expected_date: row['预计到货'] || row['expected_date'] || null,
             po_no: row['PO'] || row['po_no'] || null,
@@ -73,10 +73,10 @@ export function AsnsPage() {
         const { count } = await supabase.from('wms_asn_items').select('id', { count: 'exact', head: true }).eq('asn_id', asnId);
         const { data: sum } = await supabase.from('wms_asn_items').select('expected_qty').eq('asn_id', asnId);
         const total = (sum || []).reduce((s, r: any) => s + (r.expected_qty || 0), 0);
-        await supabase.from('wms_asns').update({ total_items: count, total_qty: total }).eq('id', asnId);
+        await supabase.from('wms_inbound_receipts').update({ total_items: count, total_qty: total }).eq('id', asnId);
       }
 
-      qc.invalidateQueries({ queryKey: ['wms_asns'] });
+      qc.invalidateQueries({ queryKey: ['wms_inbound_receipts'] });
       setImportMsg({ ok: ok.length, err: errs.length, errors: errs.slice(0, 10) });
     } finally {
       setImporting(false);
@@ -90,9 +90,9 @@ export function AsnsPage() {
   });
 
   const { data: asns } = useQuery({
-    queryKey: ['wms_asns'],
+    queryKey: ['wms_inbound_receipts'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('wms_asns').select('*').order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('wms_inbound_receipts').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       return data || [];
     },
@@ -169,7 +169,7 @@ export function AsnsPage() {
       </div>
 
       {showForm && <AsnForm warehouses={warehouses!} onClose={() => setShowForm(false)}
-        onSaved={(id) => { setShowForm(false); qc.invalidateQueries({ queryKey: ['wms_asns'] }); nav({ to: `/asns/$id`, params: { id } }); }} />}
+        onSaved={(id) => { setShowForm(false); qc.invalidateQueries({ queryKey: ['wms_inbound_receipts'] }); nav({ to: `/asns/$id`, params: { id } }); }} />}
     </div>
   );
 }
@@ -196,7 +196,7 @@ function AsnForm({ warehouses, onClose, onSaved }: any) {
   async function save() {
     if (!f.warehouse_id) return alert('请选择仓库');
     const { data: { user } } = await supabase.auth.getUser();
-    const { data, error } = await supabase.from('wms_asns').insert({
+    const { data, error } = await supabase.from('wms_inbound_receipts').insert({
       ...f, user_id: user!.id,
       total_items: items.length,
       total_qty: items.reduce((s, i) => s + (+i.expected_qty || 0), 0),
@@ -276,7 +276,7 @@ export function AsnDetailPage() {
     queryKey: ['asn', id],
     enabled: !!id,
     queryFn: async () => {
-      const { data } = await supabase.from('wms_asns').select('*').eq('id', id).single();
+      const { data } = await supabase.from('wms_inbound_receipts').select('*').eq('id', id).single();
       return data;
     },
   });
@@ -291,9 +291,9 @@ export function AsnDetailPage() {
   });
 
   const { data: locations } = useQuery({
-    queryKey: ['wms_locations_simple'],
+    queryKey: ['wms_bins_simple'],
     queryFn: async () => {
-      const { data } = await supabase.from('wms_locations').select('id,code,warehouse_id,status').eq('status', 'empty');
+      const { data } = await supabase.from('wms_bins').select('id,code,warehouse_id,status').eq('status', 'empty');
       return data || [];
     },
   });
@@ -310,7 +310,7 @@ export function AsnDetailPage() {
       await supabase.from('wms_asn_items').update({ received_qty: (it.received_qty || 0) + inc }).eq('id', it.id);
       received += inc;
     }
-    await supabase.from('wms_asns').update({
+    await supabase.from('wms_inbound_receipts').update({
       status: 'putaway',
       received_date: new Date().toISOString().slice(0, 10),
       received_qty: (asn?.received_qty || 0) + received,
@@ -361,7 +361,7 @@ export function AsnDetailPage() {
       }
 
       // 写库存日志
-      await supabase.from('wms_inventory_logs').insert({
+      await supabase.from('wms_inventory_txn').insert({
         user_id: user!.id, warehouse_id: asn.warehouse_id, product_id: it.product_id,
         sku, location_id: locId,
         qty_change: addQty,
@@ -375,7 +375,7 @@ export function AsnDetailPage() {
       await supabase.from('wms_asn_items').update({ putaway_qty: (it.putaway_qty || 0) + addQty }).eq('id', it.id);
 
       // 新增上架任务
-      await supabase.from('wms_putaway_tasks').insert({
+      await supabase.from('wms_work_tasks').insert({
         user_id: user!.id, asn_id: id, asn_item_id: it.id,
         product_id: it.product_id, sku, qty: addQty,
         target_location_id: locId, status: 'done', operator: user?.email,
@@ -383,7 +383,7 @@ export function AsnDetailPage() {
       });
 
       // 库位改为 occupied
-      await supabase.from('wms_locations').update({ status: 'occupied' }).eq('id', locId);
+      await supabase.from('wms_bins').update({ status: 'occupied' }).eq('id', locId);
 
       putawayCount += addQty;
     }
@@ -401,7 +401,7 @@ export function AsnDetailPage() {
       return remaining <= 0 || (target && target.location_id && target.qty >= remaining);
     });
 
-    await supabase.from('wms_asns').update({
+    await supabase.from('wms_inbound_receipts').update({
       status: allDone ? 'completed' : 'putaway',
       putaway_qty: (asn?.putaway_qty || 0) + putawayCount,
     }).eq('id', id);

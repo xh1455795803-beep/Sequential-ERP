@@ -33,10 +33,10 @@ export function LocationsPage() {
   });
 
   const { data: locations } = useQuery({
-    queryKey: ['wms_locations', selectedWarehouse],
+    queryKey: ['wms_bins', selectedWarehouse],
     enabled: !!selectedWarehouse,
     queryFn: async () => {
-      const { data } = await supabase.from('wms_locations').select('*').eq('warehouse_id', selectedWarehouse!).order('code');
+      const { data } = await supabase.from('wms_bins').select('*').eq('warehouse_id', selectedWarehouse!).order('code');
       return data || [];
     },
   });
@@ -61,9 +61,9 @@ export function LocationsPage() {
             aisle: String(a), rack: String(r), level: String(Math.floor((l - 1) / 4) + 1), position: String(l),
           });
         }
-    const { error } = await supabase.from('wms_locations').insert(rows);
+    const { error } = await supabase.from('wms_bins').insert(rows);
     if (error) alert(error.message);
-    else qc.invalidateQueries({ queryKey: ['wms_locations'] });
+    else qc.invalidateQueries({ queryKey: ['wms_bins'] });
   }
 
   return (
@@ -150,7 +150,7 @@ export function LocationsPage() {
                       </span>
                     </td>
                     <td className="px-5 py-2 text-right">
-                      <button onClick={async () => { if (confirm('删除？')) { await supabase.from('wms_locations').delete().eq('id', l.id); qc.invalidateQueries({ queryKey: ['wms_locations'] }); } }}
+                      <button onClick={async () => { if (confirm('删除？')) { await supabase.from('wms_bins').delete().eq('id', l.id); qc.invalidateQueries({ queryKey: ['wms_bins'] }); } }}
                         className="p-1.5 hover:bg-red-50 rounded text-red-500"><Trash2 className="w-4 h-4" /></button>
                     </td>
                   </tr>
@@ -167,11 +167,11 @@ export function LocationsPage() {
 
       {showZoneForm && <ZoneModal zones={zones!} warehouseId={selectedWarehouse!} initial={editingZone}
         onClose={() => setShowZoneForm(false)}
-        onSaved={() => { setShowZoneForm(false); qc.invalidateQueries({ queryKey: ['wms_zones', 'wms_locations'] }); }} />}
+        onSaved={() => { setShowZoneForm(false); qc.invalidateQueries({ queryKey: ['wms_zones', 'wms_bins'] }); }} />}
 
       {showLocForm && <LocationModal zones={zones!} warehouseId={selectedWarehouse!} initial={editingLoc}
         onClose={() => setShowLocForm(false)}
-        onSaved={() => { setShowLocForm(false); qc.invalidateQueries({ queryKey: ['wms_locations'] }); }} />}
+        onSaved={() => { setShowLocForm(false); qc.invalidateQueries({ queryKey: ['wms_bins'] }); }} />}
     </div>
   );
 }
@@ -212,10 +212,10 @@ function LocationModal({ zones, warehouseId, initial, onClose, onSaved }: any) {
   async function save() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!initial) {
-      const { error } = await supabase.from('wms_locations').insert({ ...f, warehouse_id: warehouseId, user_id: user!.id });
+      const { error } = await supabase.from('wms_bins').insert({ ...f, warehouse_id: warehouseId, user_id: user!.id });
       if (error) return alert(error.message);
     } else {
-      const { error } = await supabase.from('wms_locations').update(f).eq('id', initial.id);
+      const { error } = await supabase.from('wms_bins').update(f).eq('id', initial.id);
       if (error) return alert(error.message);
     }
     onSaved();

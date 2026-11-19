@@ -146,7 +146,7 @@ export default function PdaPick() {
       const { data: inv } = await supabase.from('wms_inventory').select('qty_on_hand').eq('id', stock.id).single();
       await supabase.from('wms_inventory').update({ qty_on_hand: inv!.qty_on_hand - pickQty }).eq('id', stock.id);
       await supabase.from('erp_order_items').update({ picked_qty: item.picked_qty + pickQty }).eq('id', item.id);
-      await supabase.from('wms_inventory_logs').insert({
+      await supabase.from('wms_inventory_txn').insert({
         user_id: user!.id,
         warehouse_id: (await supabase.from('wms_warehouses').select('id').eq('user_id', user!.id).limit(1)).data?.[0]?.id,
         product_id: matchProd.id,

@@ -368,11 +368,11 @@ export function OrderDetailPage() {
 
       // 如果有 location_id 关联
       if (stock.location_id && newQty === 0) {
-        await supabase.from('wms_locations').update({ status: 'empty' }).eq('id', stock.location_id);
+        await supabase.from('wms_bins').update({ status: 'empty' }).eq('id', stock.location_id);
       }
 
       // 写流水
-      await supabase.from('wms_inventory_logs').insert({
+      await supabase.from('wms_inventory_txn').insert({
         user_id: user!.id, warehouse_id: order!.warehouse_id,
         sku: it.sku, location_id: stock.location_id,
         qty_change: -qtyToPick, qty_after: newQty,
@@ -390,10 +390,10 @@ export function OrderDetailPage() {
     }
 
     // 关联 shipment
-    const existingShp = await supabase.from('wms_shipments').select('id').eq('erp_order_id', id).maybeSingle();
+    const existingShp = await supabase.from('wms_shipment_labels').select('id').eq('erp_order_id', id).maybeSingle();
     let shipmentId = existingShp.data?.id;
     if (!shipmentId) {
-      const { data: shp } = await supabase.from('wms_shipments').insert({
+      const { data: shp } = await supabase.from('wms_shipment_labels').insert({
         user_id: user!.id, erp_order_id: id,
         warehouse_id: order!.warehouse_id,
         channel_id: order!.channel_id,
@@ -441,7 +441,7 @@ export function OrderDetailPage() {
     const tracking = prompt('输入运单号（从渠道获取）');
     if (!tracking) return;
     const labelUrl = prompt('面单 PDF 地址（可留空，粘贴 PDF 链接）') || '';
-    await supabase.from('wms_shipments').update({
+    await supabase.from('wms_shipment_labels').update({
       tracking_no: tracking, label_pdf_url: labelUrl, ship_at: new Date().toISOString(),
     }).eq('erp_order_id', id);
     await supabase.from('erp_orders').update({

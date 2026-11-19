@@ -121,8 +121,8 @@ function SheetPanel({ sheet, inputs, setInputs, onSaved }: any) {
     },
   });
   const { data: locations } = useQuery({
-    queryKey: ['wms_locations_map'],
-    queryFn: async () => { const { data } = await supabase.from('wms_locations').select('id,code'); return data || []; },
+    queryKey: ['wms_bins_map'],
+    queryFn: async () => { const { data } = await supabase.from('wms_bins').select('id,code'); return data || []; },
   });
 
   async function submit() {
@@ -144,7 +144,7 @@ function SheetPanel({ sheet, inputs, setInputs, onSaved }: any) {
         const { data: { user } } = await supabase.auth.getUser();
         for (const d of diffs) {
           if (d.diff > 0) {
-            await supabase.from('wms_inventory_logs').insert({
+            await supabase.from('wms_inventory_txn').insert({
               user_id: user!.id, warehouse_id: sheet.warehouse_id,
               sku: d.it.sku, location_id: d.it.location_id,
               qty_change: d.diff, qty_after: d.actual, type: 'adjust_in',
@@ -152,7 +152,7 @@ function SheetPanel({ sheet, inputs, setInputs, onSaved }: any) {
               remark: `盘点盘盈 ${d.diff}`,
             });
           } else {
-            await supabase.from('wms_inventory_logs').insert({
+            await supabase.from('wms_inventory_txn').insert({
               user_id: user!.id, warehouse_id: sheet.warehouse_id,
               sku: d.it.sku, location_id: d.it.location_id,
               qty_change: d.diff, qty_after: d.actual, type: 'adjust_out',

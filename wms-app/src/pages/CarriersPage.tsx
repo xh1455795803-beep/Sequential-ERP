@@ -10,9 +10,9 @@ export function CarriersPage() {
   const [editing, setEditing] = useState<any>(null);
 
   const { data } = useQuery({
-    queryKey: ['wms_carriers'],
+    queryKey: ['wms_shipping_channels'],
     queryFn: async () => {
-      const { data } = await supabase.from('wms_carriers').select('*').order('created_at');
+      const { data } = await supabase.from('wms_shipping_channels').select('*').order('created_at');
       return data || [];
     },
   });
@@ -45,7 +45,7 @@ export function CarriersPage() {
                 <td className="px-5 py-3">{c.status === 'active' ? <span className="px-2 py-0.5 rounded text-xs bg-green-50 text-green-600">启用</span> : <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-500">停用</span>}</td>
                 <td className="px-5 py-3 text-right">
                   <button onClick={() => { setEditing(c); setShowForm(true); }} className="p-1.5 hover:bg-gray-100 rounded"><Pencil className="w-4 h-4 text-gray-500" /></button>
-                  <button onClick={async () => { if (confirm('确认删除？')) { await supabase.from('wms_carriers').delete().eq('id', c.id); qc.invalidateQueries({ queryKey: ['wms_carriers'] }); } }}
+                  <button onClick={async () => { if (confirm('确认删除？')) { await supabase.from('wms_shipping_channels').delete().eq('id', c.id); qc.invalidateQueries({ queryKey: ['wms_shipping_channels'] }); } }}
                     className="p-1.5 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
                 </td>
               </tr>
@@ -55,7 +55,7 @@ export function CarriersPage() {
         </table>
       </div>
       {showForm && <CarrierForm initial={editing} onClose={() => setShowForm(false)}
-        onSaved={() => { setShowForm(false); qc.invalidateQueries({ queryKey: ['wms_carriers'] }); }} />}
+        onSaved={() => { setShowForm(false); qc.invalidateQueries({ queryKey: ['wms_shipping_channels'] }); }} />}
     </div>
   );
 }
@@ -65,10 +65,10 @@ function CarrierForm({ initial, onClose, onSaved }: any) {
   async function save() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!initial) {
-      const { error } = await supabase.from('wms_carriers').insert({ ...f, user_id: user!.id });
+      const { error } = await supabase.from('wms_shipping_channels').insert({ ...f, user_id: user!.id });
       if (error) return alert(error.message);
     } else {
-      const { error } = await supabase.from('wms_carriers').update(f).eq('id', initial.id);
+      const { error } = await supabase.from('wms_shipping_channels').update(f).eq('id', initial.id);
       if (error) return alert(error.message);
     }
     onSaved();

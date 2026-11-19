@@ -29,7 +29,7 @@ export default function PdaReceive() {
     supabase.from('wms_products').select('id, sku, name, barcode').then(({ data }) => {
       setProducts(data || []);
     });
-    supabase.from('wms_locations').select('id, code').then(({ data }) => {
+    supabase.from('wms_bins').select('id, code').then(({ data }) => {
       setLocations(data || []);
     });
   }, []);
@@ -111,7 +111,7 @@ export default function PdaReceive() {
       }
 
       // 写流水
-      await supabase.from('wms_inventory_logs').insert({
+      await supabase.from('wms_inventory_txn').insert({
         user_id: user!.id,
         warehouse_id: wh!.id,
         product_id: matchedProduct.id,

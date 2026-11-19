@@ -16,14 +16,14 @@ export function ShipmentsPage() {
     queryFn: async () => { const { data } = await supabase.from('wms_warehouses').select('*'); return data || []; },
   });
   const { data: carriers } = useQuery({
-    queryKey: ['wms_carriers'],
-    queryFn: async () => { const { data } = await supabase.from('wms_carriers').select('*'); return data || []; },
+    queryKey: ['wms_shipping_channels'],
+    queryFn: async () => { const { data } = await supabase.from('wms_shipping_channels').select('*'); return data || []; },
   });
 
   const { data: shipments } = useQuery({
-    queryKey: ['wms_shipments'],
+    queryKey: ['wms_shipment_labels'],
     queryFn: async () => {
-      const { data } = await supabase.from('wms_shipments').select('*').order('created_at', { ascending: false });
+      const { data } = await supabase.from('wms_shipment_labels').select('*').order('created_at', { ascending: false });
       return data || [];
     },
   });
@@ -82,7 +82,7 @@ export function ShipmentsPage() {
       {showForm && <ShipmentForm
         warehouses={warehouses!} carriers={carriers!}
         onClose={() => setShowForm(false)}
-        onSaved={(id) => { setShowForm(false); qc.invalidateQueries({ queryKey: ['wms_shipments'] }); nav({ to: `/shipments/$id`, params: { id } }); }} />}
+        onSaved={(id) => { setShowForm(false); qc.invalidateQueries({ queryKey: ['wms_shipment_labels'] }); nav({ to: `/shipments/$id`, params: { id } }); }} />}
     </div>
   );
 }
@@ -111,7 +111,7 @@ function ShipmentForm({ warehouses, carriers, onClose, onSaved }: any) {
   async function save() {
     if (!f.warehouse_id) return alert('请选择仓库');
     const { data: { user } } = await supabase.auth.getUser();
-    const { data, error } = await supabase.from('wms_shipments').insert({
+    const { data, error } = await supabase.from('wms_shipment_labels').insert({
       ...f, user_id: user!.id,
       total_items: items.length,
       total_qty: items.reduce((s, i) => s + (+i.qty || 0), 0),
@@ -193,7 +193,7 @@ export function ShipmentDetailPage() {
   const { data: s } = useQuery({
     queryKey: ['shipment', id],
     enabled: !!id,
-    queryFn: async () => { const { data } = await supabase.from('wms_shipments').select('*').eq('id', id).single(); return data; },
+    queryFn: async () => { const { data } = await supabase.from('wms_shipment_labels').select('*').eq('id', id).single(); return data; },
   });
   const { data: items } = useQuery({
     queryKey: ['shipment_items', id],
@@ -217,28 +217,28 @@ export function ShipmentDetailPage() {
       // 更新库存
       await supabase.from('wms_inventory').update({ qty_on_hand: newQty }).eq('id', available.id);
       // 库位如果扣完置 empty
-      if (newQty === 0) await supabase.from('wms_locations').update({ status: 'empty' }).eq('id', available.location_id);
+      if (newQty === 0) await supabase.from('wms_bins').update({ status: 'empty' }).eq('id', available.location_id);
       // 写拣货任务 + 日志
-      await supabase.from('wms_pick_tasks').insert({
+      await supabase.from('wms_work_tasks').insert({
         user_id: user!.id, shipment_id: id, shipment_item_id: it.id,
         sku: it.sku, from_location_id: available.location_id, qty: it.qty,
         status: 'done', operator: user?.email, done_at: new Date().toISOString(),
       });
-      await supabase.from('wms_inventory_logs').insert({
+      await supabase.from('wms_inventory_txn').insert({
         user_id: user!.id, warehouse_id: s.warehouse_id, sku: it.sku,
         location_id: available.location_id, qty_change: -it.qty, qty_after: newQty,
         type: 'outbound_pick', ref_type: 'shipment', ref_id: id,
         operator: user?.email, remark: `发货单 ${s.shipment_no} 拣货出库`,
       });
     }
-    await supabase.from('wms_shipments').update({ status: 'packed' }).eq('id', id);
+    await supabase.from('wms_shipment_labels').update({ status: 'packed' }).eq('id', id);
     qc.invalidateQueries();
   }
 
   async function ship() {
     const tracking = prompt('输入最终追踪号（可留空）', s?.tracking_no || '');
     const { data: { user } } = await supabase.auth.getUser();
-    await supabase.from('wms_shipments').update({
+    await supabase.from('wms_shipment_labels').update({
       status: 'shipped',
       tracking_no: tracking || s?.tracking_no,
       operator: user?.email,

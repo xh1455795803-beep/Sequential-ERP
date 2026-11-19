@@ -19,8 +19,8 @@ export function InventoryPage() {
   });
 
   const { data: locations } = useQuery({
-    queryKey: ['wms_locations_map'],
-    queryFn: async () => { const { data } = await supabase.from('wms_locations').select('id,code'); return data || []; },
+    queryKey: ['wms_bins_map'],
+    queryFn: async () => { const { data } = await supabase.from('wms_bins').select('id,code'); return data || []; },
   });
 
   const rows = (allInv as any[]) || [];

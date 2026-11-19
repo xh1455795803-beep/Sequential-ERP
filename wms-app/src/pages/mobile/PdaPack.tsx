@@ -160,7 +160,7 @@ export default function PdaPack() {
 
     if (trackingNo) {
       // 写 shipment 记录
-      await supabase.from('wms_shipments').insert({
+      await supabase.from('wms_shipment_labels').insert({
         user_id: user!.id,
         erp_order_id: currentOrder.id,
         warehouse_id: (await supabase.from('wms_warehouses').select('id').eq('user_id', user!.id).limit(1)).data?.[0]?.id,

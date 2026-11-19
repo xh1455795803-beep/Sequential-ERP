@@ -8,12 +8,12 @@ async function getStats() {
   const [warehouses, inv, asns, shipments, pendingAsn, pendingShip, tasks, logs] = await Promise.all([
     supabase.from('wms_warehouses').select('id', { count: 'exact', head: true }),
     supabase.from('wms_inventory').select('qty_on_hand', { count: 'exact', head: true }),
-    supabase.from('wms_asns').select('*', { count: 'exact', head: true }),
-    supabase.from('wms_shipments').select('*', { count: 'exact', head: true }),
-    supabase.from('wms_asns').select('*').in('status', ['arrived', 'receiving', 'putaway']),
-    supabase.from('wms_shipments').select('*').in('status', ['released', 'picking', 'packed']),
-    supabase.from('wms_putaway_tasks').select('*').eq('status', 'pending'),
-    supabase.from('wms_inventory_logs').select('*').order('created_at', { ascending: false }).limit(10),
+    supabase.from('wms_inbound_receipts').select('*', { count: 'exact', head: true }),
+    supabase.from('wms_shipment_labels').select('*', { count: 'exact', head: true }),
+    supabase.from('wms_inbound_receipts').select('*').in('status', ['arrived', 'receiving', 'putaway']),
+    supabase.from('wms_shipment_labels').select('*').in('status', ['released', 'picking', 'packed']),
+    supabase.from('wms_work_tasks').select('*').eq('status', 'pending'),
+    supabase.from('wms_inventory_txn').select('*').order('created_at', { ascending: false }).limit(10),
   ]);
 
   const { data: invSum } = await supabase.from('wms_inventory')
@@ -69,7 +69,7 @@ export function DashboardPage() {
       if (invWithLoc.length > 0) {
         const locIds = [...new Set(invWithLoc.map((r: any) => r.location_id))];
         const { data: locs } = await supabase
-          .from('wms_locations')
+          .from('wms_bins')
           .select('id, code')
           .in('id', locIds);
         const locMap = Object.fromEntries((locs || []).map((l: any) => [l.id, l.code]));
@@ -78,12 +78,12 @@ export function DashboardPage() {
 
       // 2. 查待上架 ASN（用 RPC 或分开查 SKU 和 barcode）
       const [{ data: bySku }, { data: byBarcode }] = await Promise.all([
-        supabase.from('wms_asns')
+        supabase.from('wms_inbound_receipts')
           .select('id, asn_no, status, wms_asn_items!inner(sku, putaway_qty, expected_qty)')
           .eq('wms_asn_items.sku', code)
           .in('status', ['submitted', 'in_transit', 'arrived', 'receiving', 'putaway'])
           .limit(5),
-        supabase.from('wms_asns')
+        supabase.from('wms_inbound_receipts')
           .select('id, asn_no, status, wms_asn_items!inner(sku, putaway_qty, expected_qty)')
           .eq('wms_asn_items.barcode', code)
           .in('status', ['submitted', 'in_transit', 'arrived', 'receiving', 'putaway'])
@@ -165,7 +165,7 @@ export function DashboardPage() {
                     <div className="font-medium text-gray-700 mb-1">📦 库存位置 ({scanResult.inventory.length})</div>
                     {scanResult.inventory.map((inv: any, i: number) => (
                       <div key={i} className="text-gray-600 flex justify-between">
-                        <span>{inv.sku} → 库位 {inv.wms_locations?.code || '?'}</span>
+                        <span>{inv.sku} → 库位 {inv.wms_bins?.code || '?'}</span>
                         <span className="text-gray-800 font-medium">{inv.qty_on_hand} 件</span>
                       </div>
                     ))}
