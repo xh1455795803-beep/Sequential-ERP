@@ -16,16 +16,21 @@ import { ProductsPage } from './pages/ProductsPage';
 import { OrdersPage, OrderDetailPage } from './pages/OrdersPage';
 import { ChannelsPage } from './pages/ChannelsPage';
 import { ExceptionsPage } from './pages/ExceptionsPage';
+// Mobile PDA
+import PdaReceive from './pages/mobile/PdaReceive';
+import PdaPutaway from './pages/mobile/PdaPutaway';
+import PdaPick from './pages/mobile/PdaPick';
+import PdaPack from './pages/mobile/PdaPack';
 import './styles.css';
+// PWA service worker
+import './pwa/registerSW';
 
-// --- 鉴权 ---
 async function requireAuth() {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) throw new Error('UNAUTHORIZED');
   return session;
 }
 
-// --- 路由树 ---
 const rootRoute = createRootRoute();
 
 const loginRoute = createRoute({
@@ -41,17 +46,15 @@ const layoutRoute = createRoute({
   component: AppLayout,
 });
 
-// 所有子路由
+// Desktop routes
 const dashRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/dashboard', component: DashboardPage });
 
-// 新增 v2 路由
 const productsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/products', component: ProductsPage });
 const ordersRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/orders', component: OrdersPage });
 const orderDetailRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/orders/$id', component: OrderDetailPage });
 const channelsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/channels', component: ChannelsPage });
 const exceptionsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/exceptions', component: ExceptionsPage });
 
-// 保留旧路由
 const warehousesRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/warehouses', component: WarehousesPage });
 const locationsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/locations', component: LocationsPage });
 const asnsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/asns', component: AsnsPage });
@@ -60,6 +63,13 @@ const shipmentsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/
 const shipmentDetailRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/shipments/$id', component: ShipmentDetailPage });
 const inventoryRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/inventory', component: InventoryPage });
 const stocktakingRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/stocktaking', component: StocktakingPage });
+
+// PDA routes (same layout, different pages)
+const pdaHubRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/pda', component: () => null });
+const pdaReceiveRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/pda/receive', component: PdaReceive });
+const pdaPutawayRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/pda/putaway', component: PdaPutaway });
+const pdaPickRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/pda/pick', component: PdaPick });
+const pdaPackRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/pda/pack', component: PdaPack });
 
 const routeTree = rootRoute.addChildren([
   loginRoute,
@@ -78,6 +88,11 @@ const routeTree = rootRoute.addChildren([
     shipmentDetailRoute,
     inventoryRoute,
     stocktakingRoute,
+    pdaHubRoute,
+    pdaReceiveRoute,
+    pdaPutawayRoute,
+    pdaPickRoute,
+    pdaPackRoute,
   ]),
 ]);
 

@@ -1,6 +1,8 @@
 import { Outlet, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { useDevice } from '../hooks/useDevice';
+import { MobileLayout } from './MobileLayout';
 import {
   LayoutDashboard, Warehouse, MapPin, Truck, Download, Upload, Boxes, ClipboardList,
   LogOut, Menu, X, PackageCheck, Store, Factory, Plane, Tag, AlertTriangle,
@@ -11,10 +13,9 @@ type Role = 'merchant' | 'warehouse' | 'forwarder';
 const ROLE_LABEL: Record<Role, { label: string; icon: any; color: string }> = {
   merchant:  { label: '商家端', icon: Store,    color: 'from-blue-600 to-blue-500' },
   warehouse: { label: '仓库端', icon: Factory,  color: 'from-emerald-600 to-emerald-500' },
-  forwarder: { label: '货代端', Plane,           color: 'from-purple-600 to-purple-500' },
+  forwarder: { label: '货代端', icon: Plane,    color: 'from-purple-600 to-purple-500' },
 };
 
-// 按角色分菜单
 const MENUS: Record<Role, { path: string; label: string; icon: any }[]> = {
   merchant: [
     { path: '/dashboard',  label: '工作台',     icon: LayoutDashboard },
@@ -28,6 +29,7 @@ const MENUS: Record<Role, { path: string; label: string; icon: any }[]> = {
   ],
   warehouse: [
     { path: '/dashboard',  label: '工作台',     icon: LayoutDashboard },
+    { path: '/pda',        label: 'PDA 作业',    icon: PackageCheck },
     { path: '/asns',       label: '收货/ASN',    icon: Download },
     { path: '/locations',  label: '库位管理',    icon: MapPin },
     { path: '/inventory',  label: '实时库存',    icon: Boxes },
@@ -47,6 +49,7 @@ const MENUS: Record<Role, { path: string; label: string; icon: any }[]> = {
 
 export function AppLayout() {
   const navigate = useNavigate();
+  const { isMobile } = useDevice();
   const [user, setUser] = useState<any>(null);
   const [activeRole, setActiveRole] = useState<Role>('merchant');
   const [allRoles, setAllRoles] = useState<Role[]>([]);
@@ -72,7 +75,6 @@ export function AppLayout() {
 
   async function switchRole(r: Role) {
     setActiveRole(r);
-    // 持久化到 metadata
     await supabase.auth.updateUser({
       data: { ...(user?.user_metadata || {}), active_role: r },
     });
@@ -84,6 +86,12 @@ export function AppLayout() {
     navigate({ to: '/' });
   }
 
+  // === 移动端 ===
+  if (isMobile) {
+    return <MobileLayout><Outlet /></MobileLayout>;
+  }
+
+  // === PC 端 ===
   const currentPath = window.location.pathname;
   const menu = MENUS[activeRole] || MENUS.merchant;
 
@@ -100,7 +108,6 @@ export function AppLayout() {
           )}
         </div>
 
-        {/* 角色切换器 */}
         {!collapsed && allRoles.length > 1 && (
           <div className="px-3 py-2 border-b border-white/10">
             <div className="text-[10px] text-white/40 mb-1">切换角色</div>
