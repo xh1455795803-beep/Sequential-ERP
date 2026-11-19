@@ -2,8 +2,8 @@
   "name": "Thalvior WMS · 仓库管理系统",
   "short_name": "WMS",
   "description": "Thalvior 跨境电商仓库管理系统 · 三端联动 · PDA 扫码作业",
-  "start_url": "/wms/",
-  "scope": "/wms/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#f8fafc",
@@ -11,13 +11,13 @@
   "lang": "zh-CN",
   "icons": [
     {
-      "src": "/wms/icon-192.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/wms/icon-512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

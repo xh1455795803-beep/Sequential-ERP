@@ -1,312 +1,259 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useNavigate, useParams } from '@tanstack/react-router';
-import { Plus, ArrowLeft, PackageCheck, Upload } from 'lucide-react';
+import { ArrowLeft, Upload } from 'lucide-react';
 import { useState } from 'react';
-import { Modal, Grid, Field, Footer } from '../components/ui';
+
+// 面单状态 1-5
+const LABEL_STATUS: Record<number, { label: string; cls: string }> = {
+  1: { label: '已生成', cls: 'bg-gray-100 text-gray-600' },
+  2: { label: '已打印', cls: 'bg-indigo-50 text-indigo-600' },
+  3: { label: '已出库', cls: 'bg-green-50 text-green-600' },
+  4: { label: '有轨迹', cls: 'bg-green-100 text-green-700' },
+  5: { label: '已退件', cls: 'bg-red-50 text-red-600' },
+};
 
 // -------- 列表页 --------
 export function ShipmentsPage() {
   const nav = useNavigate();
-  const qc = useQueryClient();
-  const [showForm, setShowForm] = useState(false);
-
-  const { data: warehouses } = useQuery({
-    queryKey: ['wms_warehouses'],
-    queryFn: async () => { const { data } = await supabase.from('wms_warehouses').select('*'); return data || []; },
-  });
-  const { data: carriers } = useQuery({
-    queryKey: ['wms_shipping_channels'],
-    queryFn: async () => { const { data } = await supabase.from('wms_shipping_channels').select('*'); return data || []; },
-  });
-
-  const { data: shipments } = useQuery({
-    queryKey: ['wms_shipment_labels'],
+  const { data: labels } = useQuery({
+    queryKey: ['wms_labels_all'],
     queryFn: async () => {
       const { data } = await supabase.from('wms_shipment_labels').select('*').order('created_at', { ascending: false });
       return data || [];
     },
   });
+  const { data: orders } = useQuery({
+    queryKey: ['wms_orders_map'],
+    queryFn: async () => {
+      const { data } = await supabase.from('wms_orders').select('id,order_no,receiver_name,receiver_country,total_qty,channel_code');
+      return data || [];
+    },
+  });
+  const { data: channels } = useQuery({
+    queryKey: ['wms_channels_map'],
+    queryFn: async () => {
+      const { data } = await supabase.from('wms_shipping_channels').select('id,channel_code,channel_name');
+      return data || [];
+    },
+  });
 
-  const statusLabel: any = {
-    draft: '草稿', released: '已释放', picking: '拣货中',
-    packed: '已打包', shipped: '已发货', delivered: '已签收', cancelled: '已取消',
-  };
+  const orderMap = Object.fromEntries((orders || []).map((o: any) => [o.id, o]));
+  const chMap = Object.fromEntries((channels || []).map((c: any) => [c.id, c]));
 
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold">出库管理</h2>
-          <p className="text-sm text-gray-500 mt-1">发货单 → 拣货 → 打包 → 发货</p>
+          <h2 className="text-2xl font-bold">面单 / 出库</h2>
+          <p className="text-sm text-gray-500 mt-1">出库订单 → 面单 → 运单号 → 出库（真实发货在订单详情）</p>
         </div>
-        <button onClick={() => setShowForm(true)}
-          className="flex items-center gap-1.5 px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 text-sm">
-          <Plus className="w-4 h-4" /> 新建发货单
-        </button>
       </div>
+
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-500 text-xs">
             <tr>
-              <th className="text-left px-5 py-2.5">发货单号</th>
-              <th className="text-left px-5 py-2.5">仓库</th>
+              <th className="text-left px-5 py-2.5">面单号</th>
+              <th className="text-left px-5 py-2.5">关联订单</th>
               <th className="text-left px-5 py-2.5">收件人/国家</th>
-              <th className="text-right px-5 py-2.5">SKU / 件数</th>
+              <th className="text-left px-5 py-2.5">渠道</th>
+              <th className="text-left px-5 py-2.5">运单号</th>
               <th className="text-left px-5 py-2.5">状态</th>
               <th className="text-right px-5 py-2.5">操作</th>
             </tr>
           </thead>
           <tbody>
-            {shipments?.map((s: any) => (
-              <tr key={s.id} onClick={() => nav({ to: `/shipments/$id`, params: { id: s.id } })}
-                className="border-t border-gray-50 hover:bg-brand-50/30 cursor-pointer">
-                <td className="px-5 py-3 font-mono text-brand-600">{s.shipment_no}</td>
-                <td className="px-5 py-3">{(warehouses as any[])?.find(w => w.id === s.warehouse_id)?.name || '-'}</td>
-                <td className="px-5 py-3">
-                  {s.receiver_name || '-'}
-                  {s.receiver_country && <span className="text-xs text-gray-400 ml-1">· {s.receiver_country}</span>}
-                </td>
-                <td className="px-5 py-3 text-right">{s.total_items || 0} / {s.total_qty || 0}</td>
-                <td className="px-5 py-3">
-                  <span className={`px-2 py-0.5 rounded text-xs ${shipStatusBadge(s.status)}`}>{statusLabel[s.status] || s.status}</span>
-                </td>
-                <td className="px-5 py-3 text-right text-brand-500 text-xs">点击查看 →</td>
-              </tr>
-            ))}
-            {!shipments?.length && <tr><td colSpan={6} className="p-10 text-center text-gray-400">暂无发货单</td></tr>}
+            {labels?.map((l: any) => {
+              const st = LABEL_STATUS[l.status] || { label: l.status, cls: 'bg-gray-100' };
+              const o = orderMap[l.order_id];
+              const ch = chMap[l.channel_id];
+              return (
+                <tr key={l.id} onClick={() => nav({ to: `/shipments/$id`, params: { id: l.id } })}
+                  className="border-t border-gray-50 hover:bg-brand-50/30 cursor-pointer">
+                  <td className="px-5 py-3 font-mono text-brand-600">{l.label_no}</td>
+                  <td className="px-5 py-3 font-mono text-xs">{o?.order_no || '-'}</td>
+                  <td className="px-5 py-3">
+                    {o?.receiver_name || '-'}
+                    {o?.receiver_country && <span className="text-xs text-gray-400 ml-1">· {o.receiver_country}</span>}
+                  </td>
+                  <td className="px-5 py-3 text-xs text-gray-500">{ch?.channel_code || '-'}</td>
+                  <td className="px-5 py-3 font-mono text-xs">{l.tracking_no || '-'}</td>
+                  <td className="px-5 py-3"><span className={`px-2 py-0.5 rounded text-xs ${st.cls}`}>{st.label}</span></td>
+                  <td className="px-5 py-3 text-right text-brand-500 text-xs">点击查看 →</td>
+                </tr>
+              );
+            })}
+            {!labels?.length && <tr><td colSpan={7} className="p-10 text-center text-gray-400">暂无面单（请先在订单详情页打包后申请面单）</td></tr>}
           </tbody>
         </table>
       </div>
-
-      {showForm && <ShipmentForm
-        warehouses={warehouses!} carriers={carriers!}
-        onClose={() => setShowForm(false)}
-        onSaved={(id) => { setShowForm(false); qc.invalidateQueries({ queryKey: ['wms_shipment_labels'] }); nav({ to: `/shipments/$id`, params: { id } }); }} />}
     </div>
   );
 }
 
-function shipStatusBadge(s: string) {
-  const m: any = {
-    draft: 'bg-gray-100 text-gray-500', released: 'bg-blue-50 text-blue-600',
-    picking: 'bg-amber-50 text-amber-600', packed: 'bg-purple-50 text-purple-600',
-    shipped: 'bg-green-50 text-green-600', delivered: 'bg-green-100 text-green-700',
-    cancelled: 'bg-gray-100 text-gray-400',
-  };
-  return m[s] || 'bg-gray-100';
-}
-
-function ShipmentForm({ warehouses, carriers, onClose, onSaved }: any) {
-  const [f, setF] = useState({
-    warehouse_id: warehouses?.[0]?.id || '',
-    carrier_id: '', tracking_no: '',
-    shipment_no: 'SH' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + Math.floor(Math.random() * 9000 + 1000),
-    receiver_name: '', receiver_phone: '', receiver_country: '', receiver_state: '',
-    receiver_city: '', receiver_address: '', receiver_postbin_code: '',
-    weight_kg: 0, shipping_cost: 0, remark: '',
-  });
-  const [items, setItems] = useState<any[]>([{ sku: '', sku_name: '', qty: 1 }]);
-
-  async function save() {
-    if (!f.warehouse_id) return alert('请选择仓库');
-    const { data: { user } } = await supabase.auth.getUser();
-    const { data, error } = await supabase.from('wms_shipment_labels').insert({
-      ...f, user_id: user!.id,
-      total_items: items.length,
-      total_qty: items.reduce((s, i) => s + (+i.qty || 0), 0),
-    }).select().single();
-    if (error) return alert(error.message);
-
-    const rows = items.map((i) => ({
-      ...i, shipment_id: data.id, user_id: user!.id, qty: +i.qty || 0,
-    }));
-    const { error: ie } = await supabase.from('wms_shipment_items').insert(rows);
-    if (ie) return alert(ie.message);
-    onSaved(data.id);
-  }
-
-  return (
-    <Modal title="新建发货单" onClose={onClose}>
-      <Grid>
-        <Field label="仓库 *">
-          <select className="inp" value={f.warehouse_id} onChange={(e) => setF({ ...f, warehouse_id: e.target.value })}>
-            {warehouses?.map((w: any) => <option key={w.id} value={w.id}>{wbin_code} · {w.name}</option>)}
-          </select>
-        </Field>
-        <Field label="发货单号 *"><input className="inp" value={f.shipment_no} onChange={(e) => setF({ ...f, shipment_no: e.target.value })} /></Field>
-        <Field label="承运商">
-          <select className="inp" value={f.carrier_id} onChange={(e) => setF({ ...f, carrier_id: e.target.value })}>
-            <option value="">请选择</option>
-            {carriers?.map((c: any) => <option key={c.id} value={c.id}>{cbin_code} · {c.name}</option>)}
-          </select>
-        </Field>
-        <Field label="追踪号"><input className="inp" value={f.tracking_no} onChange={(e) => setF({ ...f, tracking_no: e.target.value })} /></Field>
-        <Field label="收件人"><input className="inp" value={f.receiver_name} onChange={(e) => setF({ ...f, receiver_name: e.target.value })} /></Field>
-        <Field label="电话"><input className="inp" value={f.receiver_phone} onChange={(e) => setF({ ...f, receiver_phone: e.target.value })} /></Field>
-        <Field label="国家"><input className="inp" value={f.receiver_country} onChange={(e) => setF({ ...f, receiver_country: e.target.value })} placeholder="US / DE / CN" /></Field>
-        <Field label="省/州"><input className="inp" value={f.receiver_state} onChange={(e) => setF({ ...f, receiver_state: e.target.value })} /></Field>
-        <Field label="城市"><input className="inp" value={f.receiver_city} onChange={(e) => setF({ ...f, receiver_city: e.target.value })} /></Field>
-        <Field label="邮编"><input className="inp" value={f.receiver_postcode} onChange={(e) => setF({ ...f, receiver_postbin_code: e.target.value })} /></Field>
-        <Field label="详细地址" full><input className="inp" value={f.receiver_address} onChange={(e) => setF({ ...f, receiver_address: e.target.value })} /></Field>
-        <Field label="重量 kg"><input className="inp" type="number" step="0.01" value={f.weight_kg} onChange={(e) => setF({ ...f, weight_kg: +e.target.value })} /></Field>
-        <Field label="运费"><input className="inp" type="number" step="0.01" value={f.shipping_cost} onChange={(e) => setF({ ...f, shipping_cost: +e.target.value })} /></Field>
-      </Grid>
-
-      <div className="mt-5 border-t pt-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="font-medium text-sm">发货明细</span>
-          <button onClick={() => setItems([...items, { sku: '', sku_name: '', qty: 1 }])}
-            className="text-xs text-brand-500 hover:text-brand-600">+ 添加一行</button>
-        </div>
-        <table className="w-full text-xs">
-          <thead className="text-gray-400"><tr>
-            <th className="text-left py-1">SKU *</th><th className="text-left py-1">名称</th><th className="text-right py-1">数量</th>
-          </tr></thead>
-          <tbody>
-            {items.map((it, idx) => (
-              <tr key={idx}>
-                <td className="py-1"><input className="inp" value={it.sku} onChange={(e) => updateItem(idx, 'sku', e.target.value)} /></td>
-                <td className="py-1"><input className="inp" value={it.sku_name} onChange={(e) => updateItem(idx, 'sku_name', e.target.value)} /></td>
-                <td className="py-1 w-24"><input className="inp text-right" type="number" value={it.qty} onChange={(e) => updateItem(idx, 'qty', +e.target.value)} /></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <Footer onClose={onClose} onSave={save} />
-    </Modal>
-  );
-
-  function updateItem(idx: number, key: string, val: any) {
-    setItems(items.map((it, i) => (i === idx ? { ...it, [key]: val } : it)));
-  }
-}
-
-// -------- 详情页（拣货 + 发货） --------
+// -------- 详情页 --------
 export function ShipmentDetailPage() {
   const params = useParams({ strict: false }) as any;
   const id = params?.id;
   const nav = useNavigate();
   const qc = useQueryClient();
+  const [manualTracking, setManualTracking] = useState(false);
 
-  const { data: s } = useQuery({
-    queryKey: ['shipment', id],
+  const { data: l } = useQuery({
+    queryKey: ['wms_label', id],
     enabled: !!id,
-    queryFn: async () => { const { data } = await supabase.from('wms_shipment_labels').select('*').eq('id', id).single(); return data; },
+    queryFn: async () => {
+      const { data } = await supabase.from('wms_shipment_labels').select('*').eq('id', id).single();
+      return data;
+    },
+  });
+  const { data: order } = useQuery({
+    queryKey: ['wms_order_by_label', id],
+    enabled: !!l?.order_id,
+    queryFn: async () => {
+      const { data } = await supabase.from('wms_orders').select('*').eq('id', l!.order_id).single();
+      return data;
+    },
   });
   const { data: items } = useQuery({
-    queryKey: ['shipment_items', id],
+    queryKey: ['wms_label_items', id],
     enabled: !!id,
-    queryFn: async () => { const { data } = await supabase.from('wms_shipment_items').select('*').eq('shipment_id', id); return data || []; },
+    queryFn: async () => {
+      const { data } = await supabase.from('wms_shipment_items').select('*').eq('label_id', id).order('id');
+      return data || [];
+    },
   });
-  const { data: inv } = useQuery({
-    queryKey: ['wms_inventory_for_pick', id],
-    enabled: !!id,
-    queryFn: async () => { const { data } = await supabase.from('wms_inventory').select('*').order('sku'); return data || []; },
+  const { data: channels } = useQuery({
+    queryKey: ['wms_channels_map'],
+    queryFn: async () => {
+      const { data } = await supabase.from('wms_shipping_channels').select('id,channel_code,channel_name');
+      return data || [];
+    },
   });
 
-  async function pick() {
-    if (!confirm('确认拣货并扣减库存？此操作将从库存中锁定并扣减相应数量。')) return;
-    const { data: { user } } = await supabase.auth.getUser();
-    for (const it of items!) {
-      const available = (inv as any[]).find(i => i.sku === it.sku && i.warehouse_id === s.warehouse_id);
-      if (!available) { alert(`SKU ${it.sku} 库存不足，已跳过`); continue; }
-      const newQty = (available.qty_on_hand - it.qty);
-      if (newQty < 0) { alert(`SKU ${it.sku} 仅剩 ${available.qty_on_hand}`); continue; }
-      // 更新库存
-      await supabase.from('wms_inventory').update({ qty_on_hand: newQty }).eq('id', available.id);
-      // 库位如果扣完置 empty
-      if (newQty === 0) await supabase.from('wms_bins').update({ status: 'empty' }).eq('id', available.bin_id);
-      // 写拣货任务 + 日志
-      await supabase.from('wms_work_tasks').insert({
-        user_id: user!.id, shipment_id: id, shipment_item_id: it.id,
-        sku: it.sku, from_bin_id: available.bin_id, qty: it.qty,
-        status: 'done', operator: user?.email, done_at: new Date().toISOString(),
-      });
-      await supabase.from('wms_inventory_txn').insert({
-        user_id: user!.id, warehouse_id: s.warehouse_id, sku: it.sku,
-        bin_id: available.bin_id, qty_change: -it.qty, qty_after: newQty,
-        type: 'outbound_pick', ref_type: 'shipment', ref_id: id,
-        operator: user?.email, remark: `发货单 ${s.shipment_no} 拣货出库`,
-      });
-    }
-    await supabase.from('wms_shipment_labels').update({ status: 'packed' }).eq('id', id);
+  async function markPrinted() {
+    await supabase.from('wms_shipment_labels').update({ status: 2, printed_at: new Date().toISOString() }).eq('id', id);
     qc.invalidateQueries();
   }
-
-  async function ship() {
-    const tracking = prompt('输入最终追踪号（可留空）', s?.tracking_no || '');
-    const { data: { user } } = await supabase.auth.getUser();
+  async function markShipped(tracking: string, pdfUrl: string) {
     await supabase.from('wms_shipment_labels').update({
-      status: 'shipped',
-      tracking_no: tracking || s?.tracking_no,
-      operator: user?.email,
+      status: 3, tracking_no: tracking || null,
+      label_pdf_url: pdfUrl || null, ship_at: new Date().toISOString(),
     }).eq('id', id);
+    // 同步订单状态
+    if (order) {
+      await supabase.from('wms_orders').update({ status: 5, shipped_at: new Date().toISOString() }).eq('id', order.id);
+    }
     qc.invalidateQueries();
+    setManualTracking(false);
   }
 
-  if (!s) return <div className="p-8 text-center text-gray-400">加载中...</div>;
+  if (!l) return <div className="p-8 text-center text-gray-400">加载中...</div>;
+  const st = LABEL_STATUS[l.status] || { label: l.status, cls: 'bg-gray-100' };
+  const ch = (channels as any[])?.find((c: any) => c.id === l.channel_id);
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <button onClick={() => nav({ to: '/shipments' })} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-3">
-        <ArrowLeft className="w-4 h-4" /> 返回发货单列表
+        <ArrowLeft className="w-4 h-4" /> 返回面单列表
       </button>
+
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-4">
         <div className="flex items-center gap-3 mb-4">
           <Upload className="w-6 h-6 text-brand-500" />
           <div>
-            <div className="text-lg font-bold">{s.shipment_no}</div>
-            <div className="text-xs text-gray-500">状态：<span className={shipStatusBadge(s.status)}>{s.status}</span></div>
+            <div className="text-lg font-bold">{l.label_no}</div>
+            <div className="text-xs text-gray-500">渠道 {ch?.channel_code || '-'} · 关联订单 {order?.order_no || '-'}</div>
           </div>
-          <div className="ml-auto flex gap-2">
-            {s.status === 'released' && <button onClick={pick} className="px-4 py-2 bg-sea-500 text-white rounded-lg text-sm hover:bg-sea-600">拣货并扣库存</button>}
-            {s.status === 'packed' && <button onClick={ship} className="px-4 py-2 bg-brand-500 text-white rounded-lg text-sm hover:bg-brand-600">标记发货</button>}
-            {s.status === 'shipped' && <button disabled className="px-4 py-2 bg-gray-200 text-gray-500 rounded-lg text-sm">已发货</button>}
+          <div className="ml-auto flex items-center gap-2">
+            <span className={`px-2 py-1 rounded text-xs ${st.cls}`}>{st.label}</span>
           </div>
         </div>
-        <div className="grid grid-cols-4 gap-4 text-sm">
-          <Info label="收件人" value={s.receiver_name || '-'} />
-          <Info label="国家" value={s.receiver_country || '-'} />
-          <Info label="追踪号" value={s.tracking_no || '-'} />
-          <Info label="件数" value={`${s.total_qty || 0} 件 / ${s.weight_kg || 0}kg`} />
-        </div>
-        {s.receiver_address && (
-          <div className="mt-3 pt-3 border-t border-gray-100 text-sm text-gray-600">
-            <span className="text-gray-400">收件地址：</span>{s.receiver_address}, {s.receiver_city} {s.receiver_postcode}
+
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <div className="text-xs text-gray-400 mb-1">收件信息</div>
+            <div className="font-medium">{order?.receiver_name || '-'}</div>
+            <div className="text-xs text-gray-500 mt-0.5">{order?.receiver_phone}</div>
+            <div className="text-xs text-gray-500">
+              {order?.receiver_address1}{order?.receiver_address2 ? ' ' + order?.receiver_address2 : ''},
+              {order?.receiver_city} {order?.receiver_state} {order?.receiver_zip} {order?.receiver_country}
+            </div>
           </div>
-        )}
+          <div>
+            <div className="text-xs text-gray-400 mb-1">运单号</div>
+            <div className="font-mono text-brand-600">{l.tracking_no || '-'}</div>
+            {l.label_pdf_url && <div className="text-xs text-blue-500 mt-1">📎 面单 PDF 已上传</div>}
+          </div>
+        </div>
+
+        <div className="flex gap-2 pt-4 border-t border-gray-100 mt-4">
+          {l.status === 1 && (
+            <button onClick={markPrinted} className="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm hover:bg-indigo-600">
+              标记为已打印
+            </button>
+          )}
+          {(l.status === 1 || l.status === 2) && (
+            <button onClick={() => setManualTracking(true)} className="px-4 py-2 bg-brand-500 text-white rounded-lg text-sm hover:bg-brand-600 flex items-center gap-1">
+              <Upload className="w-3.5 h-3.5" /> 填运单号并出库
+            </button>
+          )}
+          {l.status === 3 && (
+            <button onClick={async () => {
+              await supabase.from('wms_shipment_labels').update({ status: 4, track_at: new Date().toISOString() }).eq('id', id);
+              qc.invalidateQueries();
+            }} className="px-4 py-2 bg-cyan-500 text-white rounded-lg text-sm hover:bg-cyan-600">
+              模拟有轨迹更新
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* 面单明细 */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-5 py-3 border-b border-gray-100 font-medium">发货明细</div>
+        <div className="px-5 py-3 border-b border-gray-100 font-medium">面单明细（{items?.length || 0} 项）</div>
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-500 text-xs">
-            <tr><th className="text-left px-4 py-2">SKU</th><th className="text-left px-4 py-2">名称</th>
+            <tr>
+              <th className="text-left px-4 py-2">SKU</th>
               <th className="text-right px-4 py-2">数量</th>
-              <th className="text-right px-4 py-2">当前库存</th></tr>
+              <th className="text-left px-4 py-2">库位</th>
+            </tr>
           </thead>
           <tbody>
-            {items?.map((it: any) => {
-              const stock = (inv as any[]).find(i => i.sku === it.sku);
-              return (
-                <tr key={it.id} className="border-t border-gray-50">
-                  <td className="px-4 py-2 font-mono text-xs">{it.sku}</td>
-                  <td className="px-4 py-2">{it.sku_name}</td>
-                  <td className="px-4 py-2 text-right font-medium">{it.qty}</td>
-                  <td className={`px-4 py-2 text-right ${((stock?.qty_on_hand || 0) - it.qty) < 0 ? 'text-red-500' : 'text-gray-500'}`}>
-                    {stock?.qty_on_hand || 0}
-                  </td>
-                </tr>
-              );
-            })}
+            {items?.map((it: any) => (
+              <tr key={it.id} className="border-t border-gray-50">
+                <td className="px-4 py-2 font-mono text-xs">{it.sku_code}</td>
+                <td className="px-4 py-2 text-right">{it.qty}</td>
+                <td className="px-4 py-2 text-xs text-gray-500">{it.bin_id || '-'}</td>
+              </tr>
+            ))}
+            {!items?.length && <tr><td colSpan={3} className="p-6 text-center text-gray-400">无明细</td></tr>}
           </tbody>
         </table>
       </div>
+
+      {/* 手填弹窗 */}
+      {manualTracking && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-6">
+            <h3 className="font-bold mb-4">填运单号出库</h3>
+            <label className="block text-xs text-gray-500 mb-1">运单号</label>
+            <input id="trk" className="inp mb-2" defaultValue={l.tracking_no || ''} />
+            <label className="block text-xs text-gray-500 mb-1">面单 PDF 链接（可留空）</label>
+            <input id="pdf" className="inp mb-3" defaultValue={l.label_pdf_url || ''} />
+            <div className="flex gap-2">
+              <button onClick={() => setManualTracking(false)} className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-lg">取消</button>
+              <button onClick={() => {
+                const trk = (document.getElementById('trk') as HTMLInputElement).value;
+                const pdf = (document.getElementById('pdf') as HTMLInputElement).value;
+                markShipped(trk, pdf);
+              }} className="flex-1 py-2 bg-brand-500 text-white rounded-lg">确认出库</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
-
-function Info({ label, value }: any) {
-  return <div><div className="text-xs text-gray-400">{label}</div><div className="font-medium text-gray-800 mt-0.5">{value}</div></div>;
 }

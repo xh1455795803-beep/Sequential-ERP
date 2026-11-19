@@ -1,9 +1,9 @@
 // Thalvior WMS Service Worker —— 离线缓存 + 网络优先
 const CACHE_NAME = 'thalvior-wms-v2';
 const PRECACHE_URLS = [
-  '/wms/',
-  '/wms/index.html',
-  '/wms/manifest.webmanifest',
+  '/',
+  '/index.html',
+  '/manifest.webmanifest',
 ];
 
 self.addEventListener('install', (event) => {
@@ -38,14 +38,14 @@ self.addEventListener('fetch', (event) => {
       fetch(request)
         .then((resp) => {
           // 导航页 + JS/CSS 资源缓存
-          if (resp.ok && (request.mode === 'navigate' || resp.url.includes('/wms/assets/'))) {
+          if (resp.ok && (request.mode === 'navigate' || resp.url.includes('/assets/'))) {
             const copy = resp.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
           }
           return resp;
         })
         .catch(() => {
-          return caches.match(request).then((cached) => cached || caches.match('/wms/index.html'));
+          return caches.match(request).then((cached) => cached || caches.match('/index.html'));
         }),
     );
     return;
