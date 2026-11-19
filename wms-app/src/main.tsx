@@ -12,7 +12,10 @@ import { AsnsPage, AsnDetailPage } from './pages/AsnsPage';
 import { ShipmentsPage, ShipmentDetailPage } from './pages/ShipmentsPage';
 import { InventoryPage } from './pages/InventoryPage';
 import { StocktakingPage } from './pages/StocktakingPage';
-import { CarriersPage } from './pages/CarriersPage';
+import { ProductsPage } from './pages/ProductsPage';
+import { OrdersPage, OrderDetailPage } from './pages/OrdersPage';
+import { ChannelsPage } from './pages/ChannelsPage';
+import { ExceptionsPage } from './pages/ExceptionsPage';
 import './styles.css';
 
 // --- 鉴权 ---
@@ -22,7 +25,7 @@ async function requireAuth() {
   return session;
 }
 
-// --- 路由树（统一手动注册，不用文件约定式） ---
+// --- 路由树 ---
 const rootRoute = createRootRoute();
 
 const loginRoute = createRoute({
@@ -31,7 +34,6 @@ const loginRoute = createRoute({
   component: LoginPage,
 });
 
-// 布局路由（嵌套容器）
 const layoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'app',
@@ -39,71 +41,37 @@ const layoutRoute = createRoute({
   component: AppLayout,
 });
 
-const dashRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/dashboard',
-  component: DashboardPage,
-});
+// 所有子路由
+const dashRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/dashboard', component: DashboardPage });
 
-const warehousesRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/warehouses',
-  component: WarehousesPage,
-});
+// 新增 v2 路由
+const productsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/products', component: ProductsPage });
+const ordersRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/orders', component: OrdersPage });
+const orderDetailRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/orders/$id', component: OrderDetailPage });
+const channelsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/channels', component: ChannelsPage });
+const exceptionsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/exceptions', component: ExceptionsPage });
 
-const locationsRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/locations',
-  component: LocationsPage,
-});
-
-const carriersRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/carriers',
-  component: CarriersPage,
-});
-
-const asnsRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/asns',
-  component: AsnsPage,
-});
-const asnDetailRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/asns/$id',
-  component: AsnDetailPage,
-});
-
-const shipmentsRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/shipments',
-  component: ShipmentsPage,
-});
-const shipmentDetailRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/shipments/$id',
-  component: ShipmentDetailPage,
-});
-
-const inventoryRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/inventory',
-  component: InventoryPage,
-});
-
-const stocktakingRoute = createRoute({
-  getParentRoute: () => layoutRoute,
-  path: '/stocktaking',
-  component: StocktakingPage,
-});
+// 保留旧路由
+const warehousesRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/warehouses', component: WarehousesPage });
+const locationsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/locations', component: LocationsPage });
+const asnsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/asns', component: AsnsPage });
+const asnDetailRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/asns/$id', component: AsnDetailPage });
+const shipmentsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/shipments', component: ShipmentsPage });
+const shipmentDetailRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/shipments/$id', component: ShipmentDetailPage });
+const inventoryRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/inventory', component: InventoryPage });
+const stocktakingRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/stocktaking', component: StocktakingPage });
 
 const routeTree = rootRoute.addChildren([
   loginRoute,
   layoutRoute.addChildren([
     dashRoute,
+    productsRoute,
+    ordersRoute,
+    orderDetailRoute,
+    channelsRoute,
+    exceptionsRoute,
     warehousesRoute,
     locationsRoute,
-    carriersRoute,
     asnsRoute,
     asnDetailRoute,
     shipmentsRoute,
@@ -123,7 +91,6 @@ const router = createRouter({
   defaultPreload: 'intent',
   defaultErrorComponent: ({ error }: any) => {
     if (error?.message === 'UNAUTHORIZED') {
-      // 用 history 模式的正确重定向
       const u = new URL(window.location.href);
       u.pathname = '/wms/';
       window.location.replace(u.toString());
