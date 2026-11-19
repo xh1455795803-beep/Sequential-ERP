@@ -16,13 +16,14 @@ import { ProductsPage } from './pages/ProductsPage';
 import { OrdersPage, OrderDetailPage } from './pages/OrdersPage';
 import { ChannelsPage } from './pages/ChannelsPage';
 import { ExceptionsPage } from './pages/ExceptionsPage';
-// Mobile PDA
+import ErpConnectionPage from './pages/ErpConnectionPage';
+import StoreBindingPage from './pages/StoreBindingPage';
+// PDA
 import PdaReceive from './pages/mobile/PdaReceive';
 import PdaPutaway from './pages/mobile/PdaPutaway';
 import PdaPick from './pages/mobile/PdaPick';
 import PdaPack from './pages/mobile/PdaPack';
 import './styles.css';
-// PWA service worker
 import './pwa/registerSW';
 
 async function requireAuth() {
@@ -46,15 +47,20 @@ const layoutRoute = createRoute({
   component: AppLayout,
 });
 
-// Desktop routes
 const dashRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/dashboard', component: DashboardPage });
 
+// v4 新增
+const erpRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/erp', component: ErpConnectionPage });
+const storesRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/stores', component: StoreBindingPage });
+
+// v2 路由
 const productsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/products', component: ProductsPage });
 const ordersRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/orders', component: OrdersPage });
 const orderDetailRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/orders/$id', component: OrderDetailPage });
 const channelsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/channels', component: ChannelsPage });
 const exceptionsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/exceptions', component: ExceptionsPage });
 
+// 保留旧路由
 const warehousesRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/warehouses', component: WarehousesPage });
 const locationsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/locations', component: LocationsPage });
 const asnsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/asns', component: AsnsPage });
@@ -64,7 +70,7 @@ const shipmentDetailRoute = createRoute({ getParentRoute: () => layoutRoute, pat
 const inventoryRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/inventory', component: InventoryPage });
 const stocktakingRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/stocktaking', component: StocktakingPage });
 
-// PDA routes (same layout, different pages)
+// PDA
 const pdaHubRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/pda', component: () => null });
 const pdaReceiveRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/pda/receive', component: PdaReceive });
 const pdaPutawayRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/pda/putaway', component: PdaPutaway });
@@ -75,6 +81,8 @@ const routeTree = rootRoute.addChildren([
   loginRoute,
   layoutRoute.addChildren([
     dashRoute,
+    erpRoute,
+    storesRoute,
     productsRoute,
     ordersRoute,
     orderDetailRoute,
