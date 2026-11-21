@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { Camera, X, Flashlight } from 'lucide-react';
+import { Camera, X, Flashlight, Smartphone } from 'lucide-react';
+import { isNativeSync, nativeScanBarcode } from '../../hooks/useCapacitor';
 
 interface Props {
   onDetected: (code: string) => void;
@@ -8,15 +9,23 @@ interface Props {
   autoStop?: boolean;
 }
 
+/**
+ * 扫码组件 —— 自动适配环境：
+ *   Capacitor 原生壳 → 用原生 BarcodeScanner (Zebra/iData 实体扫码键也走这个)
+ *   Web 浏览器       → 用 html5-qrcode
+ *   两者都不支持     → 手动输入（扫码枪键盘模拟也能 Enter 触发）
+ */
 export function QrScanner({ onDetected, placeholder = '扫描条码 / 二维码', autoStop = true }: Props) {
   const [manualCode, setManualCode] = useState('');
   const [scannerOn, setScannerOn] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scanAreaId = 'pda-qr-area';
+  const native = isNativeSync();
 
+  // Web 环境：html5-qrcode 摄像头扫码
   useEffect(() => {
-    if (!scannerOn) return;
+    if (native || !scannerOn) return;
 
     const scanner = new Html5Qrcode(scanAreaId);
     scannerRef.current = scanner;
@@ -49,16 +58,31 @@ export function QrScanner({ onDetected, placeholder = '扫描条码 / 二维码'
         });
       }
     };
-  }, [scannerOn, onDetected, autoStop]);
+  }, [native, scannerOn, onDetected, autoStop]);
+
+  // 原生壳：调 BarcodeScanner API
+  async function startNativeScan() {
+    setError(null);
+    setScannerOn(true);
+    const code = await nativeScanBarcode();
+    setScannerOn(false);
+    if (code) {
+      onDetected(code);
+    }
+  }
 
   const toggle = () => {
-    setError(null);
-    setScannerOn((v) => !v);
+    if (native) {
+      startNativeScan();
+    } else {
+      setError(null);
+      setScannerOn((v) => !v);
+    }
   };
 
   return (
     <div className="space-y-3">
-      {/* 手动输入区（扫码枪也用这个） */}
+      {/* 手动输入区（PDA 实体扫码枪走这个） */}
       <div className="flex gap-2">
         <input
           type="text"
@@ -89,15 +113,22 @@ export function QrScanner({ onDetected, placeholder = '扫描条码 / 二维码'
         </button>
       </div>
 
-      {/* 摄像头扫码区 */}
+      {/* 扫码按钮 —— 原生壳用原生 API，Web 用摄像头 */}
       {!scannerOn ? (
         <button
           onClick={toggle}
           className="w-full flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-brand-500 to-brand-600 text-white rounded-xl active:opacity-90"
         >
-          <Camera className="w-5 h-5" />
-          <span className="font-medium">打开摄像头扫码</span>
+          {native ? <Smartphone className="w-5 h-5" /> : <Camera className="w-5 h-5" />}
+          <span className="font-medium">
+            {native ? '启动 PDA 扫码' : '打开摄像头扫码'}
+          </span>
         </button>
+      ) : native ? (
+        <div className="rounded-xl bg-black text-white p-4 text-center">
+          <div className="animate-pulse text-sm">等待扫码...</div>
+          <button onClick={() => setScannerOn(false)} className="mt-2 text-xs opacity-70">取消</button>
+        </div>
       ) : (
         <div className="relative rounded-xl overflow-hidden bg-black">
           <div id={scanAreaId} className="w-full aspect-video" />
