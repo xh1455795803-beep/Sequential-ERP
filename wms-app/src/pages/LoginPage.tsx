@@ -40,14 +40,23 @@ export function LoginPage() {
     setErr('');
     setLoading(true);
     try {
-      const { error } = mode === 'login'
+      const { data, error } = mode === 'login'
         ? await supabase.auth.signInWithPassword({ email, password })
         : await supabase.auth.signUp({ email, password });
       if (error) throw error;
-      navigate({ to: '/dashboard' });
+      
+      console.log('[Login] signIn OK, user:', data?.user?.email);
+      
+      // 硬兜底：直接用 window.location 跳转（绕过 TanStack Router 的任何可能问题）
+      // session 已经被 Supabase client 存到 localStorage 了
+      setTimeout(() => {
+        const target = '/wms/dashboard';
+        console.log('[Login] forcing redirect to', target);
+        window.location.replace(target);
+      }, 50);
     } catch (e: any) {
+      console.error('[Login] error:', e);
       setErr(e.message || '登录失败');
-    } finally {
       setLoading(false);
     }
   }
