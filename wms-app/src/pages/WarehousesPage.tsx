@@ -6,8 +6,8 @@ import { Modal, Grid, Field, Footer } from '../components/ui';
 
 const WH_TYPE: Record<number, string> = { 0: '自有仓', 1: '3PL 托管仓' };
 const WH_STATUS: Record<number, { label: string; cls: string }> = {
-  1: { label: '启用', cls: 'bg-green-50 text-green-600' },
-  0: { label: '停用', cls: 'bg-gray-100 text-gray-500' },
+  1: { label: '启用', cls: 'bg-success-bg text-success' },
+  0: { label: '停用', cls: 'bg-muted text-muted-foreground' },
 };
 
 export function WarehousesPage() {
@@ -34,7 +34,7 @@ export function WarehousesPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold">仓库管理</h2>
-          <p className="text-sm text-gray-500 mt-1">wms_warehouses · warehouse_code / is_3pl / status smallint</p>
+          <p className="text-sm text-muted-foreground mt-1">wms_warehouses · warehouse_code / is_3pl / status smallint</p>
         </div>
         <button onClick={() => { setEditing(null); setShowForm(true); }}
           className="flex items-center gap-1.5 px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 text-sm">
@@ -42,9 +42,9 @@ export function WarehousesPage() {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-card rounded-xl shadow-soft border border-border overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-gray-500 text-xs">
+          <thead className="bg-muted text-muted-foreground text-xs">
             <tr>
               <th className="text-left px-5 py-2.5">编码</th>
               <th className="text-left px-5 py-2.5">名称</th>
@@ -57,30 +57,30 @@ export function WarehousesPage() {
           </thead>
           <tbody>
             {data?.filter((w: any) => !w.deleted_at).map((w: any) => {
-              const st = WH_STATUS[w.status] || { label: w.status, cls: 'bg-gray-100' };
+              const st = WH_STATUS[w.status] || { label: w.status, cls: 'bg-muted' };
               return (
-                <tr key={w.id} className="border-t border-gray-50 hover:bg-gray-50/50">
+                <tr key={w.id} className="border-t border-transparent hover:bg-muted/50">
                   <td className="px-5 py-3 font-mono text-brand-600">{w.warehouse_code}</td>
                   <td className="px-5 py-3 font-medium">{w.name}</td>
-                  <td className="px-5 py-3 text-xs text-gray-500">{WH_TYPE[w.is_3pl] || '自有仓'}</td>
-                  <td className="px-5 py-3 text-xs text-gray-500 max-w-xs truncate">{w.address || '-'}</td>
-                  <td className="px-5 py-3 text-xs text-gray-500">
+                  <td className="px-5 py-3 text-xs text-muted-foreground">{WH_TYPE[w.is_3pl] || '自有仓'}</td>
+                  <td className="px-5 py-3 text-xs text-muted-foreground max-w-xs truncate">{w.address || '-'}</td>
+                  <td className="px-5 py-3 text-xs text-muted-foreground">
                     {w.contact_name ? <div>{w.contact_name}</div> : null}
                     {w.contact_phone ? <div>{w.contact_phone}</div> : null}
                   </td>
                   <td className="px-5 py-3 text-right">
-                    <div className="text-gray-500">{w.capacity || '-'} m³</div>
+                    <div className="text-muted-foreground">{w.capacity || '-'} m³</div>
                     <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] ${st.cls}`}>{st.label}</span>
                   </td>
                   <td className="px-5 py-3 text-right">
-                    <button onClick={() => { setEditing(w); setShowForm(true); }} className="p-1.5 hover:bg-gray-100 rounded"><Pencil className="w-4 h-4 text-gray-500" /></button>
-                    <button onClick={() => del(w.id)} className="p-1.5 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
+                    <button onClick={() => { setEditing(w); setShowForm(true); }} className="p-1.5 hover:bg-muted rounded"><Pencil className="w-4 h-4 text-muted-foreground" /></button>
+                    <button onClick={() => del(w.id)} className="p-1.5 hover:bg-danger-bg rounded"><Trash2 className="w-4 h-4 text-destructive" /></button>
                   </td>
                 </tr>
               );
             })}
             {!isLoading && !data?.filter((w: any) => !w.deleted_at).length && (
-              <tr><td colSpan={7} className="p-10 text-center text-gray-400">暂无仓库</td></tr>
+              <tr><td colSpan={7} className="p-10 text-center text-muted-foreground">暂无仓库</td></tr>
             )}
           </tbody>
         </table>

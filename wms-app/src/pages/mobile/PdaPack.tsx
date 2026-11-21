@@ -181,10 +181,10 @@ export default function PdaPack() {
   if (!currentOrder) {
     return (
       <div className="p-4 max-w-md mx-auto">
-        <h1 className="text-lg font-bold text-gray-800 mb-4">扫码打包</h1>
+        <h1 className="text-lg font-bold text-fg mb-4">扫码打包</h1>
 
         {orders.length === 0 ? (
-          <div className="text-center py-16 text-gray-500">
+          <div className="text-center py-16 text-muted-foreground">
             <Boxes className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p className="text-sm">暂无待打包订单</p>
           </div>
@@ -194,17 +194,17 @@ export default function PdaPack() {
               <button
                 key={o.id}
                 onClick={() => openOrder(o)}
-                className="w-full bg-white border border-gray-200 rounded-2xl p-4 text-left active:bg-gray-50"
+                className="w-full bg-card border border-border rounded-2xl p-4 text-left active:bg-muted"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <div className="font-semibold text-gray-800">{o.erp_order_no}</div>
+                  <div className="font-semibold text-fg">{o.erp_order_no}</div>
                   <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                    o.status === 'packing' ? 'bg-purple-100 text-purple-700' :
-                    o.status === 'ready_to_ship' ? 'bg-green-100 text-green-700' :
-                    'bg-orange-100 text-orange-700'
+                    o.status === 'packing' ? 'bg-brand-subtle text-brand' :
+                    o.status === 'ready_to_ship' ? 'bg-success-bg text-success' :
+                    'bg-warning-bg text-warning'
                   }`}>{o.status}</span>
                 </div>
-                <div className="text-sm text-gray-500">{o.receiver_name}</div>
+                <div className="text-sm text-muted-foreground">{o.receiver_name}</div>
               </button>
             ))}
           </div>
@@ -218,12 +218,12 @@ export default function PdaPack() {
   return (
     <div className="p-4 max-w-md mx-auto">
       <div className="flex items-center gap-2 mb-4">
-        <button onClick={() => { setCurrentOrder(null); loadOrders(); }} className="p-2 rounded-lg hover:bg-gray-100">
+        <button onClick={() => { setCurrentOrder(null); loadOrders(); }} className="p-2 rounded-lg hover:bg-muted">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="min-w-0">
-          <h1 className="text-lg font-bold text-gray-800 truncate">{currentOrder.erp_order_no}</h1>
-          <p className="text-xs text-gray-500">{currentOrder.receiver_name}</p>
+          <h1 className="text-lg font-bold text-fg truncate">{currentOrder.erp_order_no}</h1>
+          <p className="text-xs text-muted-foreground">{currentOrder.receiver_name}</p>
         </div>
       </div>
 
@@ -234,13 +234,13 @@ export default function PdaPack() {
             {items.map((item) => {
               const done = item.packed_qty >= item.qty;
               return (
-                <div key={item.id} className={`p-3 rounded-xl ${done ? 'bg-emerald-50 border border-emerald-200' : 'bg-white border border-gray-200'}`}>
+                <div key={item.id} className={`p-3 rounded-xl ${done ? 'bg-success-bg border border-success' : 'bg-card border border-border'}`}>
                   <div className="flex justify-between">
-                    <span className={`font-medium ${done ? 'text-emerald-700' : 'text-gray-800'}`}>{item.sku}</span>
-                    <span className={`text-sm ${done ? 'text-emerald-600' : 'text-gray-600'}`}>{item.packed_qty}/{item.qty}</span>
+                    <span className={`font-medium ${done ? 'text-success' : 'text-fg'}`}>{item.sku}</span>
+                    <span className={`text-sm ${done ? 'text-success' : 'text-muted-foreground'}`}>{item.packed_qty}/{item.qty}</span>
                   </div>
-                  <div className="mt-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                    <div className={`h-full transition-all ${done ? 'bg-emerald-500' : 'bg-purple-500'}`}
+                  <div className="mt-1 h-1.5 bg-border rounded-full overflow-hidden">
+                    <div className={`h-full transition-all ${done ? 'bg-success-bg0' : 'bg-brand-subtle0'}`}
                       style={{ width: `${(item.packed_qty / item.qty) * 100}%` }} />
                   </div>
                 </div>
@@ -248,7 +248,7 @@ export default function PdaPack() {
             })}
           </div>
           {(scanResult || error) && (
-            <div className={`mb-3 p-3 rounded-xl text-sm ${error ? 'bg-red-50 text-red-700' : 'bg-purple-50 text-purple-700'}`}>
+            <div className={`mb-3 p-3 rounded-xl text-sm ${error ? 'bg-danger-bg text-danger' : 'bg-brand-subtle text-brand'}`}>
               {error || scanResult}
             </div>
           )}
@@ -267,23 +267,23 @@ export default function PdaPack() {
       {/* 步骤2: 申请运单 */}
       {step === 'verify' && (
         <div className="space-y-4">
-          <div className="bg-purple-50 rounded-xl p-4">
-            <div className="text-sm text-purple-700 mb-3">
+          <div className="bg-brand-subtle rounded-xl p-4">
+            <div className="text-sm text-brand mb-3">
               <Truck className="w-5 h-5 inline mr-1" />
               全部 {items.length} 件商品已打包完成
             </div>
-            <label className="block text-xs text-gray-500 mb-1">实际称重 (kg)</label>
+            <label className="block text-xs text-muted-foreground mb-1">实际称重 (kg)</label>
             <input type="number" step="0.01" value={weight} onChange={(e) => setWeight(e.target.value)}
               placeholder="0.00"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white mb-3" />
-            <label className="block text-xs text-gray-500 mb-1">运单号（手动填或等渠道返回）</label>
+              className="w-full px-3 py-2 border border-input rounded-lg bg-card mb-3" />
+            <label className="block text-xs text-muted-foreground mb-1">运单号（手动填或等渠道返回）</label>
             <input type="text" value={trackingNo} onChange={(e) => setTrackingNo(e.target.value)}
               placeholder="例如 4PX1234567890"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white" />
+              className="w-full px-3 py-2 border border-input rounded-lg bg-card" />
           </div>
 
           <div className="flex gap-2">
-            <button onClick={() => setStep('scan')} className="flex-1 py-3 border border-gray-300 rounded-xl font-medium">← 返回</button>
+            <button onClick={() => setStep('scan')} className="flex-1 py-3 border border-input rounded-xl font-medium">← 返回</button>
             <button onClick={doShip} className="flex-1 py-3 bg-gradient-to-r from-brand-500 to-brand-600 text-white rounded-xl font-medium">
               确认出库
             </button>
@@ -294,10 +294,10 @@ export default function PdaPack() {
       {/* 步骤3: 面单 */}
       {step === 'ship' && (
         <div className="space-y-4">
-          <div className="bg-emerald-50 rounded-xl p-4 text-center">
-            <CheckCircle className="w-10 h-10 mx-auto mb-2 text-emerald-600" />
-            <div className="text-emerald-700 font-semibold text-lg">🎉 出库成功！</div>
-            {trackingNo && <div className="text-sm text-emerald-600 mt-1">运单号: {trackingNo}</div>}
+          <div className="bg-success-bg rounded-xl p-4 text-center">
+            <CheckCircle className="w-10 h-10 mx-auto mb-2 text-success" />
+            <div className="text-success font-semibold text-lg">🎉 出库成功！</div>
+            {trackingNo && <div className="text-sm text-success mt-1">运单号: {trackingNo}</div>}
           </div>
           <button
             onClick={generateLabel}
@@ -306,13 +306,13 @@ export default function PdaPack() {
             🖨️ 生成面单
           </button>
           {labelUrl && (
-            <a href={labelUrl} target="_blank" className="block text-center py-3 bg-gray-800 text-white rounded-xl">
+            <a href={labelUrl} target="_blank" className="block text-center py-3 bg-fg text-white rounded-xl">
               打开/下载面单
             </a>
           )}
           <button
             onClick={() => { setCurrentOrder(null); loadOrders(); }}
-            className="w-full py-3 border border-gray-300 rounded-xl"
+            className="w-full py-3 border border-input rounded-xl"
           >
             返回订单列表
           </button>

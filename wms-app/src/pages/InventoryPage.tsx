@@ -62,24 +62,24 @@ export function InventoryPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold">实时库存</h2>
-          <p className="text-sm text-gray-500 mt-1">按库位粒度的 WMS 库存快照</p>
+          <p className="text-sm text-muted-foreground mt-1">按库位粒度的 WMS 库存快照</p>
         </div>
         <input
           value={filter} onChange={(e) => setFilter(e.target.value)}
           placeholder="搜索 SKU / 库位 / 商品名..."
-          className="px-4 py-2 border border-gray-200 rounded-lg text-sm w-80 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="px-4 py-2 border border-border rounded-lg text-sm w-80 focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>
 
       <div className="grid grid-cols-3 gap-4 mb-4">
         <StatCard icon={Boxes} color="bg-brand-500"  label="SKU × 库位" value={rows.length} />
         <StatCard icon={Boxes} color="bg-sea-500"    label="在库总数"   value={totalQty} />
-        <StatCard icon={AlertCircle} color="bg-red-500" label="低库存预警" value={lowStock} />
+        <StatCard icon={AlertCircle} color="bg-danger-bg0" label="低库存预警" value={lowStock} />
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-card rounded-xl shadow-soft border border-border overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-gray-500 text-xs">
+          <thead className="bg-muted text-muted-foreground text-xs">
             <tr>
               <th className="text-left px-5 py-2.5">仓库</th>
               <th className="text-left px-5 py-2.5">SKU</th>
@@ -95,22 +95,22 @@ export function InventoryPage() {
             {filtered.map((r: any) => {
               const available = (r.qty_onhand || 0) - (r.qty_locked || 0);
               return (
-                <tr key={r.id} className={`border-t border-gray-50 hover:bg-gray-50/50 ${r.qty_onhand <= 2 && r.qty_onhand > 0 ? 'bg-red-50/30' : ''}`}>
+                <tr key={r.id} className={`border-t border-transparent hover:bg-muted/50 ${r.qty_onhand <= 2 && r.qty_onhand > 0 ? 'bg-danger-bg/30' : ''}`}>
                   <td className="px-5 py-2.5">{r.wh_name || '-'}</td>
                   <td className="px-5 py-2.5 font-mono text-brand-600">{r.sku_code}</td>
-                  <td className="px-5 py-2.5 text-gray-600">{r.product_name}</td>
+                  <td className="px-5 py-2.5 text-muted-foreground">{r.product_name}</td>
                   <td className="px-5 py-2.5 font-mono text-xs">{r.bin_code}</td>
-                  <td className={`px-5 py-2.5 text-right font-medium ${r.qty_onhand <= 2 ? 'text-red-600' : ''}`}>{r.qty_onhand}</td>
-                  <td className="px-5 py-2.5 text-right text-gray-400">{r.qty_locked || 0}</td>
-                  <td className="px-5 py-2.5 text-right text-green-600">{available}</td>
-                  <td className="px-5 py-2.5 text-gray-400 text-xs">
+                  <td className={`px-5 py-2.5 text-right font-medium ${r.qty_onhand <= 2 ? 'text-destructive' : ''}`}>{r.qty_onhand}</td>
+                  <td className="px-5 py-2.5 text-right text-muted-foreground">{r.qty_locked || 0}</td>
+                  <td className="px-5 py-2.5 text-right text-success">{available}</td>
+                  <td className="px-5 py-2.5 text-muted-foreground text-xs">
                     {r.last_move_at ? new Date(r.last_move_at).toLocaleString('zh-CN') : '-'}
                   </td>
                 </tr>
               );
             })}
             {!isLoading && !filtered?.length && (
-              <tr><td colSpan={8} className="p-10 text-center text-gray-400">{filter ? '未匹配到库存' : '暂无库存，请先入库上架'}</td></tr>
+              <tr><td colSpan={8} className="p-10 text-center text-muted-foreground">{filter ? '未匹配到库存' : '暂无库存，请先入库上架'}</td></tr>
             )}
           </tbody>
         </table>
@@ -121,13 +121,13 @@ export function InventoryPage() {
 
 function StatCard({ icon: Icon, color, label, value }: any) {
   return (
-    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
+    <div className="bg-card rounded-xl p-4 shadow-soft border border-border flex items-center gap-4">
       <div className={`w-10 h-10 rounded-lg ${color} text-white flex items-center justify-center`}>
         <Icon className="w-5 h-5" />
       </div>
       <div>
         <div className="text-2xl font-bold">{value}</div>
-        <div className="text-xs text-gray-500">{label}</div>
+        <div className="text-xs text-muted-foreground">{label}</div>
       </div>
     </div>
   );

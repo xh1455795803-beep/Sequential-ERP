@@ -76,24 +76,24 @@ export function LocationsPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold">库位管理</h2>
-          <p className="text-sm text-gray-500 mt-1">按仓库 / 库区 / 库位三级维护</p>
+          <p className="text-sm text-muted-foreground mt-1">按仓库 / 库区 / 库位三级维护</p>
         </div>
         <select
           value={selectedWarehouse || ''}
           onChange={(e) => setSelectedWarehouse(e.target.value || null)}
-          className="px-3 py-2 border border-gray-200 rounded-lg text-sm"
+          className="px-3 py-2 border border-border rounded-lg text-sm"
         >
           <option value="">选择仓库</option>
           {warehouses?.map((w: any) => <option key={w.id} value={w.id}>{w.warehouse_code} · {w.name}</option>)}
         </select>
       </div>
 
-      {!selectedWarehouse && <div className="bg-white rounded-xl p-12 text-center text-gray-400 border border-gray-100">请先选择仓库</div>}
+      {!selectedWarehouse && <div className="bg-card rounded-xl p-12 text-center text-muted-foreground border border-border">请先选择仓库</div>}
 
       {selectedWarehouse && (
         <>
           {/* 库区 */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-4">
+          <div className="bg-card rounded-xl shadow-soft border border-border p-5 mb-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold">库区</h3>
               <button onClick={() => { setEditingZone(null); setShowZoneForm(true); }}
@@ -103,18 +103,18 @@ export function LocationsPage() {
             </div>
             <div className="flex flex-wrap gap-2">
               {zones?.map((z: any) => (
-                <span key={z.id} className="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-50 rounded-lg text-sm border border-gray-100">
-                  <b className="text-brand-600">{z.zone_code}</b> · {z.name} · <span className="text-xs text-gray-400">{ZONE_TYPE[z.type] || z.type}</span>
-                  <button onClick={() => { setEditingZone(z); setShowZoneForm(true); }} className="ml-1 text-gray-400 hover:text-gray-600"><Pencil className="w-3 h-3" /></button>
+                <span key={z.id} className="inline-flex items-center gap-1 px-3 py-1.5 bg-muted rounded-lg text-sm border border-border">
+                  <b className="text-brand-600">{z.zone_code}</b> · {z.name} · <span className="text-xs text-muted-foreground">{ZONE_TYPE[z.type] || z.type}</span>
+                  <button onClick={() => { setEditingZone(z); setShowZoneForm(true); }} className="ml-1 text-muted-foreground hover:text-muted-foreground"><Pencil className="w-3 h-3" /></button>
                 </span>
               ))}
-              {!zones?.length && <span className="text-sm text-gray-400 py-2">暂无库区</span>}
+              {!zones?.length && <span className="text-sm text-muted-foreground py-2">暂无库区</span>}
             </div>
           </div>
 
           {/* 库位 */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+          <div className="bg-card rounded-xl shadow-soft border border-border overflow-hidden">
+            <div className="px-5 py-3 border-b border-border flex items-center justify-between">
               <h3 className="font-semibold">库位 ({locations?.length || 0})</h3>
               <div className="flex gap-2">
                 <button onClick={generateLocations} className="flex items-center gap-1 px-3 py-1.5 text-xs bg-sea-500 text-white rounded-md hover:bg-sea-600">
@@ -127,7 +127,7 @@ export function LocationsPage() {
               </div>
             </div>
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-gray-500 text-xs">
+              <thead className="bg-muted text-muted-foreground text-xs">
                 <tr>
                   <th className="text-left px-5 py-2.5">库区</th>
                   <th className="text-left px-5 py-2.5">库位编码</th>
@@ -137,29 +137,29 @@ export function LocationsPage() {
               </thead>
               <tbody>
                 {locations?.slice(0, 200).map((l: any) => (
-                  <tr key={l.id} className="border-t border-gray-50 hover:bg-gray-50/50">
+                  <tr key={l.id} className="border-t border-transparent hover:bg-muted/50">
                     <td className="px-5 py-2 font-mono text-xs text-brand-600">
                       {(zones as any[]).find((z: any) => z.id === l.zone_id)?.zone_code || '-'}
                     </td>
                     <td className="px-5 py-2 font-mono">{l.bin_code}</td>
                     <td className="px-5 py-2">
                       {l.is_pickable === 1
-                        ? <span className="px-2 py-0.5 rounded text-xs bg-green-50 text-green-600">可拣</span>
-                        : <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-400">不可拣</span>}
+                        ? <span className="px-2 py-0.5 rounded text-xs bg-success-bg text-success">可拣</span>
+                        : <span className="px-2 py-0.5 rounded text-xs bg-muted text-muted-foreground">不可拣</span>}
                     </td>
                     <td className="px-5 py-2 text-right">
                       <button onClick={async () => {
                         if (!confirm('删除？')) return;
                         await supabase.from('wms_bins').delete().eq('id', l.id);
                         qc.invalidateQueries();
-                      }} className="p-1.5 hover:bg-red-50 rounded text-red-500"><Trash2 className="w-4 h-4" /></button>
+                      }} className="p-1.5 hover:bg-danger-bg rounded text-destructive"><Trash2 className="w-4 h-4" /></button>
                     </td>
                   </tr>
                 ))}
                 {(locations?.length || 0) > 200 && (
-                  <tr><td colSpan={4} className="p-3 text-center text-gray-400 text-xs">仅显示前 200 条</td></tr>
+                  <tr><td colSpan={4} className="p-3 text-center text-muted-foreground text-xs">仅显示前 200 条</td></tr>
                 )}
-                {!locations?.length && <tr><td colSpan={4} className="p-10 text-center text-gray-400">暂无库位</td></tr>}
+                {!locations?.length && <tr><td colSpan={4} className="p-10 text-center text-muted-foreground">暂无库位</td></tr>}
               </tbody>
             </table>
           </div>

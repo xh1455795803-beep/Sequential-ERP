@@ -6,11 +6,11 @@ import { Modal, Grid, Field, Footer } from '../components/ui';
 
 // 盘点状态 smallint 1-5
 const STOCKTAKE_STATUS: Record<number, { label: string; cls: string }> = {
-  1: { label: '草稿',     cls: 'bg-gray-100 text-gray-600' },
-  2: { label: '盘点中',   cls: 'bg-amber-50 text-amber-600' },
-  3: { label: '差异复核', cls: 'bg-red-50 text-red-600' },
-  4: { label: '已完成',   cls: 'bg-green-50 text-green-600' },
-  5: { label: '已取消',   cls: 'bg-gray-100 text-gray-400' },
+  1: { label: '草稿',     cls: 'bg-muted text-muted-foreground' },
+  2: { label: '盘点中',   cls: 'bg-warning-bg text-warning' },
+  3: { label: '差异复核', cls: 'bg-danger-bg text-destructive' },
+  4: { label: '已完成',   cls: 'bg-success-bg text-success' },
+  5: { label: '已取消',   cls: 'bg-muted text-muted-foreground' },
 };
 
 export function StocktakingPage() {
@@ -75,7 +75,7 @@ export function StocktakingPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold">盘点管理</h2>
-          <p className="text-sm text-gray-500 mt-1">定期盘点实物与系统库存核对</p>
+          <p className="text-sm text-muted-foreground mt-1">定期盘点实物与系统库存核对</p>
         </div>
         <button onClick={() => setShowForm(true)}
           className="flex items-center gap-1.5 px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 text-sm">
@@ -85,34 +85,34 @@ export function StocktakingPage() {
 
       <div className="grid grid-cols-3 gap-4">
         {/* 盘点单列表 */}
-        <div className="col-span-1 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden h-fit">
-          <div className="px-4 py-3 border-b border-gray-100 font-semibold text-sm">盘点单</div>
+        <div className="col-span-1 bg-card rounded-xl shadow-soft border border-border overflow-hidden h-fit">
+          <div className="px-4 py-3 border-b border-border font-semibold text-sm">盘点单</div>
           <div className="max-h-[520px] overflow-auto">
             {list?.map((s: any) => {
-              const st = STOCKTAKE_STATUS[s.status] || { label: s.status, cls: 'bg-gray-100' };
+              const st = STOCKTAKE_STATUS[s.status] || { label: s.status, cls: 'bg-muted' };
               const zone = (zones as any[])?.find((z: any) => z.id === s.zone_id);
               return (
                 <div key={s.id} onClick={() => openSheet(s)}
-                  className={`px-4 py-3 border-b border-gray-50 cursor-pointer hover:bg-gray-50 ${active?.id === s.id ? 'bg-brand-50 border-l-2 border-brand-500' : ''}`}>
+                  className={`px-4 py-3 border-b border-transparent cursor-pointer hover:bg-muted ${active?.id === s.id ? 'bg-brand-50 border-l-2 border-brand-500' : ''}`}>
                   <div className="font-mono text-brand-600 text-sm">{s.stocktake_no}</div>
-                  <div className="text-xs text-gray-500 mt-1 flex justify-between">
+                  <div className="text-xs text-muted-foreground mt-1 flex justify-between">
                     <span>{zone ? `按库区 ${zone.zone_code}` : '全盘'}</span>
                     <span className={`px-1.5 py-0.5 rounded text-[10px] ${st.cls}`}>{st.label}</span>
                   </div>
                   {(+s.diff_qty || 0) > 0 && (
-                    <div className="text-xs text-red-500 mt-1">差异量 {s.diff_qty}</div>
+                    <div className="text-xs text-destructive mt-1">差异量 {s.diff_qty}</div>
                   )}
                 </div>
               );
             })}
-            {!list?.length && <div className="p-10 text-center text-gray-400 text-sm">暂无盘点单</div>}
+            {!list?.length && <div className="p-10 text-center text-muted-foreground text-sm">暂无盘点单</div>}
           </div>
         </div>
 
         {/* 盘点执行面板 */}
-        <div className="col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="col-span-2 bg-card rounded-xl shadow-soft border border-border overflow-hidden">
           {!active ? (
-            <div className="p-10 text-center text-gray-400">
+            <div className="p-10 text-center text-muted-foreground">
               <ClipboardList className="w-12 h-12 mx-auto mb-2 opacity-30" />
               <div>从左侧选择一个盘点单开始盘点</div>
             </div>
@@ -174,14 +174,14 @@ function SheetPanel({ sheet, inputs, setInputs, onSaved }: any) {
 
   return (
     <div>
-      <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+      <div className="px-5 py-3 border-b border-border flex items-center justify-between">
         <div className="font-semibold">{sheet.stocktake_no}</div>
         <button onClick={submit} className="flex items-center gap-1 px-4 py-1.5 bg-brand-500 text-white rounded-lg text-xs hover:bg-brand-600">
           <CheckCircle2 className="w-3 h-3" /> 保存盘点结果
         </button>
       </div>
       <table className="w-full text-sm">
-        <thead className="bg-gray-50 text-gray-500 text-xs">
+        <thead className="bg-muted text-muted-foreground text-xs">
           <tr>
             <th className="text-left px-4 py-2">库位</th>
             <th className="text-left px-4 py-2">SKU</th>
@@ -196,7 +196,7 @@ function SheetPanel({ sheet, inputs, setInputs, onSaved }: any) {
             const actual = inputs[it.id] ?? it.actual_qty;
             const d = +actual - +it.system_qty;
             return (
-              <tr key={it.id} className={`border-t border-gray-50 ${d !== 0 ? 'bg-red-50/40' : ''}`}>
+              <tr key={it.id} className={`border-t border-transparent ${d !== 0 ? 'bg-danger-bg/40' : ''}`}>
                 <td className="px-4 py-2 font-mono text-xs">{loc?.bin_code || '-'}</td>
                 <td className="px-4 py-2 font-mono text-brand-600">{it.sku_code || '-'}</td>
                 <td className="px-4 py-2 text-right">{it.system_qty}</td>
@@ -204,13 +204,13 @@ function SheetPanel({ sheet, inputs, setInputs, onSaved }: any) {
                   <input type="number" value={actual} onChange={(e) => setInputs({ ...inputs, [it.id]: +e.target.value })}
                     className="inp text-right text-xs py-1 px-2" />
                 </td>
-                <td className={`px-4 py-2 text-right ${d === 0 ? 'text-gray-400' : d > 0 ? 'text-green-600 font-medium' : 'text-red-500 font-medium'}`}>
+                <td className={`px-4 py-2 text-right ${d === 0 ? 'text-muted-foreground' : d > 0 ? 'text-success font-medium' : 'text-destructive font-medium'}`}>
                   {d === 0 ? '-' : (d > 0 ? '+' : '') + d}
                 </td>
               </tr>
             );
           })}
-          {!items?.length && <tr><td colSpan={5} className="p-10 text-center text-gray-400">该盘点单尚未生成明细</td></tr>}
+          {!items?.length && <tr><td colSpan={5} className="p-10 text-center text-muted-foreground">该盘点单尚未生成明细</td></tr>}
         </tbody>
       </table>
     </div>

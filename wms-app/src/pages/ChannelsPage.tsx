@@ -37,7 +37,7 @@ export function ChannelsPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold">物流渠道</h2>
-          <p className="text-sm text-gray-500 mt-1">wms_shipping_channels · ManualAdapter 兜底 · 未来可切换真实 API</p>
+          <p className="text-sm text-muted-foreground mt-1">wms_shipping_channels · ManualAdapter 兜底 · 未来可切换真实 API</p>
         </div>
         <button onClick={() => { setEditing(null); setShowForm(true); }}
           className="flex items-center gap-1.5 px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 text-sm">
@@ -45,9 +45,9 @@ export function ChannelsPage() {
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-card rounded-xl shadow-soft border border-border overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-gray-500 text-xs">
+          <thead className="bg-muted text-muted-foreground text-xs">
             <tr>
               <th className="text-left px-5 py-2.5">编码</th>
               <th className="text-left px-5 py-2.5">渠道名称</th>
@@ -59,28 +59,28 @@ export function ChannelsPage() {
           </thead>
           <tbody>
             {data?.map((c: any) => (
-              <tr key={c.id} className="border-t border-gray-50 hover:bg-gray-50/50">
+              <tr key={c.id} className="border-t border-transparent hover:bg-muted/50">
                 <td className="px-5 py-3 font-mono text-brand-600">{c.channel_code}</td>
                 <td className="px-5 py-3 font-medium">{c.channel_name}</td>
                 <td className="px-5 py-3">
-                  <span className="px-2 py-0.5 rounded text-xs bg-purple-50 text-purple-600 font-mono">{c.adapter || '-'}</span>
-                  <div className="text-[10px] text-gray-400 mt-0.5">
+                  <span className="px-2 py-0.5 rounded text-xs bg-brand-subtle text-brand font-mono">{c.adapter || '-'}</span>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">
                     {ADAPTER_LABEL[c.adapter]?.desc || '自定义适配器'}
                   </div>
                 </td>
-                <td className="px-5 py-3 text-gray-500">{c.weight_limit_kg || '-'}</td>
+                <td className="px-5 py-3 text-muted-foreground">{c.weight_limit_kg || '-'}</td>
                 <td className="px-5 py-3">
                   {c.is_active === 1
-                    ? <span className="px-2 py-0.5 rounded text-xs bg-green-50 text-green-600">启用</span>
-                    : <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-500">停用</span>}
+                    ? <span className="px-2 py-0.5 rounded text-xs bg-success-bg text-success">启用</span>
+                    : <span className="px-2 py-0.5 rounded text-xs bg-muted text-muted-foreground">停用</span>}
                 </td>
                 <td className="px-5 py-3 text-right">
-                  <button onClick={() => { setEditing(c); setShowForm(true); }} className="p-1.5 hover:bg-gray-100 rounded"><Pencil className="w-4 h-4 text-gray-500" /></button>
-                  <button onClick={() => deleteOne(c.id)} className="p-1.5 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
+                  <button onClick={() => { setEditing(c); setShowForm(true); }} className="p-1.5 hover:bg-muted rounded"><Pencil className="w-4 h-4 text-muted-foreground" /></button>
+                  <button onClick={() => deleteOne(c.id)} className="p-1.5 hover:bg-danger-bg rounded"><Trash2 className="w-4 h-4 text-destructive" /></button>
                 </td>
               </tr>
             ))}
-            {!data?.length && <tr><td colSpan={6} className="p-10 text-center text-gray-400">暂无渠道</td></tr>}
+            {!data?.length && <tr><td colSpan={6} className="p-10 text-center text-muted-foreground">暂无渠道</td></tr>}
           </tbody>
         </table>
       </div>

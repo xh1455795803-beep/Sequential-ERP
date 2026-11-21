@@ -22,35 +22,35 @@ export function CarriersPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold">承运商</h2>
-          <p className="text-sm text-gray-500 mt-1">维护常用承运商信息</p>
+          <p className="text-sm text-muted-foreground mt-1">维护常用承运商信息</p>
         </div>
         <button onClick={() => { setEditing(null); setShowForm(true); }}
           className="flex items-center gap-1.5 px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 text-sm">
           <Plus className="w-4 h-4" /> 新增承运商
         </button>
       </div>
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-card rounded-xl shadow-soft border border-border overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-gray-500 text-xs">
+          <thead className="bg-muted text-muted-foreground text-xs">
             <tr><th className="text-left px-5 py-2.5">编码</th><th className="text-left px-5 py-2.5">名称</th>
               <th className="text-left px-5 py-2.5">追踪地址</th><th className="text-left px-5 py-2.5">状态</th>
               <th className="text-right px-5 py-2.5">操作</th></tr>
           </thead>
           <tbody>
             {data?.map((c: any) => (
-              <tr key={c.id} className="border-t border-gray-50 hover:bg-gray-50/50">
+              <tr key={c.id} className="border-t border-transparent hover:bg-muted/50">
                 <td className="px-5 py-3 font-mono text-brand-600">{cbin_code}</td>
                 <td className="px-5 py-3 font-medium">{c.name}</td>
-                <td className="px-5 py-3 text-gray-500 text-xs">{c.tracking_url || '-'}</td>
-                <td className="px-5 py-3">{c.status === 'active' ? <span className="px-2 py-0.5 rounded text-xs bg-green-50 text-green-600">启用</span> : <span className="px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-500">停用</span>}</td>
+                <td className="px-5 py-3 text-muted-foreground text-xs">{c.tracking_url || '-'}</td>
+                <td className="px-5 py-3">{c.status === 'active' ? <span className="px-2 py-0.5 rounded text-xs bg-success-bg text-success">启用</span> : <span className="px-2 py-0.5 rounded text-xs bg-muted text-muted-foreground">停用</span>}</td>
                 <td className="px-5 py-3 text-right">
-                  <button onClick={() => { setEditing(c); setShowForm(true); }} className="p-1.5 hover:bg-gray-100 rounded"><Pencil className="w-4 h-4 text-gray-500" /></button>
+                  <button onClick={() => { setEditing(c); setShowForm(true); }} className="p-1.5 hover:bg-muted rounded"><Pencil className="w-4 h-4 text-muted-foreground" /></button>
                   <button onClick={async () => { if (confirm('确认删除？')) { await supabase.from('wms_shipping_channels').delete().eq('id', c.id); qc.invalidateQueries({ queryKey: ['wms_shipping_channels'] }); } }}
-                    className="p-1.5 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
+                    className="p-1.5 hover:bg-danger-bg rounded"><Trash2 className="w-4 h-4 text-destructive" /></button>
                 </td>
               </tr>
             ))}
-            {!data?.length && <tr><td colSpan={5} className="p-10 text-center text-gray-400">暂无承运商</td></tr>}
+            {!data?.length && <tr><td colSpan={5} className="p-10 text-center text-muted-foreground">暂无承运商</td></tr>}
           </tbody>
         </table>
       </div>

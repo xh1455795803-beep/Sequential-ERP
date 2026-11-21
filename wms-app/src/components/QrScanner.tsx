@@ -71,7 +71,7 @@ export function QrScanner({ onDetected, placeholder = '扫描条码 / 二维码'
             }
           }}
           placeholder={placeholder}
-          className="flex-1 px-4 py-3 text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+          className="flex-1 px-4 py-3 text-base border border-input rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 bg-card"
           autoFocus
           inputMode="text"
           enterKeyHint="done"
@@ -111,7 +111,7 @@ export function QrScanner({ onDetected, placeholder = '扫描条码 / 二维码'
       )}
 
       {error && (
-        <div className="text-xs text-red-500 bg-red-50 p-2 rounded-lg">
+        <div className="text-xs text-destructive bg-danger-bg p-2 rounded-lg">
           {error}
         </div>
       )}

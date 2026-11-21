@@ -6,11 +6,11 @@ import { useState } from 'react';
 
 // 面单状态 1-5
 const LABEL_STATUS: Record<number, { label: string; cls: string }> = {
-  1: { label: '已生成', cls: 'bg-gray-100 text-gray-600' },
-  2: { label: '已打印', cls: 'bg-indigo-50 text-indigo-600' },
-  3: { label: '已出库', cls: 'bg-green-50 text-green-600' },
-  4: { label: '有轨迹', cls: 'bg-green-100 text-green-700' },
-  5: { label: '已退件', cls: 'bg-red-50 text-red-600' },
+  1: { label: '已生成', cls: 'bg-muted text-muted-foreground' },
+  2: { label: '已打印', cls: 'bg-brand-subtle text-brand' },
+  3: { label: '已出库', cls: 'bg-success-bg text-success' },
+  4: { label: '有轨迹', cls: 'bg-success-bg text-success' },
+  5: { label: '已退件', cls: 'bg-danger-bg text-destructive' },
 };
 
 // -------- 列表页 --------
@@ -46,13 +46,13 @@ export function ShipmentsPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold">面单 / 出库</h2>
-          <p className="text-sm text-gray-500 mt-1">出库订单 → 面单 → 运单号 → 出库（真实发货在订单详情）</p>
+          <p className="text-sm text-muted-foreground mt-1">出库订单 → 面单 → 运单号 → 出库（真实发货在订单详情）</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-card rounded-xl shadow-soft border border-border overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-gray-500 text-xs">
+          <thead className="bg-muted text-muted-foreground text-xs">
             <tr>
               <th className="text-left px-5 py-2.5">面单号</th>
               <th className="text-left px-5 py-2.5">关联订单</th>
@@ -65,26 +65,26 @@ export function ShipmentsPage() {
           </thead>
           <tbody>
             {labels?.map((l: any) => {
-              const st = LABEL_STATUS[l.status] || { label: l.status, cls: 'bg-gray-100' };
+              const st = LABEL_STATUS[l.status] || { label: l.status, cls: 'bg-muted' };
               const o = orderMap[l.order_id];
               const ch = chMap[l.channel_id];
               return (
                 <tr key={l.id} onClick={() => nav({ to: `/shipments/$id`, params: { id: l.id } })}
-                  className="border-t border-gray-50 hover:bg-brand-50/30 cursor-pointer">
+                  className="border-t border-transparent hover:bg-brand-50/30 cursor-pointer">
                   <td className="px-5 py-3 font-mono text-brand-600">{l.label_no}</td>
                   <td className="px-5 py-3 font-mono text-xs">{o?.order_no || '-'}</td>
                   <td className="px-5 py-3">
                     {o?.receiver_name || '-'}
-                    {o?.receiver_country && <span className="text-xs text-gray-400 ml-1">· {o.receiver_country}</span>}
+                    {o?.receiver_country && <span className="text-xs text-muted-foreground ml-1">· {o.receiver_country}</span>}
                   </td>
-                  <td className="px-5 py-3 text-xs text-gray-500">{ch?.channel_code || '-'}</td>
+                  <td className="px-5 py-3 text-xs text-muted-foreground">{ch?.channel_code || '-'}</td>
                   <td className="px-5 py-3 font-mono text-xs">{l.tracking_no || '-'}</td>
                   <td className="px-5 py-3"><span className={`px-2 py-0.5 rounded text-xs ${st.cls}`}>{st.label}</span></td>
                   <td className="px-5 py-3 text-right text-brand-500 text-xs">点击查看 →</td>
                 </tr>
               );
             })}
-            {!labels?.length && <tr><td colSpan={7} className="p-10 text-center text-gray-400">暂无面单（请先在订单详情页打包后申请面单）</td></tr>}
+            {!labels?.length && <tr><td colSpan={7} className="p-10 text-center text-muted-foreground">暂无面单（请先在订单详情页打包后申请面单）</td></tr>}
           </tbody>
         </table>
       </div>
@@ -149,22 +149,22 @@ export function ShipmentDetailPage() {
     setManualTracking(false);
   }
 
-  if (!l) return <div className="p-8 text-center text-gray-400">加载中...</div>;
-  const st = LABEL_STATUS[l.status] || { label: l.status, cls: 'bg-gray-100' };
+  if (!l) return <div className="p-8 text-center text-muted-foreground">加载中...</div>;
+  const st = LABEL_STATUS[l.status] || { label: l.status, cls: 'bg-muted' };
   const ch = (channels as any[])?.find((c: any) => c.id === l.channel_id);
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
-      <button onClick={() => nav({ to: '/shipments' })} className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-3">
+      <button onClick={() => nav({ to: '/shipments' })} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-fg mb-3">
         <ArrowLeft className="w-4 h-4" /> 返回面单列表
       </button>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-4">
+      <div className="bg-card rounded-xl shadow-soft border border-border p-6 mb-4">
         <div className="flex items-center gap-3 mb-4">
           <Upload className="w-6 h-6 text-brand-500" />
           <div>
             <div className="text-lg font-bold">{l.label_no}</div>
-            <div className="text-xs text-gray-500">渠道 {ch?.channel_code || '-'} · 关联订单 {order?.order_no || '-'}</div>
+            <div className="text-xs text-muted-foreground">渠道 {ch?.channel_code || '-'} · 关联订单 {order?.order_no || '-'}</div>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <span className={`px-2 py-1 rounded text-xs ${st.cls}`}>{st.label}</span>
@@ -173,24 +173,24 @@ export function ShipmentDetailPage() {
 
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <div className="text-xs text-gray-400 mb-1">收件信息</div>
+            <div className="text-xs text-muted-foreground mb-1">收件信息</div>
             <div className="font-medium">{order?.receiver_name || '-'}</div>
-            <div className="text-xs text-gray-500 mt-0.5">{order?.receiver_phone}</div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-muted-foreground mt-0.5">{order?.receiver_phone}</div>
+            <div className="text-xs text-muted-foreground">
               {order?.receiver_address1}{order?.receiver_address2 ? ' ' + order?.receiver_address2 : ''},
               {order?.receiver_city} {order?.receiver_state} {order?.receiver_zip} {order?.receiver_country}
             </div>
           </div>
           <div>
-            <div className="text-xs text-gray-400 mb-1">运单号</div>
+            <div className="text-xs text-muted-foreground mb-1">运单号</div>
             <div className="font-mono text-brand-600">{l.tracking_no || '-'}</div>
             {l.label_pdf_url && <div className="text-xs text-blue-500 mt-1">📎 面单 PDF 已上传</div>}
           </div>
         </div>
 
-        <div className="flex gap-2 pt-4 border-t border-gray-100 mt-4">
+        <div className="flex gap-2 pt-4 border-t border-border mt-4">
           {l.status === 1 && (
-            <button onClick={markPrinted} className="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm hover:bg-indigo-600">
+            <button onClick={markPrinted} className="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary">
               标记为已打印
             </button>
           )}
@@ -203,7 +203,7 @@ export function ShipmentDetailPage() {
             <button onClick={async () => {
               await supabase.from('wms_shipment_labels').update({ status: 4, track_at: new Date().toISOString() }).eq('id', id);
               qc.invalidateQueries();
-            }} className="px-4 py-2 bg-cyan-500 text-white rounded-lg text-sm hover:bg-cyan-600">
+            }} className="px-4 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary">
               模拟有轨迹更新
             </button>
           )}
@@ -211,10 +211,10 @@ export function ShipmentDetailPage() {
       </div>
 
       {/* 面单明细 */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-5 py-3 border-b border-gray-100 font-medium">面单明细（{items?.length || 0} 项）</div>
+      <div className="bg-card rounded-xl shadow-soft border border-border overflow-hidden">
+        <div className="px-5 py-3 border-b border-border font-medium">面单明细（{items?.length || 0} 项）</div>
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-gray-500 text-xs">
+          <thead className="bg-muted text-muted-foreground text-xs">
             <tr>
               <th className="text-left px-4 py-2">SKU</th>
               <th className="text-right px-4 py-2">数量</th>
@@ -223,13 +223,13 @@ export function ShipmentDetailPage() {
           </thead>
           <tbody>
             {items?.map((it: any) => (
-              <tr key={it.id} className="border-t border-gray-50">
+              <tr key={it.id} className="border-t border-transparent">
                 <td className="px-4 py-2 font-mono text-xs">{it.sku_code}</td>
                 <td className="px-4 py-2 text-right">{it.qty}</td>
-                <td className="px-4 py-2 text-xs text-gray-500">{it.bin_id || '-'}</td>
+                <td className="px-4 py-2 text-xs text-muted-foreground">{it.bin_id || '-'}</td>
               </tr>
             ))}
-            {!items?.length && <tr><td colSpan={3} className="p-6 text-center text-gray-400">无明细</td></tr>}
+            {!items?.length && <tr><td colSpan={3} className="p-6 text-center text-muted-foreground">无明细</td></tr>}
           </tbody>
         </table>
       </div>
@@ -237,14 +237,14 @@ export function ShipmentDetailPage() {
       {/* 手填弹窗 */}
       {manualTracking && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-6">
+          <div className="bg-card rounded-xl shadow-xl max-w-md w-full mx-4 p-6">
             <h3 className="font-bold mb-4">填运单号出库</h3>
-            <label className="block text-xs text-gray-500 mb-1">运单号</label>
+            <label className="block text-xs text-muted-foreground mb-1">运单号</label>
             <input id="trk" className="inp mb-2" defaultValue={l.tracking_no || ''} />
-            <label className="block text-xs text-gray-500 mb-1">面单 PDF 链接（可留空）</label>
+            <label className="block text-xs text-muted-foreground mb-1">面单 PDF 链接（可留空）</label>
             <input id="pdf" className="inp mb-3" defaultValue={l.label_pdf_url || ''} />
             <div className="flex gap-2">
-              <button onClick={() => setManualTracking(false)} className="flex-1 py-2 bg-gray-100 text-gray-600 rounded-lg">取消</button>
+              <button onClick={() => setManualTracking(false)} className="flex-1 py-2 bg-muted text-muted-foreground rounded-lg">取消</button>
               <button onClick={() => {
                 const trk = (document.getElementById('trk') as HTMLInputElement).value;
                 const pdf = (document.getElementById('pdf') as HTMLInputElement).value;

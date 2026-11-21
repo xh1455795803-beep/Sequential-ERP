@@ -44,13 +44,13 @@ export function ProductsPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold">商品管理</h2>
-          <p className="text-sm text-gray-500 mt-1">SKU 主数据 · 一个商品可以有多个条码（wms_product_barcodes）</p>
+          <p className="text-sm text-muted-foreground mt-1">SKU 主数据 · 一个商品可以有多个条码（wms_product_barcodes）</p>
         </div>
         <div className="flex gap-2">
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-400" />
+            <Search className="w-4 h-4 absolute left-3 top-2.5 text-muted-foreground" />
             <input value={search} onChange={(e) => setSearch(e.target.value)}
-              placeholder="搜索 SKU/名称" className="pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm w-64" />
+              placeholder="搜索 SKU/名称" className="pl-9 pr-3 py-2 border border-border rounded-lg text-sm w-64" />
           </div>
           <button onClick={() => { setEditing(null); setShowForm(true); }}
             className="flex items-center gap-1.5 px-4 py-2 bg-brand-500 text-white rounded-lg hover:bg-brand-600 text-sm">
@@ -59,9 +59,9 @@ export function ProductsPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-card rounded-xl shadow-soft border border-border overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-gray-500 text-xs">
+          <thead className="bg-muted text-muted-foreground text-xs">
             <tr>
               <th className="text-left px-5 py-2.5">SKU</th>
               <th className="text-left px-5 py-2.5">名称</th>
@@ -76,27 +76,27 @@ export function ProductsPage() {
             {products?.map((p: any) => {
               const wh = (warehouses as any[])?.find((w: any) => w.id === p.warehouse_id);
               return (
-                <tr key={p.id} className="border-t border-gray-50 hover:bg-gray-50/50">
+                <tr key={p.id} className="border-t border-transparent hover:bg-muted/50">
                   <td className="px-5 py-3 font-mono text-brand-600">{p.sku_code}</td>
                   <td className="px-5 py-3 font-medium">{p.name}</td>
-                  <td className="px-5 py-3 text-xs text-gray-500 font-mono">{(bcMap[p.id] || []).join(', ') || '-'}</td>
-                  <td className="px-5 py-3 text-gray-500">{wh?.warehouse_code || '-'}</td>
-                  <td className="px-5 py-3 text-xs text-gray-500">
+                  <td className="px-5 py-3 text-xs text-muted-foreground font-mono">{(bcMap[p.id] || []).join(', ') || '-'}</td>
+                  <td className="px-5 py-3 text-muted-foreground">{wh?.warehouse_code || '-'}</td>
+                  <td className="px-5 py-3 text-xs text-muted-foreground">
                     {Number(p.length_cm || 0).toFixed(0)}×{Number(p.width_cm || 0).toFixed(0)}×{Number(p.height_cm || 0).toFixed(0)}
                   </td>
-                  <td className="px-5 py-3 text-xs text-gray-500">{p.weight_kg || 0} kg / ¥{p.unit_cost || 0}</td>
+                  <td className="px-5 py-3 text-xs text-muted-foreground">{p.weight_kg || 0} kg / ¥{p.unit_cost || 0}</td>
                   <td className="px-5 py-3 text-right">
-                    <button onClick={() => { setEditing(p); setShowForm(true); }} className="p-1.5 hover:bg-gray-100 rounded"><Pencil className="w-4 h-4 text-gray-500" /></button>
+                    <button onClick={() => { setEditing(p); setShowForm(true); }} className="p-1.5 hover:bg-muted rounded"><Pencil className="w-4 h-4 text-muted-foreground" /></button>
                     <button onClick={async () => {
                       if (!confirm('确认删除？库存关联不会自动清理。')) return;
                       await supabase.from('wms_products').delete().eq('id', p.id);
                       qc.invalidateQueries();
-                    }} className="p-1.5 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4 text-red-500" /></button>
+                    }} className="p-1.5 hover:bg-danger-bg rounded"><Trash2 className="w-4 h-4 text-destructive" /></button>
                   </td>
                 </tr>
               );
             })}
-            {!products?.length && <tr><td colSpan={7} className="p-10 text-center text-gray-400">暂无商品，点击右上角新增</td></tr>}
+            {!products?.length && <tr><td colSpan={7} className="p-10 text-center text-muted-foreground">暂无商品，点击右上角新增</td></tr>}
           </tbody>
         </table>
       </div>

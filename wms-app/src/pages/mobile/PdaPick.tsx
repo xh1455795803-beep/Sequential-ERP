@@ -187,12 +187,12 @@ export default function PdaPick() {
     return (
       <div className="p-4 max-w-md mx-auto">
         <div className="mb-4">
-          <h1 className="text-lg font-bold text-gray-800">扫码拣货</h1>
-          <p className="text-xs text-gray-500">选择一张待拣货订单</p>
+          <h1 className="text-lg font-bold text-fg">扫码拣货</h1>
+          <p className="text-xs text-muted-foreground">选择一张待拣货订单</p>
         </div>
 
         {orders.length === 0 ? (
-          <div className="text-center py-16 text-gray-500">
+          <div className="text-center py-16 text-muted-foreground">
             <Boxes className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p className="text-sm">暂无待拣货订单</p>
           </div>
@@ -204,17 +204,17 @@ export default function PdaPick() {
                 <button
                   key={o.id}
                   onClick={() => openOrder(o)}
-                  className="w-full bg-white border border-gray-200 rounded-2xl p-4 text-left active:bg-gray-50"
+                  className="w-full bg-card border border-border rounded-2xl p-4 text-left active:bg-muted"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <div className="font-semibold text-gray-800">{o.erp_order_no}</div>
+                    <div className="font-semibold text-fg">{o.erp_order_no}</div>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                      o.status === 'picking' ? 'bg-orange-100 text-orange-700' :
-                      o.status === 'confirmed' ? 'bg-blue-100 text-blue-700' :
-                      'bg-gray-100 text-gray-600'
+                      o.status === 'picking' ? 'bg-warning-bg text-warning' :
+                      o.status === 'confirmed' ? 'bg-brand-subtle text-brand' :
+                      'bg-muted text-muted-foreground'
                     }`}>{o.status}</span>
                   </div>
-                  <div className="text-sm text-gray-500">{o.receiver_name}</div>
+                  <div className="text-sm text-muted-foreground">{o.receiver_name}</div>
                 </button>
               );
             })}
@@ -232,13 +232,13 @@ export default function PdaPick() {
       <div className="flex items-center gap-2 mb-4">
         <button
           onClick={() => { setCurrentOrder(null); loadOrders(); }}
-          className="p-2 rounded-lg hover:bg-gray-100"
+          className="p-2 rounded-lg hover:bg-muted"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="min-w-0">
-          <h1 className="text-lg font-bold text-gray-800 truncate">{currentOrder.erp_order_no}</h1>
-          <p className="text-xs text-gray-500">{currentOrder.receiver_name}</p>
+          <h1 className="text-lg font-bold text-fg truncate">{currentOrder.erp_order_no}</h1>
+          <p className="text-xs text-muted-foreground">{currentOrder.receiver_name}</p>
         </div>
       </div>
 
@@ -249,25 +249,25 @@ export default function PdaPick() {
           const done = remaining === 0;
           return (
             <div key={item.id} className={`p-3 rounded-xl ${
-              done ? 'bg-emerald-50 border border-emerald-200' : 'bg-white border border-gray-200'
+              done ? 'bg-success-bg border border-success' : 'bg-card border border-border'
             }`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <div className={`font-medium ${done ? 'text-emerald-700' : 'text-gray-800'}`}>
+                  <div className={`font-medium ${done ? 'text-success' : 'text-fg'}`}>
                     {item.sku}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-muted-foreground">
                     已拣 {item.picked_qty}/{item.qty}
                   </div>
                 </div>
-                <div className={`text-lg font-bold ${done ? 'text-emerald-600' : 'text-orange-500'}`}>
+                <div className={`text-lg font-bold ${done ? 'text-success' : 'text-warning'}`}>
                   {done ? '✓' : `剩${remaining}`}
                 </div>
               </div>
               {/* 进度条 */}
-              <div className="mt-2 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+              <div className="mt-2 h-1.5 bg-border rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all ${done ? 'bg-emerald-500' : 'bg-brand-500'}`}
+                  className={`h-full rounded-full transition-all ${done ? 'bg-success-bg0' : 'bg-brand-500'}`}
                   style={{ width: `${(item.picked_qty / item.qty) * 100}%` }}
                 />
               </div>
@@ -278,13 +278,13 @@ export default function PdaPick() {
 
       {/* 扫码区 */}
       {allDone ? (
-        <div className="p-6 bg-emerald-50 rounded-2xl text-center">
-          <PackageCheck className="w-12 h-12 mx-auto mb-2 text-emerald-600" />
-          <div className="text-emerald-700 font-semibold">🎉 全部拣完！</div>
-          <div className="text-xs text-emerald-600 mt-1">订单已进入打包状态</div>
+        <div className="p-6 bg-success-bg rounded-2xl text-center">
+          <PackageCheck className="w-12 h-12 mx-auto mb-2 text-success" />
+          <div className="text-success font-semibold">🎉 全部拣完！</div>
+          <div className="text-xs text-success mt-1">订单已进入打包状态</div>
           <button
             onClick={() => { setCurrentOrder(null); loadOrders(); }}
-            className="mt-4 px-6 py-2 bg-emerald-500 text-white rounded-xl"
+            className="mt-4 px-6 py-2 bg-success-bg0 text-white rounded-xl"
           >
             返回订单列表
           </button>
@@ -294,7 +294,7 @@ export default function PdaPick() {
           {/* 反馈区 */}
           {(scanResult || error) && (
             <div className={`mb-3 p-3 rounded-xl text-sm ${
-              error ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'
+              error ? 'bg-danger-bg text-danger' : 'bg-success-bg text-success'
             }`}>
               {error || scanResult}
             </div>

@@ -75,8 +75,8 @@ export default function ErpConnectionPage() {
     <div className="p-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-gray-800">ERP 来源 / 店铺绑定</h1>
-          <p className="text-sm text-gray-500 mt-1">wms_platform_shops · 订单从这里进入 WMS</p>
+          <h1 className="text-xl font-bold text-fg">ERP 来源 / 店铺绑定</h1>
+          <p className="text-sm text-muted-foreground mt-1">wms_platform_shops · 订单从这里进入 WMS</p>
         </div>
         <button onClick={() => setShowForm(true)}
           className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-brand-500 to-brand-600 text-white rounded-xl font-medium">
@@ -85,35 +85,35 @@ export default function ErpConnectionPage() {
       </div>
 
       {(data || []).length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
-          <Store className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-          <h3 className="text-gray-700 font-medium mb-1">还没有绑定任何来源</h3>
-          <p className="text-sm text-gray-500">点右上角开始 · 生产环境这里走 OAuth · 当前演示直接写库</p>
+        <div className="bg-card rounded-2xl border border-border p-12 text-center">
+          <Store className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+          <h3 className="text-fg font-medium mb-1">还没有绑定任何来源</h3>
+          <p className="text-sm text-muted-foreground">点右上角开始 · 生产环境这里走 OAuth · 当前演示直接写库</p>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 gap-4">
           {data?.map((s: any) => {
             const plat = PLATFORMS.find(p => p.value === s.platform);
             return (
-              <div key={s.id} className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+              <div key={s.id} className="bg-card rounded-2xl border border-border overflow-hidden">
                 <div className={`h-2 bg-gradient-to-r from-brand-500 to-brand-600`} />
                 <div className="p-5">
                   <div className="flex items-start justify-between">
                     <div>
-                      <div className="font-semibold text-gray-800">{s.shop_name}</div>
-                      <div className="text-xs text-gray-500 mt-0.5">
+                      <div className="font-semibold text-fg">{s.shop_name}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">
                         {plat?.label || s.platform} · {s.shop_id}
                       </div>
                     </div>
                     <div className="flex gap-1">
-                      <button onClick={() => sync(s.id)} className="p-1.5 text-gray-500 hover:bg-gray-100 rounded"><RefreshCw className="w-4 h-4" /></button>
-                      <button onClick={() => toggle(s.id, s.is_active)} className="p-1.5 hover:bg-gray-100 rounded">
-                        {s.is_active === 1 ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <XCircle className="w-4 h-4 text-gray-400" />}
+                      <button onClick={() => sync(s.id)} className="p-1.5 text-muted-foreground hover:bg-muted rounded"><RefreshCw className="w-4 h-4" /></button>
+                      <button onClick={() => toggle(s.id, s.is_active)} className="p-1.5 hover:bg-muted rounded">
+                        {s.is_active === 1 ? <CheckCircle className="w-4 h-4 text-success" /> : <XCircle className="w-4 h-4 text-muted-foreground" />}
                       </button>
-                      <button onClick={() => remove(s.id)} className="p-1.5 text-red-500 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
+                      <button onClick={() => remove(s.id)} className="p-1.5 text-destructive hover:bg-danger-bg rounded"><Trash2 className="w-4 h-4" /></button>
                     </div>
                   </div>
-                  <div className="mt-4 text-xs text-gray-500">
+                  <div className="mt-4 text-xs text-muted-foreground">
                     {s.last_sync_at ? <>上次同步：{new Date(s.last_sync_at).toLocaleString('zh-CN')}</> : <>从未同步</>}
                   </div>
                 </div>

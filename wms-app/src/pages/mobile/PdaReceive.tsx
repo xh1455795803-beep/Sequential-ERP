@@ -153,22 +153,22 @@ export default function PdaReceive() {
       <div className="flex items-center gap-2 mb-4">
         <button
           onClick={() => window.history.back()}
-          className="p-2 rounded-lg hover:bg-gray-100"
+          className="p-2 rounded-lg hover:bg-muted"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-lg font-bold text-gray-800">扫码收货</h1>
-          <p className="text-xs text-gray-500">先扫库位 → 再扫商品 → 确认数量</p>
+          <h1 className="text-lg font-bold text-fg">扫码收货</h1>
+          <p className="text-xs text-muted-foreground">先扫库位 → 再扫商品 → 确认数量</p>
         </div>
       </div>
 
       {/* 状态消息 */}
       {msg && (
         <div className={`mb-4 p-3 rounded-xl flex items-start gap-2 ${
-          status === 'error' ? 'bg-red-50 text-red-700' :
-          status === 'received' ? 'bg-emerald-50 text-emerald-700' :
-          'bg-blue-50 text-blue-700'
+          status === 'error' ? 'bg-danger-bg text-danger' :
+          status === 'received' ? 'bg-success-bg text-success' :
+          'bg-brand-subtle text-brand'
         }`}>
           {status === 'error' ? <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" /> :
            status === 'received' ? <CheckCircle className="w-5 h-5 shrink-0 mt-0.5" /> :
@@ -180,7 +180,7 @@ export default function PdaReceive() {
       {/* 步骤1: 库位 */}
       {!targetLocation && (
         <div className="mb-4">
-          <div className="text-xs text-gray-500 mb-2">① 扫描/选择库位</div>
+          <div className="text-xs text-muted-foreground mb-2">① 扫描/选择库位</div>
           <select
             value=""
             onChange={(e) => {
@@ -191,7 +191,7 @@ export default function PdaReceive() {
                 setStatus('idle');
               }
             }}
-            className="w-full px-3 py-3 border border-gray-300 rounded-xl text-base bg-white mb-3"
+            className="w-full px-3 py-3 border border-input rounded-xl text-base bg-card mb-3"
           >
             <option value="">选择库位...</option>
             {locations.map((l) => (
@@ -204,10 +204,10 @@ export default function PdaReceive() {
 
       {/* 已选库位 */}
       {targetLocation && (
-        <div className="mb-4 p-3 bg-gray-100 rounded-xl flex items-center justify-between">
+        <div className="mb-4 p-3 bg-muted rounded-xl flex items-center justify-between">
           <div>
-            <div className="text-[10px] text-gray-500">当前库位</div>
-            <div className="font-semibold text-gray-800">{targetLocationbin_code}</div>
+            <div className="text-[10px] text-muted-foreground">当前库位</div>
+            <div className="font-semibold text-fg">{targetLocationbin_code}</div>
           </div>
           <button
             onClick={() => setTargetLocation(null)}
@@ -221,7 +221,7 @@ export default function PdaReceive() {
       {/* 步骤2: 商品扫描 */}
       {targetLocation && (
         <div className="mb-4">
-          <div className="text-xs text-gray-500 mb-2">② 扫描商品条码</div>
+          <div className="text-xs text-muted-foreground mb-2">② 扫描商品条码</div>
           <QrScanner onDetected={handleScan} placeholder="扫描商品条码或手动输入 SKU" />
         </div>
       )}
@@ -230,26 +230,26 @@ export default function PdaReceive() {
       {matchedProduct && (
         <div className="space-y-4 p-4 border-2 border-brand-500 rounded-xl bg-brand-50">
           <div>
-            <div className="font-semibold text-gray-800 text-lg">{matchedProduct.sku}</div>
-            <div className="text-sm text-gray-600">{matchedProduct.name}</div>
+            <div className="font-semibold text-fg text-lg">{matchedProduct.sku}</div>
+            <div className="text-sm text-muted-foreground">{matchedProduct.name}</div>
           </div>
 
           <div>
-            <div className="text-xs text-gray-500 mb-1">数量</div>
+            <div className="text-xs text-muted-foreground mb-1">数量</div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setScanQty((q) => Math.max(1, q - 1))}
-                className="w-12 h-12 bg-white border border-gray-300 rounded-xl text-xl font-bold active:bg-gray-100"
+                className="w-12 h-12 bg-card border border-input rounded-xl text-xl font-bold active:bg-muted"
               >−</button>
               <input
                 type="number"
                 value={scanQty}
                 onChange={(e) => setScanQty(Math.max(1, parseInt(e.target.value) || 1))}
-                className="flex-1 h-12 text-center text-xl font-semibold border border-gray-300 rounded-xl bg-white"
+                className="flex-1 h-12 text-center text-xl font-semibold border border-input rounded-xl bg-card"
               />
               <button
                 onClick={() => setScanQty((q) => q + 1)}
-                className="w-12 h-12 bg-white border border-gray-300 rounded-xl text-xl font-bold active:bg-gray-100"
+                className="w-12 h-12 bg-card border border-input rounded-xl text-xl font-bold active:bg-muted"
               >+</button>
             </div>
           </div>
@@ -257,7 +257,7 @@ export default function PdaReceive() {
           <div className="flex gap-2">
             <button
               onClick={reset}
-              className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 active:bg-gray-100"
+              className="flex-1 py-3 border border-input rounded-xl font-medium text-fg active:bg-muted"
             >
               重扫
             </button>
