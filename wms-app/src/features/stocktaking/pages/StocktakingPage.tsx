@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { Plus, ClipboardList, CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Modal, Grid, Field, Footer } from '../../../components/shared/ui';
 
 // 盘点状态 smallint 1-5
@@ -169,7 +170,7 @@ function SheetPanel({ sheet, inputs, setInputs, onSaved }: any) {
     }).eq('id', sheet.id);
 
     refetch(); qc.invalidateQueries(); onSaved();
-    alert(`盘点已保存（差异量 ${diff}）`);
+    toast.success(`盘点已保存（差异量 ${diff}）`);
   }
 
   return (
@@ -226,10 +227,10 @@ function StocktakingForm({ warehouses, zones, onClose, onSaved }: any) {
 
   async function save() {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return alert('请先登录');
+    if (!user) toast.error('请先登录'); return;
     const { data: acc } = await supabase.from('wms_accounts').select('tenant_id').eq('email', user.email).maybeSingle();
     const tenant_id = acc?.tenant_id;
-    if (!tenant_id) return alert('账户未绑定租户');
+    if (!tenant_id) toast.error('账户未绑定租户'); return;
 
     const stocktake_no = 'ST' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + Math.floor(Math.random() * 9000 + 1000);
     const { error } = await supabase.from('wms_stocktaking').insert({
@@ -238,7 +239,7 @@ function StocktakingForm({ warehouses, zones, onClose, onSaved }: any) {
       status: 1, diff_qty: 0, total_qty: 0, diff_flag: 0,
       remark: f.remark || null,
     });
-    if (error) return alert(error.message);
+    if (error) toast.error(error.message); return;
     onSaved();
   }
 

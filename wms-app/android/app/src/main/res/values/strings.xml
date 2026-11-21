@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">塔威仓库管理系统</string>
-    <string name="title_activity_main">塔威仓库管理系统</string>
+    <string name="app_name">thalvior｜塔威仓库管理系统</string>
+    <string name="title_activity_main">thalvior｜塔威仓库管理系统</string>
     <string name="package_name">com.thalvior.wms</string>
     <string name="custom_url_scheme">com.thalvior.wms</string>
 </resources>

@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { Plus, Trash2, Pencil } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Modal, Grid, Field, Footer } from '../../../components/shared/ui';
 
 // zone type smallint
@@ -48,7 +49,7 @@ export function LocationsPage() {
     const zoneCode = prompt('要在哪个库区生成库位？（库区编码，如 A）');
     if (!zoneCode) return;
     const zone = (zones as any[])?.find((z: any) => z.zone_code === zoneCode);
-    if (!zone) return alert(`库区 ${zoneCode} 不存在`);
+    if (!zone) toast.error(`库区 ${zoneCode} 不存在`); return;
     const count = parseInt(prompt('生成几个库位？', '10') || '10');
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -67,7 +68,7 @@ export function LocationsPage() {
       });
     }
     const { error } = await supabase.from('wms_bins').insert(rows);
-    if (error) alert(error.message);
+    if (error) toast.error(error.message);
     else qc.invalidateQueries();
   }
 
@@ -181,22 +182,22 @@ function ZoneModal({ zones, warehouseId, initial, onClose, onSaved }: any) {
   const [f, setF] = useState(initial || { zone_code: '', name: '', type: 2 });
   async function save() {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return alert('请先登录');
+    if (!user) toast.error('请先登录'); return;
     const { data: acc } = await supabase.from('wms_accounts').select('tenant_id').eq('email', user.email).maybeSingle();
     const tenant_id = acc?.tenant_id;
-    if (!tenant_id) return alert('账户未绑定租户');
+    if (!tenant_id) toast.error('账户未绑定租户'); return;
 
     if (!initial) {
       const { error } = await supabase.from('wms_zones').insert({
         tenant_id, warehouse_id: warehouseId,
         zone_code: f.zone_code, name: f.name, type: +f.type,
       });
-      if (error) return alert(error.message);
+      if (error) toast.error(error.message); return;
     } else {
       const { error } = await supabase.from('wms_zones').update({
         zone_code: f.zone_code, name: f.name, type: +f.type,
       }).eq('id', initial.id);
-      if (error) return alert(error.message);
+      if (error) toast.error(error.message); return;
     }
     onSaved();
   }
@@ -221,22 +222,22 @@ function LocationModal({ zones, warehouseId, initial, onClose, onSaved }: any) {
   const [f, setF] = useState(initial || { zone_id: zones?.[0]?.id || '', bin_code: '', is_pickable: 1 });
   async function save() {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return alert('请先登录');
+    if (!user) toast.error('请先登录'); return;
     const { data: acc } = await supabase.from('wms_accounts').select('tenant_id').eq('email', user.email).maybeSingle();
     const tenant_id = acc?.tenant_id;
-    if (!tenant_id) return alert('账户未绑定租户');
+    if (!tenant_id) toast.error('账户未绑定租户'); return;
 
     if (!initial) {
       const { error } = await supabase.from('wms_bins').insert({
         tenant_id, warehouse_id: warehouseId,
         zone_id: f.zone_id, bin_code: f.bin_code, is_pickable: +f.is_pickable,
       });
-      if (error) return alert(error.message);
+      if (error) toast.error(error.message); return;
     } else {
       const { error } = await supabase.from('wms_bins').update({
         zone_id: f.zone_id, bin_code: f.bin_code, is_pickable: +f.is_pickable,
       }).eq('id', initial.id);
-      if (error) return alert(error.message);
+      if (error) toast.error(error.message); return;
     }
     onSaved();
   }

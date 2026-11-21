@@ -1,5 +1,6 @@
 import { Outlet, useNavigate, useLocation } from '@tanstack/react-router';
 import { useEffect, useState, useCallback } from 'react';
+import { Toaster } from 'sonner';
 import { supabase } from '../lib/supabase';
 import { useDevice } from '../hooks/useDevice';
 import { MobileLayout } from './MobileLayout';
@@ -576,6 +577,7 @@ export function AppLayout() {
           <Outlet />
         </div>
       </main>
+      <Toaster position="top-right" richColors closeButton duration={3000} />
     </div>
   );
 }

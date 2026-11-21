@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { Plus, Trash2, RefreshCw, CheckCircle, XCircle, Store } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Modal, Grid, Field, Footer } from '../../../components/shared/ui';
 
 // wms_platform_shops: platform, shop_id, shop_name, access_token_enc, refresh_token_enc, token_expires_at, is_active, last_sync_at
@@ -34,11 +35,11 @@ export default function ErpConnectionPage() {
 
   async function saveShop() {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return alert('请先登录');
+    if (!user) toast.error('请先登录'); return;
     const { data: acc } = await supabase.from('wms_accounts').select('tenant_id').eq('email', user.email).maybeSingle();
     const tenant_id = acc?.tenant_id;
-    if (!tenant_id) return alert('账户未绑定租户');
-    if (!form.shop_name.trim()) return alert('店铺名称不能为空');
+    if (!tenant_id) toast.error('账户未绑定租户'); return;
+    if (!form.shop_name.trim()) toast('店铺名称不能为空'); return;
 
     const { error } = await supabase.from('wms_platform_shops').insert({
       tenant_id, platform: form.platform,
@@ -48,7 +49,7 @@ export default function ErpConnectionPage() {
       refresh_token_enc: form.refresh_token_enc || 'demo_token',
       is_active: 1,
     });
-    if (error) return alert(error.message);
+    if (error) toast.error(error.message); return;
     setShowForm(false);
     setForm({ platform: 'manual', shop_id: '', shop_name: '', access_token_enc: '', refresh_token_enc: '' });
     qc.invalidateQueries();
@@ -67,7 +68,7 @@ export default function ErpConnectionPage() {
 
   async function sync(id: number) {
     await supabase.from('wms_platform_shops').update({ last_sync_at: new Date().toISOString() }).eq('id', id);
-    alert('✅ 模拟同步完成（生产环境将触发 ERP 拉单）');
+    toast.success('✅ 模拟同步完成（生产环境将触发 ERP 拉单）');
     qc.invalidateQueries();
   }
 

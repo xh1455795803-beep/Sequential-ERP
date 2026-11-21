@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { Plus, Trash2, Pencil, Truck } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Modal, Grid, Field, Footer } from '../../../components/shared/ui';
 
 const ADAPTER_LABEL: Record<string, { label: string; desc: string }> = {
@@ -99,10 +100,10 @@ function ChannelForm({ initial, onClose, onSaved }: any) {
 
   async function save() {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return alert('请先登录');
+    if (!user) toast.error('请先登录'); return;
     const { data: acc } = await supabase.from('wms_accounts').select('tenant_id').eq('email', user.email).maybeSingle();
     const tenant_id = acc?.tenant_id;
-    if (!tenant_id) return alert('账户未绑定租户');
+    if (!tenant_id) toast.error('账户未绑定租户'); return;
 
     const payload = {
       channel_code: f.channel_code, channel_name: f.channel_name,
@@ -113,10 +114,10 @@ function ChannelForm({ initial, onClose, onSaved }: any) {
 
     if (!initial) {
       const { error } = await supabase.from('wms_shipping_channels').insert({ ...payload, tenant_id });
-      if (error) return alert(error.message);
+      if (error) toast.error(error.message); return;
     } else {
       const { error } = await supabase.from('wms_shipping_channels').update(payload).eq('id', initial.id);
-      if (error) return alert(error.message);
+      if (error) toast.error(error.message); return;
     }
     onSaved();
   }

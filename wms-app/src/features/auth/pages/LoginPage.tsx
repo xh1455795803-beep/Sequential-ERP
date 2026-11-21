@@ -46,18 +46,11 @@ export function LoginPage() {
         : await supabase.auth.signUp({ email, password });
       if (error) throw error;
       
-      console.log('[Login] signIn OK, user:', data?.user?.email);
-      
-      // 硬兜底：直接用 window.location 跳转（绕过 TanStack Router 的任何可能问题）
-      // session 已经被 Supabase client 存到 localStorage 了
       setTimeout(() => {
         const bp = getBasepath().replace(/\/$/, '');
-        const target = bp + '/dashboard';
-        console.log('[Login] forcing redirect to', target);
-        window.location.replace(target);
+        window.location.replace(bp + '/dashboard');
       }, 50);
     } catch (e: any) {
-      console.error('[Login] error:', e);
       setErr(e.message || '登录失败');
       setLoading(false);
     }
@@ -68,7 +61,7 @@ export function LoginPage() {
       panelTitle={mode === 'login' ? '登录到您的 WMS 仓库' : '创建 WMS 账号'}
       panelDesc={mode === 'login'
         ? '商家端、仓库端、货代端三端联动，一次登录管理所有业务。'
-        : 'Thalvior WMS 与货小易 ERP 共用同一账号体系。'}
+        : '与 thalvior.fun 主站共用同一账号体系。'}
     >
       {/* 模式切换（meoo Tabs 风格） */}
       <div className="mb-6 text-center">

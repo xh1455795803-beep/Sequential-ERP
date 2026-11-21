@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { Plus, Trash2, Pencil } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Modal, Grid, Field, Footer } from '../../../components/shared/ui';
 
 export function CarriersPage() {
@@ -66,10 +67,10 @@ function CarrierForm({ initial, onClose, onSaved }: any) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!initial) {
       const { error } = await supabase.from('wms_shipping_channels').insert({ ...f, user_id: user!.id });
-      if (error) return alert(error.message);
+      if (error) toast.error(error.message); return;
     } else {
       const { error } = await supabase.from('wms_shipping_channels').update(f).eq('id', initial.id);
-      if (error) return alert(error.message);
+      if (error) toast.error(error.message); return;
     }
     onSaved();
   }

@@ -3,6 +3,7 @@ import { supabase } from '../../../lib/supabase';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { Plus, ArrowLeft, Tag, Package, AlertTriangle, Play, Check, X, Truck, PackageCheck, Printer } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Modal, Grid, Field, Footer } from '../../../components/shared/ui';
 
 // ========== 状态机（smallint 1-7） ==========
@@ -138,14 +139,14 @@ function OrderForm({ warehouses, onClose, onSaved }: any) {
   const [items, setItems] = useState<any[]>([{ sku_code: '', qty: 1 }]);
 
   async function save() {
-    if (!f.warehouse_id) return alert('请选择仓库');
+    if (!f.warehouse_id) toast.error('请选择仓库'); return;
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return alert('请先登录');
+    if (!user) toast.error('请先登录'); return;
 
     // 查 tenant_id
     const { data: acc } = await supabase.from('wms_accounts').select('tenant_id').eq('email', user.email).maybeSingle();
     const tenant_id = acc?.tenant_id;
-    if (!tenant_id) return alert('账户未绑定租户');
+    if (!tenant_id) toast.error('账户未绑定租户'); return;
 
     const order_no = 'OR' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + Math.floor(Math.random() * 9000 + 1000);
 
@@ -163,7 +164,7 @@ function OrderForm({ warehouses, onClose, onSaved }: any) {
       });
       total_qty += qty;
     }
-    if (itemRows.length === 0) return alert('请至少填写一条有效明细');
+    if (itemRows.length === 0) toast.error('请至少填写一条有效明细'); return;
 
     const orderPayload: any = {
       tenant_id, warehouse_id: f.warehouse_id, order_no,
@@ -187,7 +188,7 @@ function OrderForm({ warehouses, onClose, onSaved }: any) {
     }
 
     const { data: ins, error } = await supabase.from('wms_orders').insert(orderPayload).select().single();
-    if (error) return alert(error.message);
+    if (error) toast.error(error.message); return;
 
     const orderId = ins!.id;
     for (const r of itemRows) {
@@ -305,7 +306,7 @@ export function OrderDetailPage() {
   async function setStatus(status: number, extra: any = {}) {
     const payload: any = { status, ...extra };
     const { error } = await supabase.from('wms_orders').update(payload).eq('id', id);
-    if (error) { alert('状态转移失败：' + error.message); return false; }
+    if (error) { toast.error('状态转移失败：' + error.message); return false; }
     qc.invalidateQueries();
     return true;
   }
@@ -351,7 +352,7 @@ export function OrderDetailPage() {
 
     // 更新状态 → 2 拣货中 → 3 待打包
     await setStatus(3, { picked_at: new Date().toISOString() });
-    alert(`✅ 拣货完成，已锁定库存`);
+    toast.success(`✅ 拣货完成，已锁定库存`);
   }
 
   async function pack() {
@@ -373,7 +374,7 @@ export function OrderDetailPage() {
       await supabase.from('wms_order_items').update({ packed_qty: +it.qty }).eq('id', it.id);
     }
     await setStatus(4, { packed_at: new Date().toISOString() });
-    alert('✅ 已打包');
+    toast.success('✅ 已打包');
   }
 
   async function requestLabel() {
@@ -382,7 +383,7 @@ export function OrderDetailPage() {
     if (!labelId) {
       const channel = await supabase.from('wms_shipping_channels').select('id').eq('channel_code', order!.channel_code).maybeSingle();
       const chId = channel.data?.id;
-      if (!chId) { alert('未找到渠道：' + order!.channel_code); return; }
+      if (!chId) { toast('未找到渠道：' + order!.channel_code); return; }
       const ln = 'LB' + order!.order_no.slice(2);
       const { data: ins } = await supabase.from('wms_shipment_labels').insert({
         tenant_id: order!.tenant_id,
@@ -393,7 +394,7 @@ export function OrderDetailPage() {
       labelId = ins!.id;
     }
     await supabase.from('wms_shipment_labels').update({ status: 2, printed_at: new Date().toISOString() }).eq('id', labelId);
-    alert('✅ 面单已生成并标记为已打印（生产环境将调用渠道 API 取 PDF）');
+    toast.success('✅ 面单已生成并标记为已打印（生产环境将调用渠道 API 取 PDF）');
     qc.invalidateQueries();
   }
 

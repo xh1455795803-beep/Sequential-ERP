@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../../../lib/supabase';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Modal, Grid, Field, Footer } from '../../../components/shared/ui';
 
 const WH_TYPE: Record<number, string> = { 0: '自有仓', 1: '3PL 托管仓' };
@@ -100,10 +101,10 @@ function WarehouseForm({ initial, onClose, onSaved }: any) {
 
   async function save() {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return alert('请先登录');
+    if (!user) toast.error('请先登录'); return;
     const { data: acc } = await supabase.from('wms_accounts').select('tenant_id').eq('email', user.email).maybeSingle();
     const tenant_id = acc?.tenant_id;
-    if (!tenant_id) return alert('账户未绑定租户');
+    if (!tenant_id) toast.error('账户未绑定租户'); return;
 
     const payload: any = {
       warehouse_code: f.warehouse_code, name: f.name,
@@ -114,10 +115,10 @@ function WarehouseForm({ initial, onClose, onSaved }: any) {
 
     if (!initial) {
       const { error } = await supabase.from('wms_warehouses').insert({ ...payload, tenant_id });
-      if (error) return alert(error.message);
+      if (error) toast.error(error.message); return;
     } else {
       const { error } = await supabase.from('wms_warehouses').update(payload).eq('id', initial.id);
-      if (error) return alert(error.message);
+      if (error) toast.error(error.message); return;
     }
     onSaved();
   }

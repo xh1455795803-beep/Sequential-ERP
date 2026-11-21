@@ -45,7 +45,7 @@ function PlaceholderPage({ title, hint }: { title: string; hint?: string }) {
       </svg>
       <h2 className="mb-1 text-base font-semibold text-fg">{title}</h2>
       <p className="text-sm text-fg-muted max-w-sm">
-        {hint || '此模块为货小易 ERP 核心功能，WMS 专注仓库管理场景。'}
+        {hint || '此模块正在开发中。'}
       </p>
     </div>
   );

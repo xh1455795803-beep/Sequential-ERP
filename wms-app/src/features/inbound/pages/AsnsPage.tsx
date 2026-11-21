@@ -3,6 +3,7 @@ import { supabase } from '../../../lib/supabase';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { Plus, ArrowLeft, Download, Search } from 'lucide-react';
 import { useState, useRef } from 'react';
+import { toast } from 'sonner';
 import { Modal, Grid, Field, Footer } from '../../../components/shared/ui';
 
 // 入库状态 smallint 1-5
@@ -99,14 +100,14 @@ function ReceiptForm({ warehouses, onClose, onSaved }: any) {
   const [items, setItems] = useState<any[]>([{ sku_code: '', expected_qty: 1 }]);
 
   async function save() {
-    if (!f.warehouse_id) return alert('请选择仓库');
+    if (!f.warehouse_id) toast.error('请选择仓库'); return;
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return alert('请先登录');
+    if (!user) toast.error('请先登录'); return;
 
     // tenant
     const { data: acc } = await supabase.from('wms_accounts').select('tenant_id').eq('email', user.email).maybeSingle();
     const tenant_id = acc?.tenant_id;
-    if (!tenant_id) return alert('账户未绑定租户');
+    if (!tenant_id) toast.error('账户未绑定租户'); return;
 
     const receipt_no = 'IN' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + Math.floor(Math.random() * 9000 + 1000);
 
@@ -116,7 +117,7 @@ function ReceiptForm({ warehouses, onClose, onSaved }: any) {
       const qty = +it.expected_qty || 0;
       if (!it.sku_code || qty <= 0) continue;
       const { data: prod } = await supabase.from('wms_products').select('id').eq('sku_code', it.sku_code).eq('tenant_id', tenant_id).maybeSingle();
-      if (!prod) { alert(`SKU ${it.sku_code} 不存在`); return; }
+      if (!prod) { toast.error(`SKU ${it.sku_code} 不存在`); return; }
       itemRows.push({
         tenant_id, receipt_id: 0, // will fill after insert
         product_id: prod.id, sku_code: it.sku_code,
@@ -124,7 +125,7 @@ function ReceiptForm({ warehouses, onClose, onSaved }: any) {
       });
       expected_qty += qty;
     }
-    if (itemRows.length === 0) return alert('请至少填写一条有效明细');
+    if (itemRows.length === 0) toast.error('请至少填写一条有效明细'); return;
 
     const { data: ins, error } = await supabase.from('wms_inbound_receipts').insert({
       tenant_id, warehouse_id: f.warehouse_id, receipt_no,
@@ -134,7 +135,7 @@ function ReceiptForm({ warehouses, onClose, onSaved }: any) {
       expected_qty, receipted_qty: 0,
       status: 1, diff_flag: 0, remark: f.remark || null,
     }).select().single();
-    if (error) return alert(error.message);
+    if (error) toast.error(error.message); return;
 
     for (const r of itemRows) {
       await supabase.from('wms_inbound_items').insert({ ...r, receipt_id: ins!.id });
@@ -227,7 +228,7 @@ export function AsnDetailPage() {
     if (!sku || !items?.length) return;
     // 找到第一个 sku_code 匹配且 received_qty < expected_qty 的 item
     const target = (items as any[]).find((it: any) => it.sku_code === sku && (+it.received_qty || 0) < +it.expected_qty);
-    if (!target) { alert(`SKU ${sku} 无待收货项`); return; }
+    if (!target) { toast.error(`SKU ${sku} 无待收货项`); return; }
     await supabase.from('wms_inbound_items').update({ received_qty: +target.received_qty + 1 }).eq('id', target.id);
     setScanSku('');
     await refreshReceiptQty();
@@ -251,7 +252,7 @@ export function AsnDetailPage() {
     // 把已收未上架的 SKU 放到第一个 bin（简化）；生产应该 PDA 扫 bin
     if (!confirm('确认自动上架到 B-01-02（简化演示）？')) return;
     const binPick = bins?.[0];
-    if (!binPick) { alert('仓库没有库位'); return; }
+    if (!binPick) { toast('仓库没有库位'); return; }
 
     let anyPut = false;
     for (const it of items!) {
@@ -279,9 +280,9 @@ export function AsnDetailPage() {
         status: 3,
         received_at: new Date().toISOString(),
       }).eq('id', id);
-      alert('✅ 上架完成');
+      toast.success('✅ 上架完成');
     } else {
-      alert('没有可上架项');
+      toast('没有可上架项');
     }
     qc.invalidateQueries();
   }

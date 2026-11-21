@@ -14,7 +14,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
  */
 const config: CapacitorConfig = {
   appId: 'com.thalvior.wms',
-  appName: 'Thalvior WMS',
+  appName: 'thalvior｜塔威仓库管理系统',
   webDir: 'dist',
   bundledWebRuntime: false,
 
