@@ -4,6 +4,7 @@ import {
   AlertTriangle, LogOut,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { getBasepath } from '../lib/env';
 
 const PDA_ACTIONS = [
   { path: '/pda/receive', label: '扫码收货', icon: Download, color: 'from-emerald-500 to-emerald-600' },
@@ -29,16 +30,17 @@ export function MobileLayout({ children }: { children: React.ReactNode }) {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
   }, []);
 
-  const path = window.location.pathname.replace('/wms', '');
+  const bp = getBasepath();
+  const path = window.location.pathname.replace(bp, '');
   const isPdaHub = path === '/pda';
 
   const logout = async () => {
     await supabase.auth.signOut();
-    window.location.href = '/wms/';
+    window.location.href = bp + (bp.endsWith('/') ? '' : '/');
   };
 
   const go = (p: string) => {
-    window.location.href = '/wms' + p;
+    window.location.href = bp.replace(/\/$/, '') + p;
   };
 
   return (

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { supabase } from '../../../lib/supabase';
+import { getBasepath } from '../../../lib/env';
 import { Globe, Moon, Sun, Monitor, Shield, Lock, Mail, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { AuthShell } from '../../../components/ui/auth-shell';
 import { Tabs, TabsList, TabsTrigger } from '../../../components/ui/tabs';
@@ -50,7 +51,8 @@ export function LoginPage() {
       // 硬兜底：直接用 window.location 跳转（绕过 TanStack Router 的任何可能问题）
       // session 已经被 Supabase client 存到 localStorage 了
       setTimeout(() => {
-        const target = '/wms/dashboard';
+        const bp = getBasepath().replace(/\/$/, '');
+        const target = bp + '/dashboard';
         console.log('[Login] forcing redirect to', target);
         window.location.replace(target);
       }, 50);

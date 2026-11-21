@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../../lib/supabase';
+import { getBasepath } from '../../../lib/env';
 import { ArrowLeft, MapPin, AlertTriangle, PackageCheck } from 'lucide-react';
 
 interface PutawayTask {
@@ -36,7 +37,7 @@ export default function PdaPutaway() {
           上架与收货共用同一套 PDA 流程：
           <br />先扫库位 → 再扫商品 → 确认数量
         </p>
-        <a href="/wms/pda/receive"
+        <a href={`${getBasepath().replace(/\/$/, '')}/pda/receive`}
           className="inline-flex items-center gap-2 px-6 py-3 bg-brand-subtle0 text-white rounded-xl font-medium">
           前往扫码入库 →
         </a>

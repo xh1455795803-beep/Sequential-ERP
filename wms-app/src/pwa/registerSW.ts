@@ -1,3 +1,5 @@
+import { getBasepath } from '../lib/env';
+
 /**
  * 注册 Service Worker —— PWA 离线缓存
  *
@@ -23,7 +25,8 @@ export async function registerSW() {
   if (!(await shouldRegister())) return;
 
   window.addEventListener('load', () => {
-    const swUrl = '/wms/sw.js';
+    const bp = getBasepath();
+    const swUrl = `${bp.replace(/\/$/, '')}/sw.js`;
     navigator.serviceWorker
       .register(swUrl, { updateViaCache: 'none' })
       .then((reg) => {

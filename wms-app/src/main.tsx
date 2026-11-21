@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { RouterProvider, createRouter, createRootRoute, createRoute } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { supabase } from './lib/supabase';
+import { getBasepath } from './lib/env';
 import { AppLayout } from './layouts/AppLayout';
 import { LoginPage } from './features/auth/pages/LoginPage';
 import { DashboardPage } from './features/dashboard/pages/DashboardPage';
@@ -52,8 +53,9 @@ function PlaceholderPage({ title, hint }: { title: string; hint?: string }) {
 
 // ============ Auth ============
 async function requireAuth() {
-  // 跳过登录页本身（path === '/' 是 loginRoute）
-  const p = window.location.pathname.replace('/wms', '') || '/';
+  const bp = getBasepath();
+  // 跳过登录页本身
+  const p = window.location.pathname.replace(bp, '') || '/';
   if (p === '/' || p === '') return null;  // 登录页不需要 session
   
   const { data: { session } } = await supabase.auth.getSession();
@@ -268,12 +270,13 @@ const queryClient = new QueryClient({
 
 const router = createRouter({
   routeTree,
-  basepath: '/wms',
+  basepath: getBasepath(),
   defaultPreload: 'intent',
   defaultErrorComponent: ({ error }: any) => {
     if (error?.message === 'UNAUTHORIZED') {
+      const bp = getBasepath();
       const u = new URL(window.location.href);
-      u.pathname = '/wms/';
+      u.pathname = bp + (bp.endsWith('/') ? '' : '/');
       window.location.replace(u.toString());
       return null;
     }

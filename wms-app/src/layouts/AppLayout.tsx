@@ -9,6 +9,7 @@ import {
   Wallet, BarChart3, Sparkles, Wrench, LogOut, Menu, X, Search, Bell,
   ChevronDown, ChevronRight, XCircle, Building2,
 } from 'lucide-react';
+import { getBasepath } from '../lib/env';
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuLabel,
@@ -304,7 +305,8 @@ export function AppLayout() {
 
   // ===== location 变化 → sync openTabs =====
   useEffect(() => {
-    const p = location.pathname.replace('/wms', '') || '/dashboard';
+    const bp = getBasepath();
+    const p = location.pathname.replace(bp, '') || '/dashboard';
     syncPath(p); saveActive(p);
   }, [location.pathname, syncPath]);
 
