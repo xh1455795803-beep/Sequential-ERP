@@ -33,6 +33,13 @@ from teams import (
     DesignCrew,
     TEAM_REGISTRY,
 )
+from teams.config import (
+    get_llm,
+    estimate_cost,
+    estimate_team_cost,
+    format_usage,
+    _get_llm_provider_and_model,
+)
 
 # ========== 团队信息 ==========
 TEAM_INFO = {
@@ -109,7 +116,7 @@ def cmd_run(args):
         print(f"   运行 'python main.py list' 查看所有可用团队")
         sys.exit(1)
 
-    # 构建输入
+    # 1) 构建输入
     info = TEAM_INFO[team_key]
     inputs = {}
 
@@ -118,32 +125,99 @@ def cmd_run(args):
     elif args.input_file:
         with open(args.input_file, "r", encoding="utf-8") as f:
             inputs[info["input_key"]] = f.read()
+    else:
+        print(f"❌ 需要 --input 或 --input-file")
+        print(f"   示例: python main.py run {team_key} --input \"{info['example']}\"")
+        sys.exit(1)
 
-    # 解析额外参数
     if args.extra:
         for pair in args.extra:
             if "=" in pair:
                 k, v = pair.split("=", 1)
                 inputs[k] = v
 
-    # 创建并运行团队
-    team_class = TEAM_REGISTRY[team_key]
-    team = team_class(verbose=args.verbose)
+    # 2) 检查 LLM
+    llm = get_llm()
+    if llm is None:
+        print("\n❌ 未检测到 LLM API Key")
+        print("   请在 .env 中设置 DEEPSEEK_API_KEY / OPENAI_API_KEY 等")
+        print("   或运行 'python main.py list' → 先去服务商注册")
+        sys.exit(1)
 
-    print(f"\n🚀 启动 {info['name']}...")
-    print(f"   输入: {args.input or '(从文件)'}")
+    # 3) 成本预估
+    team_class = TEAM_REGISTRY[team_key]
+    team_temp = team_class(verbose=False)
+    num_tasks = len(team_temp.build_crew().tasks)
+    del team_temp
+
+    est = estimate_team_cost(num_tasks=num_tasks, llm=llm)
+    provider, model = _get_llm_provider_and_model(llm)
+
+    # 估算：实际 cost 以 crew.usage_metrics 为准，但先给个预估值
+    print(f"\n{'='*60}")
+    print(f"📋 任务预估")
+    print(f"{'='*60}")
+    print(f"  团队: {info['name']}")
+    print(f"  任务数: {num_tasks}")
+    print(f"  LLM: {provider}/{model}")
+    print(f"  预估 token: ~{est['total_tokens']:,} "
+          f"(输入 ~{est['input_tokens']:,}, 输出 ~{est['output_tokens']:,})")
+    if est["cost_yuan"] is not None:
+        print(f"  预估费用: ~¥{est['cost_yuan']:.2f}")
+    else:
+        print(f"  预估费用: (该 provider 价格未收录)")
+    print(f"  ⚠️  {est['note']}")
+
+    # 4) 确认（--yes / -y 跳过）
+    if not getattr(args, "yes", False):
+        print(f"\n  继续? (y/N): ", end="", flush=True)
+        try:
+            ans = input().strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            ans = "n"
+        if ans not in ("y", "yes"):
+            print("  已取消")
+            sys.exit(0)
+
+    # 5) 运行
+    print(f"\n{'='*60}")
+    print(f"🚀 启动 {info['name']}...")
+    print(f"{'='*60}\n")
+
+    team = team_class(verbose=not args.quiet)
 
     try:
         result = team.run(inputs=inputs)
-        print(f"\n✅ 完成! 结果已保存到 output/ 目录")
-        if hasattr(result, "raw"):
-            print(f"\n📄 最终输出预览:\n")
-            print(result.raw[:500] + "..." if len(result.raw) > 500 else result.raw)
     except Exception as e:
         print(f"\n❌ 运行出错: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
+
+    # 6) 显示实际用量和费用
+    print(f"\n{'='*60}")
+    print(f"✅ 完成!")
+    print(f"{'='*60}")
+
+    metrics = team._crew.usage_metrics if team._crew else None
+    print(format_usage(metrics))
+
+    if metrics is not None:
+        total = getattr(metrics, "total_tokens", 0) or 0
+        prompt = getattr(metrics, "prompt_tokens", 0) or 0
+        completion = getattr(metrics, "completion_tokens", 0) or 0
+        actual_cost = estimate_cost(prompt, completion, llm=llm)
+        if actual_cost is not None:
+            print(f"\n  💰 本次实际费用: ¥{actual_cost:.4f}")
+
+    print(f"\n📁 结果已保存到 output/ 目录")
+    if hasattr(result, "raw"):
+        raw = result.raw or ""
+        if raw:
+            preview = raw[:600] + "..." if len(raw) > 600 else raw
+            print(f"\n📄 最终输出预览:\n")
+            print(preview)
+    print()
 
 
 def cmd_demo(args):
@@ -195,6 +269,7 @@ def main():
     run_parser.add_argument("--input-file", "-f", help="从文件读取输入")
     run_parser.add_argument("--extra", "-e", action="append", help="额外参数 key=value")
     run_parser.add_argument("--quiet", "-q", action="store_true", help="静默模式")
+    run_parser.add_argument("--yes", "-y", action="store_true", help="跳过成本确认直接运行")
 
     # demo 子命令
     subparsers.add_parser("demo", help="演示模式")

@@ -166,6 +166,163 @@ def reset_default_llm():
     _DEFAULT_LLM = None
 
 
+# ============ Token 价格表（人民币 ¥ / 1M tokens）============
+# 数据来源：各官方定价页面，2026-11-22 采集
+# 单位：输入 token 价格 / 输出 token 价格
+PRICING = {
+    # provider: {model_prefix: (输入价, 输出价)}
+    "deepseek": {
+        "default": (1.0, 2.0),            # deepseek-chat / deepseek-v3
+        "deepseek-chat": (1.0, 2.0),
+        "deepseek-reasoner": (2.0, 8.0),
+    },
+    "openai": {
+        "default": (4.0, 16.0),
+        "gpt-4o": (5.0, 15.0),
+        "gpt-4o-mini": (0.15, 0.60),
+        "gpt-4.1": (10.0, 40.0),
+    },
+    "anthropic": {
+        "default": (15.0, 75.0),
+        "claude-3-5-sonnet": (3.0, 15.0),
+        "claude-3.5-sonnet": (3.0, 15.0),
+        "claude-3-opus": (15.0, 75.0),
+    },
+    "google": {
+        "default": (1.5, 6.0),
+        "gemini-2.0-flash": (0.75, 3.0),
+        "gemini-2.5-pro": (1.5, 6.0),
+    },
+    "groq": {
+        "default": (0.6, 1.2),             # llama-3.3-70b
+    },
+    "ollama": {
+        "default": (0.0, 0.0),             # 本地模型免费
+    },
+}
+
+
+def _get_llm_provider_and_model(llm) -> tuple:
+    """从 LLM 实例提取 (provider, model_name)"""
+    if llm is None:
+        return ("unknown", "unknown")
+    model_str = getattr(llm, "model", "") or ""
+    if "/" in model_str:
+        provider, model = model_str.split("/", 1)
+        return (provider, model)
+    # 某些 provider 不带前缀
+    provider = _detect_provider() or "unknown"
+    return (provider, model_str)
+
+
+def estimate_cost(input_tokens: int, output_tokens: int, llm=None,
+                  provider: str = None, model: str = None) -> float:
+    """
+    根据 token 用量估算费用（人民币）
+
+    Args:
+        input_tokens: 输入 token 数
+        output_tokens: 输出 token 数
+        llm: crewai.LLM 实例（优先从这里推断）
+        provider: provider 名（llm 为 None 时使用）
+        model: 模型名（llm 为 None 时使用）
+
+    Returns:
+        预估费用（元），无法估算时返回 None
+    """
+    if llm is not None:
+        provider, model = _get_llm_provider_and_model(llm)
+    if provider is None:
+        provider = _detect_provider() or "unknown"
+
+    provider_pricing = PRICING.get(provider)
+    if not provider_pricing:
+        return None
+
+    # 精确匹配模型 → 回退 default
+    input_price, output_price = provider_pricing.get(
+        model, provider_pricing.get("default", (None, None))
+    )
+    if input_price is None:
+        return None
+
+    cost = (input_tokens / 1_000_000) * input_price + \
+           (output_tokens / 1_000_000) * output_price
+    return round(cost, 4)
+
+
+def estimate_team_cost(num_tasks: int = 4, avg_input_per_task: int = 12000,
+                       avg_output_per_task: int = 2500, llm=None,
+                       provider: str = None, model: str = None) -> dict:
+    """
+    估算一个 Team 的预期成本
+
+    Args:
+        num_tasks: Task 数量（默认 4）
+        avg_input_per_task: 每个 Task 平均输入 token（默认 12K）
+        avg_output_per_task: 每个 Task 平均输出 token（默认 2.5K）
+        llm/provider/model: 用于定价
+
+    Returns:
+        dict {
+            input_tokens, output_tokens, total_tokens,
+            cost_yuan, provider, model,
+            note: 说明（如含缓存折扣、不含推理 token）
+        }
+    """
+    total_input = num_tasks * avg_input_per_task
+    total_output = num_tasks * avg_output_per_task
+    cost = estimate_cost(total_input, total_output, llm=llm,
+                         provider=provider, model=model)
+    p, m = _get_llm_provider_and_model(llm) if llm else (
+        provider or _detect_provider() or "unknown", model or "default")
+
+    note = "估算值，实际可能 ±50%。含上下文累积、不含缓存命中折扣。"
+    return {
+        "input_tokens": total_input,
+        "output_tokens": total_output,
+        "total_tokens": total_input + total_output,
+        "cost_yuan": cost,
+        "provider": p,
+        "model": m,
+        "note": note,
+    }
+
+
+def format_usage(metrics) -> str:
+    """
+    格式化 UsageMetrics 为易读字符串
+
+    Args:
+        metrics: UsageMetrics 对象（crew.usage_metrics）
+
+    Returns:
+        格式化字符串
+    """
+    if metrics is None:
+        return "(无用量数据)"
+
+    total = getattr(metrics, "total_tokens", 0) or 0
+    prompt = getattr(metrics, "prompt_tokens", 0) or 0
+    completion = getattr(metrics, "completion_tokens", 0) or 0
+    cached = getattr(metrics, "cached_prompt_tokens", 0) or 0
+    reasoning = getattr(metrics, "reasoning_tokens", 0) or 0
+    requests = getattr(metrics, "successful_requests", 0) or 0
+
+    lines = [
+        f"  📊 Token 用量统计:",
+        f"     总计: {total:,} tokens",
+        f"       ├─ 输入: {prompt:,}",
+        f"       ├─ 输出: {completion:,}",
+    ]
+    if cached:
+        lines.append(f"       ├─ 缓存命中: {cached:,} (省了约 ¥{(cached/1_000_000)*4:.3f})")
+    if reasoning:
+        lines.append(f"       └─ 推理: {reasoning:,}")
+    lines.append(f"     成功请求: {requests} 次")
+    return "\n".join(lines)
+
+
 def diagnose():
     """
     诊断 LLM 配置状态（用于排查问题）
@@ -183,17 +340,26 @@ def diagnose():
         if cfg["api_key_env"]:
             key = os.getenv(cfg["api_key_env"])
             has_key = bool(key)
-        print(f"  {name:12s}: {'✅ 已配置' if has_key else '❌ 未配置'} "
-              f"(默认模型: {cfg['default_full']})")
+        status = "✅ 已配置" if has_key else "❌ 未配置"
+        # 附加价格
+        p = PRICING.get(name, {})
+        price = p.get("default", (None, None))
+        if price[0] is not None:
+            status += f"  (¥{price[0]}/¥{price[1]} per 1M)"
+        print(f"  {name:12s}: {status}")
 
     # 3. 测试 LLM 创建
     print("\n  正在创建 LLM 实例...")
     llm = get_llm()
     if llm:
-        print(f"  ✅ LLM 创建成功: {llm}")
+        provider, model = _get_llm_provider_and_model(llm)
+        est = estimate_team_cost(num_tasks=4, llm=llm)
+        print(f"  ✅ LLM 创建成功: {provider}/{model}")
+        print(f"  💰 预估 4-task Team 成本: ~¥{est['cost_yuan']:.2f} "
+              f"(总 {est['total_tokens']:,} tokens)")
     else:
         print("  ❌ LLM 创建失败：未检测到任何有效的 API Key")
-        print("  💡 请在 .env 中设置 OPENAI_API_KEY / DEEPSEEK_API_KEY 等")
+        print("  💡 请在 .env 中设置 DEEPSEEK_API_KEY / OPENAI_API_KEY 等")
 
     print("=" * 50 + "\n")
     return llm is not None
