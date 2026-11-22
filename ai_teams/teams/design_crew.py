@@ -26,7 +26,7 @@ class DesignCrew(BaseTeam):
             优先级框架（RICE/MoSCoW）、指标驱动开发。你善于平衡
             用户价值、技术可行性和业务目标。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def ux_researcher(self) -> Agent:
         """UX 研究员"""
@@ -37,7 +37,7 @@ class DesignCrew(BaseTeam):
             包括用户访谈、问卷调查、可用性测试、数据分析。你总能从
             用户行为中发现洞察，用证据而非直觉驱动设计。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def interaction_designer(self) -> Agent:
         """交互设计师"""
@@ -48,7 +48,7 @@ class DesignCrew(BaseTeam):
             信息架构、线框图、原型设计。你关注每个交互细节，
             让复杂的操作变得简单自然。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def visual_designer(self) -> Agent:
         """视觉设计师"""
@@ -59,7 +59,7 @@ class DesignCrew(BaseTeam):
             组件库、响应式设计、品牌视觉。你相信好的设计不仅好看，
             更能提升体验和转化率。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     # ========== Tasks ==========
     def discovery_task(self) -> Task:
@@ -151,7 +151,7 @@ class DesignCrew(BaseTeam):
             ],
             process=Process.sequential,
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
 
 def quick_design(concept: str, verbose: bool = True):

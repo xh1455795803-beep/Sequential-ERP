@@ -62,8 +62,8 @@ PROVIDERS = {
     "ollama": {
         "api_key_env": None,
         "base_url_env": "OLLAMA_BASE_URL",
-        "default_model": "qwen2.5:7b",
-        "default_full": "ollama/qwen2.5:7b",
+        "default_model": "qwen2.5:3b",
+        "default_full": "ollama/qwen2.5:3b",
     },
 }
 
@@ -71,14 +71,19 @@ PROVIDERS = {
 def _detect_provider() -> Optional[str]:
     """
     检测可用的 provider（按优先级）
-    优先级: DEEPSEEK > OPENAI > ANTHROPIC > GOOGLE > GROQ
+    优先级: 显式 LLM_PROVIDER > OLLAMA(本地) > DEEPSEEK > OPENAI > ANTHROPIC > GOOGLE > GROQ
     """
-    # 显式指定优先
+    # 显式指定优先（最最高）
     explicit = os.getenv("LLM_PROVIDER")
     if explicit and explicit in PROVIDERS:
         return explicit
 
-    # 按优先级检测
+    # Ollama 本地：如果设了 OLLAMA_BASE_URL 就算有
+    ollama_url = os.getenv("OLLAMA_BASE_URL")
+    if ollama_url:
+        return "ollama"
+
+    # 按优先级检测有 API Key 的云 provider
     priority = ["deepseek", "openai", "anthropic", "google", "groq"]
     for p in priority:
         cfg = PROVIDERS[p]
@@ -89,13 +94,13 @@ def _detect_provider() -> Optional[str]:
 
 
 def get_llm(model: Optional[str] = None, temperature: float = 0.7,
-            timeout: float = 120, **kwargs):
+            timeout: float = 600, **kwargs):
     """
     创建 CrewAI LLM 实例
 
     Args:
         model: 模型名，格式 "provider/model" 或简写 "model-id"
-               不传则使用 provider 的默认模型
+               不传则使用 LLM_MODEL 环境变量或 provider 的默认模型
         temperature: 随机性 (0.0-1.0)，低=确定性，高=创造性
         timeout: 超时秒数
         **kwargs: LLM 其他参数（max_tokens, top_p 等）
@@ -103,6 +108,12 @@ def get_llm(model: Optional[str] = None, temperature: float = 0.7,
     Returns:
         crewai.LLM 实例；若无法配置则返回 None
     """
+    # 优先顺序: 函数参数 model > 环境变量 LLM_MODEL > provider 默认
+    if not model:
+        env_model = os.getenv("LLM_MODEL")
+        if env_model:
+            model = env_model
+
     provider = _detect_provider()
 
     # 如果显式指定了 provider/model，用它
@@ -121,7 +132,7 @@ def get_llm(model: Optional[str] = None, temperature: float = 0.7,
 
     cfg = PROVIDERS[provider]
 
-    # 确定最终模型全名
+    # 确定最终模型全名（CrewAI 新版全部需要 provider 前缀）
     if model and "/" in model:
         full_model = model
     elif model:
@@ -139,8 +150,13 @@ def get_llm(model: Optional[str] = None, temperature: float = 0.7,
     llm_kwargs = {"model": full_model, "temperature": temperature, "timeout": timeout}
     llm_kwargs.update(kwargs)
 
-    # 如果有 base_url，加进去
-    if cfg["base_url_env"]:
+    # Ollama 特殊处理：base_url 自动加 /v1 (CrewAI 通过 OpenAI 兼容协议调 Ollama)
+    if provider == "ollama":
+        base_url = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
+        if not base_url.endswith("/v1"):
+            base_url = base_url.rstrip("/") + "/v1"
+        llm_kwargs["base_url"] = base_url
+    elif cfg["base_url_env"]:
         base_url = os.getenv(cfg["base_url_env"])
         if base_url:
             llm_kwargs["base_url"] = base_url

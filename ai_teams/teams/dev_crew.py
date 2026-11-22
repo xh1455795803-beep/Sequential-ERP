@@ -26,7 +26,7 @@ class DevCrew(BaseTeam):
             擅长将业务需求转化为合理的技术方案。你注重系统的可扩展性、性能和安全性，
             同时也关心开发团队的工作效率。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def developer(self) -> Agent:
         """全栈开发工程师 - 负责代码实现"""
@@ -37,7 +37,7 @@ class DevCrew(BaseTeam):
             Go 等多种语言。你遵循 Clean Code 原则，擅长编写清晰、优雅的代码，
             并始终考虑代码的可测试性和可维护性。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def reviewer(self) -> Agent:
         """代码审查员 - 负责代码质量把关"""
@@ -48,7 +48,7 @@ class DevCrew(BaseTeam):
             你擅长发现代码中的 bug、性能问题、安全隐患和可维护性问题。
             你的审查意见总是建设性的，帮助团队持续进步。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def tester(self) -> Agent:
         """测试工程师 - 负责编写和执行测试"""
@@ -59,7 +59,7 @@ class DevCrew(BaseTeam):
             端到端测试等多种测试方法。你擅长边界条件分析，能发现开发人员忽略的
             问题。你相信好的测试是软件质量的保障。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     # ========== Tasks ==========
     def architecture_task(self) -> Task:
@@ -151,7 +151,7 @@ class DevCrew(BaseTeam):
             ],
             process=Process.sequential,
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
 
 # ========== 便捷函数 ==========

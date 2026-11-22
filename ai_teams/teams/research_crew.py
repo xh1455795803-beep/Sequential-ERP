@@ -26,7 +26,7 @@ class ResearchCrew(BaseTeam):
             信息检索能力。你擅长使用多种渠道（学术文献、行业报告、
             权威媒体、官方数据）进行系统性研究。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def fact_checker(self) -> Agent:
         """事实核查员"""
@@ -37,7 +37,7 @@ class ResearchCrew(BaseTeam):
             判断力。你交叉验证不同来源的信息，标注信息的可信度等级，
             拒绝传播未经证实的说法。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def analyst(self) -> Agent:
         """综合分析师"""
@@ -48,7 +48,7 @@ class ResearchCrew(BaseTeam):
             识别关联、发现矛盾、预测趋势。你能将分散的信息整合成
             有逻辑、有深度的分析框架。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def writer(self) -> Agent:
         """研究报告撰写者"""
@@ -59,7 +59,7 @@ class ResearchCrew(BaseTeam):
             研究成果以结构化、可读性强的方式呈现。你的报告总是
             逻辑清晰、证据充分、结论有说服力。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     # ========== Tasks ==========
     def collection_task(self) -> Task:
@@ -150,7 +150,7 @@ class ResearchCrew(BaseTeam):
             ],
             process=Process.sequential,
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
 
 def quick_research(topic: str, verbose: bool = True):

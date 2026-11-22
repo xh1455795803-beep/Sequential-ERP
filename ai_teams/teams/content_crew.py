@@ -26,7 +26,7 @@ class ContentCrew(BaseTeam):
             目标受众分析、内容形式选择结合起来。你能为任何主题设计出
             结构清晰、有吸引力的内容大纲。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def writer(self) -> Agent:
         """撰稿人"""
@@ -37,7 +37,7 @@ class ContentCrew(BaseTeam):
             营销文案、技术文档、社交媒体内容等多种形式。你的文字流畅、
             有说服力，总能抓住读者的注意力。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def editor(self) -> Agent:
         """编辑"""
@@ -48,7 +48,7 @@ class ContentCrew(BaseTeam):
             你擅长发现逻辑漏洞、事实错误、语法问题，并在保持原文风格的
             同时提升内容质量。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def seo_specialist(self) -> Agent:
         """SEO 专家"""
@@ -59,7 +59,7 @@ class ContentCrew(BaseTeam):
             元数据优化、可读性分析。你能在保持内容质量的前提下，
             让更多目标读者看到它。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     # ========== Tasks ==========
     def strategy_task(self) -> Task:
@@ -152,7 +152,7 @@ class ContentCrew(BaseTeam):
             ],
             process=Process.sequential,
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
 
 def quick_content(topic: str, target_words: str = "1500",

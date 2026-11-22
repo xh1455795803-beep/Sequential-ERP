@@ -26,7 +26,7 @@ class DevOpsCrew(BaseTeam):
             Kubernetes、Terraform、IaC 等。你追求基础设施的一致性、
             可重现性和成本效率。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def cicd_engineer(self) -> Agent:
         """CI/CD 专家"""
@@ -37,7 +37,7 @@ class DevOpsCrew(BaseTeam):
             Jenkins、ArgoCD 等工具链。你设计的管道能快速反馈、自动测试、
             安全部署，并最大化交付速度。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def security_engineer(self) -> Agent:
         """DevSecOps 工程师"""
@@ -48,7 +48,7 @@ class DevOpsCrew(BaseTeam):
             密钥管理、合规审计。你相信安全是每个人的责任，应左移到
             开发流程的最早阶段。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def sre(self) -> Agent:
         """SRE - 可靠性/监控专家"""
@@ -59,7 +59,7 @@ class DevOpsCrew(BaseTeam):
             ELK、OpenTelemetry 等可观测性工具。你设计的监控告警系统
             能在问题影响用户之前发现它。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     # ========== Tasks ==========
     def infra_task(self) -> Task:
@@ -151,7 +151,7 @@ class DevOpsCrew(BaseTeam):
             ],
             process=Process.sequential,
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
 
 def quick_devops(application: str, verbose: bool = True):

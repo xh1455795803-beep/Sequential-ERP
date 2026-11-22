@@ -26,7 +26,7 @@ class PMCrew(BaseTeam):
             两种方法论。你擅长利益相关者管理、资源协调、沟通推动，
             能够在约束条件下找到最优解。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def decomposer(self) -> Agent:
         """WBS 专家 - 任务分解"""
@@ -37,7 +37,7 @@ class PMCrew(BaseTeam):
             逐层分解为最小可管理单元。你定义清晰的任务边界、依赖关系、
             交付标准和验收条件。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def coordinator(self) -> Agent:
         """进度协调员"""
@@ -48,7 +48,7 @@ class PMCrew(BaseTeam):
             进度管理专家。你能准确估算工期、识别任务依赖、
             发现资源冲突，并提出可行的调整方案。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def risk_manager(self) -> Agent:
         """风险管理专家"""
@@ -59,7 +59,7 @@ class PMCrew(BaseTeam):
             风险分析。你总能提前发现潜在问题，并准备好应对方案，
             让项目团队有备无患。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     # ========== Tasks ==========
     def charter_task(self) -> Task:
@@ -157,7 +157,7 @@ class PMCrew(BaseTeam):
             ],
             process=Process.sequential,
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
 
 def quick_plan(goal: str, verbose: bool = True):

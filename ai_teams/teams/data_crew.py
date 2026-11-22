@@ -26,7 +26,7 @@ class DataCrew(BaseTeam):
             SQL 和 Python 数据处理。你擅长从各种数据源（数据库、API、文件、爬虫）
             获取数据，并进行清洗、转换和特征工程。你追求数据质量的极致。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def analyst(self) -> Agent:
         """数据分析师 - 负责探索性分析"""
@@ -37,7 +37,7 @@ class DataCrew(BaseTeam):
             你精通 Pandas、NumPy、SQL 等工具，善于从数据中发现隐藏的模式、
             异常值和业务洞察。你相信每个数据点背后都有故事。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def statistician(self) -> Agent:
         """统计学家 - 负责高级统计分析"""
@@ -48,7 +48,7 @@ class DataCrew(BaseTeam):
             贝叶斯方法、机器学习建模。你擅长将业务问题转化为统计问题，
             并给出可信、可解释的分析结论。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     def reporter(self) -> Agent:
         """报告撰写者 - 负责结果呈现"""
@@ -59,7 +59,7 @@ class DataCrew(BaseTeam):
             以清晰、直观的方式呈现给业务决策者。你精通数据可视化原理，
             能选择最合适的图表和格式来传达关键洞察。""",
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
     # ========== Tasks ==========
     def data_prep_task(self) -> Task:
@@ -149,7 +149,7 @@ class DataCrew(BaseTeam):
             ],
             process=Process.sequential,
             verbose=self.verbose,
-        )
+            llm=self.llm,        )
 
 
 def quick_analysis(topic: str, verbose: bool = True):
