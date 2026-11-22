@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>发票管理 | Thalvior 跨境 ERP</title>
+<style>
+  :root{
+    --bg:#f2f8ff; --surface:#fff; --border:#e2ecf8;
+    --text:#16233a; --text-2:#5b6b85; --text-3:#8d9ab1;
+    --brand:#2563eb; --indigo:#4f46e5; --violet:#7c3aed;
+    --green:#059669; --amber:#d97706; --danger:#dc2626;
+    --radius:16px;
+    --shadow:0 1px 2px rgba(16,40,80,.04),0 8px 28px rgba(16,40,80,.07);
+    --shadow-lg:0 12px 44px rgba(16,40,80,.14);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+       background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+  header{background:rgba(255,255,255,.85);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:62px}
+  .logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:17px;letter-spacing:-.2px}
+  .logo-mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--brand),var(--indigo) 55%,var(--violet));display:grid;place-items:center;color:#fff;font-size:14px;font-weight:800;box-shadow:0 4px 12px rgba(37,99,235,.32)}
+  .nav-right{display:flex;align-items:center;gap:12px;font-size:13.5px}
+  .btn-ghost{border:1px solid var(--border);background:#fff;border-radius:9px;padding:7px 14px;font-size:13px;cursor:pointer;color:var(--text-2);transition:.18s}
+  .btn-ghost:hover{border-color:var(--brand);color:var(--brand)}
+
+  .hero{padding:46px 0 26px;position:relative;overflow:hidden}
+  .hero:before{content:"";position:absolute;inset:-40% -10% auto;height:380px;background:radial-gradient(ellipse at 40% 0%,rgba(37,99,235,.13),transparent 62%),radial-gradient(ellipse at 76% 12%,rgba(124,58,237,.10),transparent 55%);pointer-events:none}
+  .hero h1{font-size:32px;font-weight:800;letter-spacing:-.6px;margin-bottom:9px;position:relative}
+  .hero p{color:var(--text-2);font-size:15px;max-width:680px;position:relative}
+
+  /* 额度卡 */
+  .quota-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+  .qcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow)}
+  .qcard .lbl{font-size:13px;color:var(--text-3);font-weight:600;margin-bottom:6px}
+  .qcard .val{font-size:27px;font-weight:800;letter-spacing:-.6px}
+  .qcard .val small{font-size:14px;font-weight:600;color:var(--text-3);margin-left:2px}
+  .qcard .val.blue{color:var(--brand)}
+  .qcard .val.green{color:var(--green)}
+  .qcard .val.gray{color:var(--text-2)}
+
+  section{padding:28px 0}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .card-head{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .card-head h2{font-size:17px;font-weight:700}
+  .card-head p{font-size:13px;color:var(--text-3);margin-top:2px}
+  .card-body{padding:22px 24px}
+
+  /* 表单 */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:13.5px;font-weight:600;color:var(--text-2);margin-bottom:7px}
+  .field label .req{color:var(--danger);margin-left:3px}
+  .field input,.field select,.field textarea{
+    width:100%;border:1px solid #d5e2f2;background:#fbfdff;border-radius:10px;
+    padding:10px 13px;font-size:14px;color:var(--text);outline:none;transition:.18s;
+    font-family:inherit;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--brand);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.11)}
+  .field .hint{font-size:12px;color:var(--text-3);margin-top:5px}
+  .radio-row{display:flex;gap:10px;flex-wrap:wrap}
+  .radio-row label{
+    display:flex;align-items:center;gap:7px;border:1px solid #d5e2f2;background:#fbfdff;
+    border-radius:10px;padding:9px 15px;cursor:pointer;font-size:13.5px;font-weight:600;
+    color:var(--text-2);transition:.18s;margin:0;
+  }
+  .radio-row input{width:auto;margin:0;accent-color:var(--brand)}
+  .radio-row label.on{border-color:var(--brand);background:#eff5ff;color:var(--brand)}
+
+  /* 订单选择 */
+  .order-pick{max-height:270px;overflow:auto;border:1px solid var(--border);border-radius:12px}
+  .order-pick table{width:100%;border-collapse:collapse;font-size:13.5px}
+  .order-pick th{background:#f6faff;color:var(--text-3);font-weight:600;font-size:12.5px;text-align:left;padding:11px 14px;position:sticky;top:0;border-bottom:1px solid var(--border)}
+  .order-pick td{padding:11px 14px;border-bottom:1px solid #f0f6fd}
+  .order-pick tr:last-child td{border-bottom:0}
+  .order-pick tr.sel{background:#eff5ff}
+  .order-pick input[type=checkbox]{width:16px;height:16px;accent-color:var(--brand);cursor:pointer}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:var(--text-2)}
+
+  /* 按钮 */
+  .btn{border:0;border-radius:10px;padding:11px 24px;font-size:14px;font-weight:700;cursor:pointer;transition:.18s;font-family:inherit}
+  .btn-primary{background:var(--brand);color:#fff;box-shadow:0 4px 14px rgba(37,99,235,.3)}
+  .btn-primary:hover{background:#1d4ed8}
+  .btn-primary:disabled{background:#c3d3e8;box-shadow:none;cursor:not-allowed}
+  .btn-sm{padding:7px 14px;font-size:12.5px;border-radius:8px}
+
+  .sum-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:20px;padding-top:18px;border-top:1px solid var(--border);flex-wrap:wrap}
+  .sum-bar .amt{font-size:14px;color:var(--text-2)}
+  .sum-bar .amt b{font-size:24px;color:var(--brand);font-weight:800;letter-spacing:-.5px}
+
+  /* 记录列表 */
+  .rec{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 0;border-bottom:1px solid #f0f6fd}
+  .rec:last-child{border-bottom:0}
+  .rec .l{min-width:0}
+  .rec .t{font-size:14.5px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rec .s{font-size:12.5px;color:var(--text-3)}
+  .rec .r{display:flex;align-items:center;gap:12px;flex-shrink:0}
+  .rec .money{font-size:15.5px;font-weight:800;color:var(--text)}
+
+  .tag{display:inline-block;font-size:11.5px;font-weight:700;border-radius:6px;padding:3px 9px}
+  .tag.pending{background:#fff7e6;color:var(--amber)}
+  .tag.issued{background:#ecfdf5;color:var(--green)}
+  .tag.rejected{background:#fef2f2;color:var(--danger)}
+
+  .empty{text-align:center;padding:44px 20px;color:var(--text-3)}
+  .empty .ico{font-size:38px;margin-bottom:10px;opacity:.5}
+  .empty p{font-size:14px}
+
+  /* toast */
+  #toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-140%);opacity:0;visibility:hidden;pointer-events:none;
+         background:#16233a;color:#fff;
+         padding:12px 22px;border-radius:11px;font-size:14px;font-weight:600;z-index:999;transition:transform .32s,opacity .32s,visibility .32s;box-shadow:var(--shadow-lg);max-width:90vw}
+  #toast.on{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible}
+  #toast.err{background:#b91c1c}
+  #toast.ok{background:#047857}
+
+  /* 弹窗 */
+  .mask{position:fixed;inset:0;background:rgba(16,34,60,.5);display:none;align-items:center;justify-content:center;z-index:200;padding:20px;backdrop-filter:blur(3px)}
+  .mask.on{display:flex}
+  .modal{background:#fff;border-radius:18px;max-width:520px;width:100%;box-shadow:var(--shadow-lg);overflow:hidden;max-height:88vh;display:flex;flex-direction:column}
+  .modal-head{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .modal-head h3{font-size:17px;font-weight:700}
+  .modal-close{border:0;background:transparent;font-size:22px;line-height:1;cursor:pointer;color:var(--text-3);padding:0 4px}
+  .modal-body{padding:22px 24px;overflow:auto}
+  .modal-foot{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+
+  .kv{display:flex;justify-content:space-between;padding:9px 0;font-size:13.5px;border-bottom:1px dashed #eaf2fb}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--text-3)}
+  .kv .v{font-weight:600;text-align:right}
+
+  @media(max-width:820px){
+    .quota-row{grid-template-columns:1fr}
+    .grid2{grid-template-columns:1fr}
+    .hero h1{font-size:25px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="logo" href="/dashboard">
+      <span class="logo-mark">T</span>
+      <span>Thalvior</span>
+    </a>
+    <div class="nav-right">
+      <span id="who" style="color:var(--text-3);font-size:13px"></span>
+      <button class="btn-ghost" onclick="goBack()">返回财务中心</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap hero">
+  <h1>发票管理</h1>
+  <p>凡是通过平台完成真实付款的订单（订阅套餐、AI 积分包），均可在此申请开具发票。提交后由财务审核开具，电子发票将发送至你填写的邮箱。</p>
+
+  <div class="quota-row">
+    <div class="qcard">
+      <div class="lbl">累计已支付</div>
+      <div class="val gray" id="paidTotal">¥0.00</div>
+    </div>
+    <div class="qcard">
+      <div class="lbl">已申请开票</div>
+      <div class="val gray" id="invTotal">¥0.00</div>
+    </div>
+    <div class="qcard">
+      <div class="lbl">可开票金额</div>
+      <div class="val blue" id="availTotal">¥0.00</div>
+    </div>
+  </div>
+</div>
+
+<section class="wrap">
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <h2>申请开票</h2>
+        <p>勾选需要开票的订单，填写抬头信息后提交</p>
+      </div>
+      <button class="btn-ghost btn-sm" onclick="loadOrders()">刷新订单</button>
+    </div>
+    <div class="card-body">
+
+      <div id="orderWrap">
+        <div class="empty"><div class="ico">⏳</div><p>正在加载可开票订单…</p></div>
+      </div>
+
+      <div class="sum-bar">
+        <div class="amt">已选 <b id="selCount">0</b> 笔，合计 <b id="selAmount">¥0.00</b></div>
+        <button class="btn btn-primary" id="btnSubmit" onclick="submitInvoice()" disabled>提交开票申请</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <h2>开票记录</h2>
+        <p>申请进度与历史发票</p>
+      </div>
+      <button class="btn-ghost btn-sm" onclick="loadInvoices()">刷新</button>
+    </div>
+    <div class="card-body" id="recordWrap">
+      <div class="empty"><div class="ico">⏳</div><p>正在加载…</p></div>
+    </div>
+  </div>
+</section>
+
+<div style="height:50px"></div>
+
+<div class="mask" id="formMask">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>填写开票信息</h3>
+      <button class="modal-close" onclick="closeForm()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>发票类型</label>
+        <div class="radio-row" id="typeRow">
+          <label class="on"><input type="radio" name="itype" value="normal" checked onchange="syncType(this)">增值税普通发票</label>
+          <label><input type="radio" name="itype" value="special" onchange="syncType(this)">增值税专用发票</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>抬头类型</label>
+        <div class="radio-row" id="titleRow">
+          <label class="on"><input type="radio" name="ttype" value="personal" checked onchange="syncTitleType(this)">个人 / 非企业</label>
+          <label><input type="radio" name="ttype" value="company" onchange="syncTitleType(this)">企业单位</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>发票抬头<span class="req">*</span></label>
+        <input id="fTitle" placeholder="个人姓名或公司全称" maxlength="100">
+      </div>
+
+      <div class="field" id="taxField" style="display:none">
+        <label>纳税人识别号<span class="req">*</span></label>
+        <input id="fTax" placeholder="15/17/18/20 位统一社会信用代码" maxlength="32">
+        <div class="hint">开具企业发票必须填写，请与营业执照一致</div>
+      </div>
+
+      <div class="field">
+        <label>开票内容</label>
+        <select id="fContent">
+          <option>信息技术服务费</option>
+          <option>软件服务费</option>
+          <option>技术服务费</option>
+          <option>平台服务费</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>接收邮箱<span class="req">*</span></label>
+        <input id="fEmail" type="email" placeholder="用于接收电子发票">
+      </div>
+
+      <div class="field">
+        <label>备注</label>
+        <textarea id="fRemark" rows="2" placeholder="选填，如特殊开票要求"></textarea>
+      </div>
+
+      <div style="background:#f6faff;border:1px solid var(--border);border-radius:11px;padding:14px 16px;margin-top:4px">
+        <div class="kv"><span class="k">开票金额</span><span class="v" id="mAmount" style="color:var(--brand);font-size:17px">¥0.00</span></div>
+        <div class="kv"><span class="k">关联订单</span><span class="v" id="mOrders">—</span></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-ghost" onclick="closeForm()">取消</button>
+      <button class="btn btn-primary" id="btnConfirm" onclick="confirmSubmit()">确认提交</button>
+    </div>
+  </div>
+</div>
+
+<div class="mask" id="detailMask">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>开票详情</h3>
+      <button class="modal-close" onclick="document.getElementById('detailMask').classList.remove('on')">&times;</button>
+    </div>
+    <div class="modal-body" id="detailBody"></div>
+    <div class="modal-foot">
+      <button class="btn-ghost" onclick="document.getElementById('detailMask').classList.remove('on')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ================= 配置 ================= */
+var SB_URL = location.origin;              // nginx 已反代 /rest /auth
+
+/* 公开 anon key（与前端 bundle 中一致，用于 apikey 头；非密钥，可公开） */
+var FALLBACK_ANON = 'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJyb2xlIjogImFub24iLCAiaXNzIjogInN1cGFiYXNlIiwgImlhdCI6IDE3OTAyNjgwMTYsICJleHAiOiAyMTA1NjI4MDE2fQ.P3s0YUizo985KezDkYZLOSbJGB0_2EaEzLd23MGSsFw';
+var ANON_KEY = null;
+var SESSION = null;
+var ORDERS = [];
+var SELECTED = {};
+
+/* ================= 工具 ================= */
+function toast(msg, kind){
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'on ' + (kind || '');
+  clearTimeout(el._t);
+  el._t = setTimeout(function(){ el.className = ''; }, 2800);
+}
+function money(n){
+  var v = Number(n || 0);
+  return '¥' + v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function fmtTime(t){
+  if (!t) return '—';
+  try {
+    var d = new Date(t);
+    if (isNaN(d.getTime())) return t;
+    var p = function(n){ return n < 10 ? '0'+n : ''+n; };
+    return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());
+  } catch(e){ return t; }
+}
+
+/* ================= 会话 ================= */
+function loadAnonKey(){
+  // 1) 从主站页面/全局探测
+  try {
+    if (window.__SUPABASE_ANON_KEY) return (ANON_KEY = window.__SUPABASE_ANON_KEY);
+    var probe = window.SUPABASE_ANON_KEY || (window.__ENV && window.__ENV.SUPABASE_ANON_KEY);
+    if (probe) return (ANON_KEY = probe);
+  } catch(e){}
+  // 2) 从 localStorage 任一 sb-* 值里找 anon 角色 JWT
+  try {
+    var keys = Object.keys(localStorage);
+    for (var i = 0; i < keys.length; i++){
+      var raw = localStorage.getItem(keys[i]) || '';
+      var m = raw.match(/eyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+/g);
+      if (!m) continue;
+      for (var j = 0; j < m.length; j++){
+        try {
+          var payload = JSON.parse(atob(m[j].split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+          if (payload && payload.role === 'anon'){ ANON_KEY = m[j]; return ANON_KEY; }
+        } catch(e){}
+      }
+    }
+  } catch(e){}
+  // 3) 兜底：内置公开 anon key
+  ANON_KEY = FALLBACK_ANON;
+  return ANON_KEY;
+}
+
+function loadSession(){
+  // Supabase JS 默认把 session 存在 localStorage：sb-<ref>-auth-token
+  var keys = Object.keys(localStorage);
+  for (var i = 0; i < keys.length; i++){
+    var k = keys[i];
+    if (/^sb-.*-auth-token$/.test(k) || k === 'supabase.auth.token'){
+      try {
+        var raw = localStorage.getItem(k);
+        if (!raw) continue;
+        var o = JSON.parse(raw);
+        var s = o && o.currentSession ? o.currentSession : (o && o.session ? o.session : o);
+        if (s && s.access_token){ SESSION = s; break; }
+      } catch(e){}
+    }
+  }
+  // 兜底：适配层/其他键
+  if (!SESSION){
+    for (var j = 0; j < keys.length; j++){
+      if (/supabase|sb-/i.test(keys[j])){
+        try {
+          var v = JSON.parse(localStorage.getItem(keys[j]) || '{}');
+          var cand = v.access_token ? v : (v.session || v.currentSession);
+          if (cand && cand.access_token){ SESSION = cand; break; }
+        } catch(e){}
+      }
+    }
+  }
+  return SESSION;
+}
+
+function authHeaders(extra){
+  var h = Object.assign({ 'Content-Type': 'application/json' }, extra || {});
+  if (ANON_KEY) h['apikey'] = ANON_KEY;
+  if (SESSION && SESSION.access_token){
+    h['Authorization'] = 'Bearer ' + SESSION.access_token;
+  }
+  return h;
+}
+
+function userId(){
+  return SESSION && SESSION.user ? SESSION.user.id : null;
+}
+
+/* ================= 数据 ================= */
+async function api(path, opts){
+  var r = await fetch(SB_URL + path, Object.assign({
+    headers: authHeaders()
+  }, opts || {}));
+  var txt = await r.text();
+  var data = null;
+  try { data = txt ? JSON.parse(txt) : null; } catch(e){ data = txt; }
+  if (!r.ok){
+    var msg = (data && (data.message || data.error || data.hint)) || ('请求失败 ' + r.status);
+    throw new Error(typeof msg === 'string' ? msg : JSON.stringify(msg));
+  }
+  return data;
+}
+
+async function loadQuota(){
+  var uid = userId();
+  if (!uid) return;
+  try {
+    var rows = await api('/rest/v1/invoice_quota?select=paid_total,invoiced_total,available_amount&user_id=eq.' + uid);
+    var r = Array.isArray(rows) ? rows[0] : rows;
+    if (!r) { r = { paid_total: 0, invoiced_total: 0, available_amount: 0 }; }
+    document.getElementById('paidTotal').textContent   = money(r.paid_total);
+    document.getElementById('invTotal').textContent    = money(r.invoiced_total);
+    document.getElementById('availTotal').textContent  = money(r.available_amount);
+  } catch(e){
+    console.warn('quota fail', e);
+  }
+}
+
+async function loadOrders(){
+  var uid = userId();
+  var wrap = document.getElementById('orderWrap');
+  if (!uid){
+    wrap.innerHTML = '<div class="empty"><div class="ico">🔒</div><p>未检测到登录状态，请重新登录后访问</p></div>';
+    return;
+  }
+  wrap.innerHTML = '<div class="empty"><div class="ico">⏳</div><p>正在加载可开票订单…</p></div>';
+  try {
+    var rows = await api('/rest/v1/rpc/invoiceable_orders', {
+      method: 'POST',
+      body: JSON.stringify({ p_user_id: uid })
+    });
+    ORDERS = Array.isArray(rows) ? rows : [];
+    SELECTED = {};
+    renderOrders();
+  } catch(e){
+    wrap.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p>加载失败：' + esc(e.message) + '</p></div>';
+  }
+}
+
+function renderOrders(){
+  var wrap = document.getElementById('orderWrap');
+  if (!ORDERS.length){
+    wrap.innerHTML = '<div class="empty"><div class="ico">🧾</div><p>暂无可开票订单<br><span style="font-size:12.5px">完成支付后的订单会出现在这里</span></p></div>';
+    updateSum();
+    return;
+  }
+  var html = '<div class="order-pick"><table><thead><tr>' +
+    '<th style="width:44px"><input type="checkbox" id="pickAll" onchange="toggleAll(this)"></th>' +
+    '<th>订单号</th><th>支付时间</th><th>商品</th><th style="text-align:right">金额</th>' +
+    '</tr></thead><tbody>';
+  ORDERS.forEach(function(o, i){
+    var goods = o.package_code ? ('积分包 ' + o.package_code) : '订阅/服务费';
+    html += '<tr id="orow' + i + '">' +
+      '<td><input type="checkbox" onchange="toggleOne(' + i + ', this)"></td>' +
+      '<td class="mono">' + esc(o.order_no) + '</td>' +
+      '<td style="color:var(--text-2);font-size:12.5px">' + fmtTime(o.paid_at) + '</td>' +
+      '<td>' + esc(goods) + '</td>' +
+      '<td style="text-align:right;font-weight:700">' + money(o.amount) + '</td>' +
+      '</tr>';
+  });
+  html += '</tbody></table></div>';
+  wrap.innerHTML = html;
+  updateSum();
+}
+
+function toggleAll(cb){
+  ORDERS.forEach(function(o, i){
+    SELECTED[i] = cb.checked;
+    var row = document.getElementById('orow' + i);
+    if (row){
+      row.classList.toggle('sel', cb.checked);
+      var box = row.querySelector('input[type=checkbox]');
+      if (box) box.checked = cb.checked;
+    }
+  });
+  updateSum();
+}
+
+function toggleOne(i, cb){
+  SELECTED[i] = cb.checked;
+  var row = document.getElementById('orow' + i);
+  if (row) row.classList.toggle('sel', cb.checked);
+  updateSum();
+}
+
+function selectedOrders(){
+  var out = [];
+  ORDERS.forEach(function(o, i){ if (SELECTED[i]) out.push(o); });
+  return out;
+}
+function selectedAmount(){
+  return selectedOrders().reduce(function(s, o){ return s + Number(o.amount || 0); }, 0);
+}
+
+function updateSum(){
+  var n = selectedOrders().length;
+  document.getElementById('selCount').textContent = n;
+  document.getElementById('selAmount').textContent = money(selectedAmount());
+  document.getElementById('btnSubmit').disabled = n === 0;
+}
+
+async function loadInvoices(){
+  var uid = userId();
+  var wrap = document.getElementById('recordWrap');
+  if (!uid){ wrap.innerHTML = '<div class="empty"><p>未登录</p></div>'; return; }
+  wrap.innerHTML = '<div class="empty"><div class="ico">⏳</div><p>正在加载…</p></div>';
+  try {
+    var rows = await api('/rest/v1/invoices?select=*&user_id=eq.' + uid + '&order=created_at.desc');
+    rows = Array.isArray(rows) ? rows : [];
+    if (!rows.length){
+      wrap.innerHTML = '<div class="empty"><div class="ico">📄</div><p>还没有开票记录</p></div>';
+      return;
+    }
+    var html = '';
+    rows.forEach(function(v, i){
+      var st = v.status === 'issued' ? 'issued' : (v.status === 'rejected' ? 'rejected' : 'pending');
+      var stTxt = st === 'issued' ? '已开具' : (st === 'rejected' ? '已驳回' : '待审核');
+      var title = (v.title_type === 'company' ? '企业' : '个人') + ' · ' + (v.title || '');
+      var sub = '申请于 ' + fmtTime(v.created_at) +
+                (v.invoice_no ? ' · 发票号 ' + esc(v.invoice_no) : '') +
+                (st === 'rejected' && v.reject_reason ? ' · ' + esc(v.reject_reason) : '');
+      html += '<div class="rec">' +
+        '<div class="l"><div class="t">' + esc(title) + '</div><div class="s">' + sub + '</div></div>' +
+        '<div class="r">' +
+          '<span class="tag ' + st + '">' + stTxt + '</span>' +
+          '<span class="money">' + money(v.amount) + '</span>' +
+          '<button class="btn-ghost btn-sm" onclick="showDetail(' + i + ')">详情</button>' +
+        '</div></div>';
+    });
+    wrap.innerHTML = html;
+    window.__INV = rows;
+  } catch(e){
+    wrap.innerHTML = '<div class="empty"><div class="ico">⚠️</div><p>加载失败：' + esc(e.message) + '</p></div>';
+  }
+}
+
+/* ================= 详情 ================= */
+function showDetail(i){
+  var v = (window.__INV || [])[i];
+  if (!v) return;
+  var stTxt = v.status === 'issued' ? '已开具' : (v.status === 'rejected' ? '已驳回' : '待审核');
+  var orders = Array.isArray(v.order_nos) ? v.order_nos.join('、') : '—';
+  var html =
+    '<div class="kv"><span class="k">状态</span><span class="v">' + stTxt + '</span></div>' +
+    '<div class="kv"><span class="k">发票号</span><span class="v mono">' + esc(v.invoice_no || '开具后生成') + '</span></div>' +
+    '<div class="kv"><span class="k">发票类型</span><span class="v">' + (v.invoice_type === 'special' ? '增值税专用发票' : '增值税普通发票') + '</span></div>' +
+    '<div class="kv"><span class="k">抬头类型</span><span class="v">' + (v.title_type === 'company' ? '企业单位' : '个人 / 非企业') + '</span></div>' +
+    '<div class="kv"><span class="k">发票抬头</span><span class="v">' + esc(v.title) + '</span></div>' +
+    (v.tax_no ? '<div class="kv"><span class="k">纳税人识别号</span><span class="v mono">' + esc(v.tax_no) + '</span></div>' : '') +
+    '<div class="kv"><span class="k">开票内容</span><span class="v">' + esc(v.content) + '</span></div>' +
+    '<div class="kv"><span class="k">开票金额</span><span class="v" style="color:var(--brand);font-size:16px">' + money(v.amount) + '</span></div>' +
+    '<div class="kv"><span class="k">接收邮箱</span><span class="v">' + esc(v.email || '—') + '</span></div>' +
+    '<div class="kv"><span class="k">关联订单</span><span class="v mono" style="font-size:12px;max-width:60%">' + esc(orders) + '</span></div>' +
+    '<div class="kv"><span class="k">申请时间</span><span class="v">' + fmtTime(v.created_at) + '</span></div>' +
+    (v.issued_at ? '<div class="kv"><span class="k">开具时间</span><span class="v">' + fmtTime(v.issued_at) + '</span></div>' : '') +
+    (v.reject_reason ? '<div class="kv"><span class="k">驳回原因</span><span class="v" style="color:var(--danger)">' + esc(v.reject_reason) + '</span></div>' : '') +
+    (v.remark ? '<div class="kv"><span class="k">备注</span><span class="v">' + esc(v.remark) + '</span></div>' : '') +
+    (v.file_url ? '<div style="margin-top:14px"><a class="btn btn-primary" style="display:inline-block;text-decoration:none" href="' + esc(v.file_url) + '" target="_blank">下载发票文件</a></div>' : '');
+  document.getElementById('detailBody').innerHTML = html;
+  document.getElementById('detailMask').classList.add('on');
+}
+
+/* ================= 表单 ================= */
+function syncType(el){
+  var row = document.getElementById('typeRow');
+  [].forEach.call(row.querySelectorAll('label'), function(l){
+    l.classList.toggle('on', l.contains(el));
+  });
+}
+function syncTitleType(el){
+  var row = document.getElementById('titleRow');
+  [].forEach.call(row.querySelectorAll('label'), function(l){
+    l.classList.toggle('on', l.contains(el));
+  });
+  var isCompany = el.value === 'company';
+  document.getElementById('taxField').style.display = isCompany ? 'block' : 'none';
+}
+
+function openForm(){
+  var sel = selectedOrders();
+  if (!sel.length){ toast('请先勾选需要开票的订单', 'err'); return; }
+  document.getElementById('mAmount').textContent = money(selectedAmount());
+  document.getElementById('mOrders').textContent = sel.length + ' 笔';
+  // 邮箱默认填登录邮箱
+  if (!document.getElementById('fEmail').value && SESSION && SESSION.user && SESSION.user.email){
+    document.getElementById('fEmail').value = SESSION.user.email;
+  }
+  document.getElementById('formMask').classList.add('on');
+}
+function closeForm(){
+  document.getElementById('formMask').classList.remove('on');
+}
+
+function submitInvoice(){
+  openForm();
+}
+
+async function confirmSubmit(){
+  var uid = userId();
+  if (!uid){ toast('登录状态失效，请重新登录', 'err'); return; }
+
+  var itype = document.querySelector('input[name=itype]:checked').value;
+  var ttype = document.querySelector('input[name=ttype]:checked').value;
+  var title = document.getElementById('fTitle').value.trim();
+  var tax   = document.getElementById('fTax').value.trim();
+  var email = document.getElementById('fEmail').value.trim();
+  var content = document.getElementById('fContent').value;
+  var remark  = document.getElementById('fRemark').value.trim();
+
+  if (!title){ toast('请填写发票抬头', 'err'); return; }
+  if (ttype === 'company' && !tax){ toast('开具企业发票请填写纳税人识别号', 'err'); return; }
+  if (ttype === 'company' && !/^[0-9A-Z]{15,20}$/.test(tax)){ toast('纳税人识别号格式不正确', 'err'); return; }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ toast('请填写正确的接收邮箱', 'err'); return; }
+
+  var sel = selectedOrders();
+  var amount = selectedAmount();
+  var btn = document.getElementById('btnConfirm');
+  btn.disabled = true; btn.textContent = '提交中…';
+
+  try {
+    var payload = {
+      user_id: uid,
+      invoice_type: itype,
+      title_type: ttype,
+      title: title,
+      tax_no: ttype === 'company' ? tax : null,
+      amount: amount,
+      content: content,
+      email: email,
+      remark: remark || null,
+      status: 'pending',
+      order_nos: sel.map(function(o){ return o.order_no; })
+    };
+    await api('/rest/v1/invoices', { method: 'POST', body: JSON.stringify(payload) });
+    closeForm();
+    toast('开票申请已提交，财务将在 1-3 个工作日内处理', 'ok');
+    // 重置表单
+    document.getElementById('fTitle').value = '';
+    document.getElementById('fTax').value = '';
+    document.getElementById('fRemark').value = '';
+    await Promise.all([loadOrders(), loadQuota(), loadInvoices()]);
+  } catch(e){
+    toast('提交失败：' + e.message, 'err');
+  } finally {
+    btn.disabled = false; btn.textContent = '确认提交';
+  }
+}
+
+/* ================= 返回财务中心 ================= */
+function goBack(){
+  // 优先回浏览器上一页（通常是财务中心子页）；无历史则回账单明细
+  try {
+    if (document.referrer && document.referrer.indexOf(location.host) > -1 && history.length > 1){
+      history.back();
+      // 兜底：300ms 后仍未离开则直接跳转
+      setTimeout(function(){
+        if (location.pathname.indexOf('/finance/invoice') === 0) location.href = '/finance';
+      }, 350);
+      return;
+    }
+  } catch(e){}
+  location.href = '/finance';
+}
+
+/* ================= 启动 ================= */
+(function init(){
+  loadAnonKey();
+  loadSession();
+  if (!SESSION || !SESSION.access_token){
+    toast('未检测到登录状态，请从 ERP 后台进入本页', 'err');
+  } else if (SESSION.user && SESSION.user.email){
+    document.getElementById('who').textContent = SESSION.user.email;
+  }
+  loadQuota();
+  loadOrders();
+  loadInvoices();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+-- FBA 配送费尺寸分段表：存储亚马逊官方 FBA 配送费率（2024 年标准尺寸/大件费率）
+CREATE TABLE IF NOT EXISTS public.fba_fee_tiers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
+  tier_key TEXT NOT NULL,
+  tier_label TEXT NOT NULL,
+  max_dimension NUMERIC NOT NULL,
+  max_weight NUMERIC NOT NULL,
+  delivery_fee NUMERIC NOT NULL,
+  storage_rate NUMERIC NOT NULL DEFAULT 0.87,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 种子数据：亚马逊官方 FBA 配送费（2024 年标准尺寸与大件费率，单位美元）
+INSERT INTO public.fba_fee_tiers (tier_key, tier_label, max_dimension, max_weight, delivery_fee, storage_rate, sort_order) VALUES
+  ('small_std', '小号标准件', 15, 0.75, 3.22, 0.87, 1),
+  ('large_std', '大号标准件', 18, 20, 4.75, 0.87, 2),
+  ('small_oversize', '小号大件', 60, 70, 8.26, 0.87, 3),
+  ('large_oversize', '大号大件', 108, 150, 9.73, 0.87, 4);
