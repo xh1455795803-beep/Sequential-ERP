@@ -24,6 +24,11 @@ import PdaReceive from './features/pda/pages/PdaReceive';
 import PdaPutaway from './features/pda/pages/PdaPutaway';
 import PdaPick from './features/pda/pages/PdaPick';
 import PdaPack from './features/pda/pages/PdaPack';
+import { InventoryLogsPage } from './features/inventory/pages/InventoryLogsPage';
+import { InventoryAlertsPage } from './features/inventory/pages/InventoryAlertsPage';
+import { InventoryAdjustmentsPage } from './features/inventory/pages/InventoryAdjustmentsPage';
+import { SuppliersPage } from './features/purchase/pages/SuppliersPage';
+import { PurchaseOrdersPage } from './features/purchase/pages/PurchaseOrdersPage';
 import './styles.css';
 import './pwa/registerSW';
 
@@ -116,13 +121,13 @@ const inventoryRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/
 const inventorySkusRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/inventory/skus', component: ProductsPage });
 const inventoryWarehousesRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/inventory/warehouses', component: WarehousesPage });
 const inventoryLocationsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/inventory/locations', component: LocationsPage });
-const inventoryAdjustmentsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/inventory/adjustments', component: () => <PlaceholderPage title="库存调整" hint="盘盈盘亏、质量冻结、调拨等手动调整单据。" /> });
+const inventoryAdjustmentsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/inventory/adjustments', component: InventoryAdjustmentsPage });
 const inventoryCountsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/inventory/counts', component: StocktakingPage });
-const inventoryAlertsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/inventory/alerts', component: () => <PlaceholderPage title="库存告警" hint="低于安全库存、超期、不可售等告警汇总。" /> });
-const inventoryLowStockRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/inventory/low-stock', component: () => <PlaceholderPage title="低库存清单" hint="低于安全线的 SKU 列表（可一键补货下单）。" /> });
-const inventoryOutOfStockRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/inventory/out-of-stock', component: () => <PlaceholderPage title="缺货清单" hint="库存为 0 的 SKU 列表。" /> });
+const inventoryAlertsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/inventory/alerts', component: () => <InventoryAlertsPage mode="all" /> });
+const inventoryLowStockRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/inventory/low-stock', component: () => <InventoryAlertsPage mode="low" /> });
+const inventoryOutOfStockRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/inventory/out-of-stock', component: () => <InventoryAlertsPage mode="out" /> });
 const inventoryStrategiesRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/inventory/strategies', component: () => <PlaceholderPage title="库存策略" hint="自动补货 / 自动下架 / 安全线等策略配置。" /> });
-const inventoryLogsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/inventory/logs', component: () => <PlaceholderPage title="库存流水" hint="出入库/调拨/盘点/调整等全部流水记录。" /> });
+const inventoryLogsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/inventory/logs', component: InventoryLogsPage });
 
 // ------- Business: 履约 group -------
 const fulfillmentRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/fulfillment', component: ShipmentsPage });
@@ -140,8 +145,8 @@ const logisticsTrackingRoute = createRoute({ getParentRoute: () => layoutRoute, 
 const logisticsReconcileRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/logistics/reconcile', component: () => <PlaceholderPage title="物流对账" hint="按账单周期核对渠道/货代/仓储费用。" /> });
 
 // ------- Business: 采购 group -------
-const purchaseOrdersRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/purchase/orders', component: () => <PlaceholderPage title="采购订单" hint="向供应商下达的采购订单统一入口。" /> });
-const purchaseSuppliersRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/purchase/suppliers', component: () => <PlaceholderPage title="供应商管理" hint="供应商档案、分级、付款条件。" /> });
+const purchaseOrdersRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/purchase/orders', component: PurchaseOrdersPage });
+const purchaseSuppliersRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/purchase/suppliers', component: SuppliersPage });
 const purchaseReturnsRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/purchase/returns', component: () => <PlaceholderPage title="采购退货" hint="质量不合格 / 发错货的退货流程。" /> });
 const purchasePlanRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/purchase/plan', component: () => <PlaceholderPage title="补货计划" hint="基于销量预测 + 库存水位自动生成补货建议。" /> });
 const purchaseInboundRoute = createRoute({ getParentRoute: () => layoutRoute, path: '/purchase/inbound', component: AsnsPage });
