@@ -13,6 +13,9 @@ import { ShipmentsPage, ShipmentDetailPage } from './pages/ShipmentsPage';
 import { InventoryPage } from './pages/InventoryPage';
 import { StocktakingPage } from './pages/StocktakingPage';
 import { CarriersPage } from './pages/CarriersPage';
+import { BomManagementPage, BomDetailPage } from './pages/BomManagementPage';
+import { KittingOrdersPage, KittingDetailPage } from './pages/KittingOrdersPage';
+import { TransferPage, TransferDetailPage } from './pages/TransferPage';
 import './styles.css';
 
 // --- 鉴权 ---
@@ -97,6 +100,40 @@ const stocktakingRoute = createRoute({
   component: StocktakingPage,
 });
 
+// BOM / Kitting / Transfers
+const bomRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/bom',
+  component: BomManagementPage,
+});
+const bomDetailRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/bom/$id',
+  component: BomDetailPage,
+});
+
+const kittingRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/kitting',
+  component: KittingOrdersPage,
+});
+const kittingDetailRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/kitting/$id',
+  component: KittingDetailPage,
+});
+
+const transfersRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/transfers',
+  component: TransferPage,
+});
+const transferDetailRoute = createRoute({
+  getParentRoute: () => layoutRoute,
+  path: '/transfers/$id',
+  component: TransferDetailPage,
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   layoutRoute.addChildren([
@@ -109,6 +146,12 @@ const routeTree = rootRoute.addChildren([
     shipmentsRoute,
     shipmentDetailRoute,
     inventoryRoute,
+    bomRoute,
+    bomDetailRoute,
+    kittingRoute,
+    kittingDetailRoute,
+    transfersRoute,
+    transferDetailRoute,
     stocktakingRoute,
   ]),
 ]);

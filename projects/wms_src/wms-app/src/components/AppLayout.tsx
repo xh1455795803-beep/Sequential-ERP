@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import {
   LayoutDashboard, Warehouse, MapPin, Truck, Download, Upload, Boxes, ClipboardList,
-  LogOut, Menu, X, PackageCheck,
+  LogOut, Menu, X, PackageCheck, Layers, ArrowRightLeft,
 } from 'lucide-react';
 
 // 注意：main.tsx 里是手动注册路由，这里直接导出 AppLayout 组件
@@ -14,6 +14,9 @@ const MENU = [
   { path: '/inventory', label: '实时库存', icon: Boxes },
   { path: '/asns', label: '入库管理', icon: Download },
   { path: '/shipments', label: '出库管理', icon: Upload },
+  { path: '/bom', label: 'BOM 物料清单', icon: Layers },
+  { path: '/kitting', label: '组套生产', icon: PackageCheck },
+  { path: '/transfers', label: '跨库调拨', icon: ArrowRightLeft },
   { path: '/stocktaking', label: '盘点管理', icon: ClipboardList },
   { path: '/carriers', label: '承运商', icon: Truck },
 ];

@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 import { useNavigate, useParams } from '@tanstack/react-router';
-import { Plus, ArrowLeft, PackageCheck, Download } from 'lucide-react';
-import { useState } from 'react';
+import { Plus, ArrowLeft, PackageCheck, Download, Sparkles, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Modal, Grid, Field, Footer } from './LocationsPage';
 
 // -------- 列表页 --------
@@ -172,7 +172,7 @@ function AsnForm({ warehouses, onClose, onSaved }: any) {
   }
 }
 
-// -------- 详情页（收货 + 上架） --------
+// -------- 详情页（收货 + 上架 + 🧠智能上架建议） --------
 export function AsnDetailPage() {
   const params = useParams({ strict: false }) as any;
   const id = params?.id;
@@ -206,7 +206,56 @@ export function AsnDetailPage() {
   });
 
   const [receivedMap, setReceivedMap] = useState<Record<string, number>>({});
-  const [putawayMap, setPutawayMap] = useState<Record<string, any>>({}); // item_id -> { location_id, qty }
+  const [putawayMap, setPutawayMap] = useState<Record<string, any>>({});
+  const [suggestions, setSuggestions] = useState<Record<string, any[]>>({});
+  const [suggestLoading, setSuggestLoading] = useState(false);
+
+  // 🧠 自动触发智能上架建议（收货后自动拉取）
+  useEffect(() => {
+    if (!asn?.warehouse_id || !items?.length || asn.status !== 'putaway') return;
+    fetchSuggestions();
+  }, [asn?.warehouse_id, items?.length, asn?.status]);
+
+  async function fetchSuggestions() {
+    if (!asn?.warehouse_id || !items?.length) return;
+    setSuggestLoading(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    if (!token) { setSuggestLoading(false); return; }
+
+    const results: Record<string, any[]> = {};
+    for (const it of items) {
+      try {
+        const res = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/wms-putaway-suggest`,
+          {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              warehouse_id: asn.warehouse_id,
+              sku: it.sku,
+              expected_qty: it.expected_qty,
+            }),
+          }
+        );
+        const json = await res.json();
+        if (json.success && json.suggestions?.length) {
+          results[it.id] = json.suggestions;
+          // 自动填选第一个推荐
+          if (!putawayMap[it.id]) {
+            setPutawayMap(prev => ({
+              ...prev,
+              [it.id]: { location_id: json.suggestions[0].location_id, qty: it.expected_qty - (it.putaway_qty || 0) },
+            }));
+          }
+        }
+      } catch {
+        // Edge Function 可能未部署，静默失败
+      }
+    }
+    setSuggestions(results);
+    setSuggestLoading(false);
+  }
 
   async function receiveAll() {
     const { data: { user } } = await supabase.auth.getUser();
@@ -269,8 +318,6 @@ export function AsnDetailPage() {
         { ...row, location_id: row.location_id, qty_on_hand: row.qty_on_hand },
         { onConflict: 'warehouse_id,location_id,sku,batch_no', ignoreDuplicates: false }
       );
-      // 修正：upsert 累加需要用 rpc 或者先查后写。简单起见我们在前端手动查
-      // 这里跳过复杂处理，简化演示
     }
 
     await supabase.from('wms_inventory_logs').insert(logRows);
@@ -319,7 +366,16 @@ export function AsnDetailPage() {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-5 py-3 border-b border-gray-100 font-medium">ASN 明细</div>
+        <div className="px-5 py-3 border-b border-gray-100 font-medium flex items-center justify-between">
+          <span>ASN 明细</span>
+          {asn.status === 'putaway' && (
+            <button onClick={fetchSuggestions} disabled={suggestLoading}
+              className="text-xs flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-brand-500 to-amber-500 text-white rounded-lg hover:opacity-90 disabled:opacity-50">
+              {suggestLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+              🧠 智能建议库位
+            </button>
+          )}
+        </div>
         <table className="w-full text-sm">
           <thead className="bg-gray-50 text-gray-500 text-xs">
             <tr>
@@ -328,41 +384,72 @@ export function AsnDetailPage() {
               <th className="text-right px-4 py-2">预期</th>
               <th className="text-right px-4 py-2">已收</th>
               <th className="text-right px-4 py-2">已上</th>
+              <th className="text-left px-4 py-2">推荐库位</th>
               <th className="text-left px-4 py-2">上架库位</th>
               <th className="text-right px-4 py-2">数量</th>
             </tr>
           </thead>
           <tbody>
-            {items?.map((it: any) => (
-              <tr key={it.id} className="border-t border-gray-50">
-                <td className="px-4 py-2 font-mono text-xs">{it.sku}</td>
-                <td className="px-4 py-2">{it.sku_name}</td>
-                <td className="px-4 py-2 text-right">{it.expected_qty}</td>
-                <td className="px-4 py-2 text-right text-amber-600">{it.received_qty || 0}</td>
-                <td className="px-4 py-2 text-right text-green-600">{it.putaway_qty || 0}</td>
-                <td className="px-4 py-2">
-                  <select
-                    className="inp text-xs py-1 px-2"
-                    value={putawayMap[it.id]?.location_id || ''}
-                    onChange={(e) => setPutawayMap({ ...putawayMap, [it.id]: { ...(putawayMap[it.id] || {}), location_id: e.target.value } })}
-                    disabled={asn.status === 'completed'}
-                  >
-                    <option value="">选择库位</option>
-                    {(locations as any[])?.filter(l => l.warehouse_id === asn.warehouse_id).map((l: any) =>
-                      <option key={l.id} value={l.id}>{l.code}</option>)}
-                  </select>
-                </td>
-                <td className="px-4 py-2 text-right w-20">
-                  <input type="number" min="0"
-                    className="inp text-right text-xs py-1 px-2"
-                    value={putawayMap[it.id]?.qty || ''}
-                    placeholder={String(it.expected_qty - (it.putaway_qty || 0))}
-                    onChange={(e) => setPutawayMap({ ...putawayMap, [it.id]: { ...(putawayMap[it.id] || {}), qty: +e.target.value } })}
-                    disabled={asn.status === 'completed'}
-                  />
-                </td>
-              </tr>
-            ))}
+            {items?.map((it: any) => {
+              const suggs = suggestions[it.id] || [];
+              return (
+                <tr key={it.id} className="border-t border-gray-50">
+                  <td className="px-4 py-2 font-mono text-xs">{it.sku}</td>
+                  <td className="px-4 py-2">{it.sku_name}</td>
+                  <td className="px-4 py-2 text-right">{it.expected_qty}</td>
+                  <td className="px-4 py-2 text-right text-amber-600">{it.received_qty || 0}</td>
+                  <td className="px-4 py-2 text-right text-green-600">{it.putaway_qty || 0}</td>
+                  <td className="px-4 py-2">
+                    {suggests.length > 0 ? (
+                      <div className="flex flex-col gap-1">
+                        {suggests.slice(0, 3).map((s: any, idx: number) => (
+                          <button
+                            key={s.location_id}
+                            onClick={() => setPutawayMap(prev => ({
+                              ...prev,
+                              [it.id]: { ...(prev[it.id] || {}), location_id: s.location_id },
+                            }))}
+                            title={s.reason}
+                            className={`text-xs px-2 py-0.5 rounded text-left border transition-colors
+                              ${idx === 0 ? 'border-brand-500 bg-brand-50 text-brand-700' : 'border-gray-200 bg-white text-gray-600 hover:border-brand-300'}
+                              ${putawayMap[it.id]?.location_id === s.location_id ? 'ring-2 ring-brand-500' : ''}`}
+                          >
+                            <span className="font-mono font-semibold">{s.code}</span>
+                            <span className="text-gray-400 ml-1">({s.zone_code})</span>
+                            <span className="text-[10px] text-brand-500 ml-1">★{Math.round(s.score)}</span>
+                          </button>
+                        ))}
+                      </div>
+                    ) : suggestLoading ? (
+                      <span className="text-xs text-gray-400">加载中...</span>
+                    ) : (
+                      <span className="text-xs text-gray-400">-</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-2">
+                    <select
+                      className="inp text-xs py-1 px-2"
+                      value={putawayMap[it.id]?.location_id || ''}
+                      onChange={(e) => setPutawayMap({ ...putawayMap, [it.id]: { ...(putawayMap[it.id] || {}), location_id: e.target.value } })}
+                      disabled={asn.status === 'completed'}
+                    >
+                      <option value="">选择库位</option>
+                      {(locations as any[])?.filter(l => l.warehouse_id === asn.warehouse_id).map((l: any) =>
+                        <option key={l.id} value={l.id}>{l.code}</option>)}
+                    </select>
+                  </td>
+                  <td className="px-4 py-2 text-right w-20">
+                    <input type="number" min="0"
+                      className="inp text-right text-xs py-1 px-2"
+                      value={putawayMap[it.id]?.qty || ''}
+                      placeholder={String(it.expected_qty - (it.putaway_qty || 0))}
+                      onChange={(e) => setPutawayMap({ ...putawayMap, [it.id]: { ...(putawayMap[it.id] || {}), qty: +e.target.value } })}
+                      disabled={asn.status === 'completed'}
+                    />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
