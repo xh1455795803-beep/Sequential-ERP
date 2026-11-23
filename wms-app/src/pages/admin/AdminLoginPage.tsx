@@ -12,25 +12,29 @@ export function AdminLoginPage() {
 
   async function submit() {
     setErr('');
-    if (!email || !password) {
-      setErr('请输入邮箱和密码');
-      return;
-    }
+    if (!email || !password) { setErr('请输入邮箱和密码'); return; }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
+      // 登录成功后校验 portalRole 必须是 admin
+      const role = data.user?.user_metadata?.portal_role;
+      if (role !== 'admin') {
+        await supabase.auth.signOut();
+        setErr('该账号无管理员权限');
+        setLoading(false);
+        return;
+      }
       navigate({ to: '/admin/dashboard' });
     } catch (e: any) {
-      setErr(e?.message || '登录失败，请检查账号');
+      setErr(e?.message || '登录失败');
     } finally {
-      setLoading(false);
+      if (loading) setLoading(false);
     }
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#8b5cf6] via-indigo-800 to-slate-900 relative overflow-hidden">
-      {/* 背景装饰 */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-400/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
 
@@ -50,48 +54,27 @@ export function AdminLoginPage() {
             <label className="text-xs text-slate-600 mb-1.5 block font-medium">管理员邮箱</label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type="email"
-                placeholder="admin@thalvior.icu"
-                value={email}
+              <input type="email" placeholder="请输入管理员邮箱" value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#8b5cf6] focus:border-[#8b5cf6] transition"
-              />
+                className="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#8b5cf6] focus:border-[#8b5cf6] transition" />
             </div>
           </div>
           <div>
             <label className="text-xs text-slate-600 mb-1.5 block font-medium">密码</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type="password"
-                placeholder="请输入密码"
-                value={password}
+              <input type="password" placeholder="请输入密码" value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && submit()}
-                className="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#8b5cf6] focus:border-[#8b5cf6] transition"
-              />
+                className="w-full pl-9 pr-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#8b5cf6] focus:border-[#8b5cf6] transition" />
             </div>
           </div>
 
-          {err && (
-            <div className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-100">
-              {err}
-            </div>
-          )}
+          {err && <div className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-100">{err}</div>}
 
-          <button
-            onClick={submit}
-            disabled={loading}
-            className="w-full py-2.5 bg-[#8b5cf6] hover:bg-[#7c3aed] text-white rounded-lg font-medium transition disabled:opacity-60 shadow-md shadow-purple-500/20 flex items-center justify-center gap-2"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" /> 登录中...
-              </>
-            ) : (
-              '进入控制台'
-            )}
+          <button onClick={submit} disabled={loading}
+            className="w-full py-2.5 bg-[#8b5cf6] hover:bg-[#7c3aed] text-white rounded-lg font-medium transition disabled:opacity-60 shadow-md shadow-purple-500/20 flex items-center justify-center gap-2">
+            {loading ? (<><Loader2 className="w-4 h-4 animate-spin" /> 登录中...</>) : '进入控制台'}
           </button>
         </div>
 

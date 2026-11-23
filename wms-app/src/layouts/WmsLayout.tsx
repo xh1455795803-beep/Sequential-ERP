@@ -1,6 +1,6 @@
 import { Outlet, useLocation, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, getAuthContext } from '../lib/supabase';
 import {
   LayoutDashboard, Package, Truck, Inbox, ShoppingCart, ClipboardList,
   Wallet, BarChart3, LogOut, Menu, X, User, Building2,
@@ -20,8 +20,21 @@ export function WmsLayout() {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [collapsed, setCollapsed] = useState(false);
+  const [warehouseName, setWarehouseName] = useState<string>('加载中...');
   const path = useLocation().pathname;
   const isAuth = path.endsWith('/login');
+
+  useEffect(() => {
+    (async () => {
+      const ctx = await getAuthContext();
+      if (ctx.warehouseId) {
+        const { data } = await supabase.from('tlv_warehouses').select('name').eq('id', ctx.warehouseId).maybeSingle();
+        setWarehouseName(data?.name || '未知仓库');
+      } else {
+        setWarehouseName('未绑定仓库');
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
@@ -80,7 +93,7 @@ export function WmsLayout() {
           </button>
           <h1 className="font-semibold text-slate-700">{MENU.find((m) => currentPath.startsWith(m.path))?.label || '工作台'}</h1>
           <div className="ml-auto flex items-center gap-3 text-xs text-slate-500">
-            <span>当前仓库: <b className="text-emerald-700">深圳前海云仓</b></span>
+            <span>当前仓库: <b className="text-emerald-700">{warehouseName}</b></span>
           </div>
         </header>
         <div className="flex-1 overflow-auto bg-slate-50 p-4"><Outlet /></div>

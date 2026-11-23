@@ -1,42 +1,32 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
-import { Search, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { supabase, getAuthContext } from '../../lib/supabase';
+import { Search } from 'lucide-react';
 
-const MERCHANT_ID = '00000000-0000-0000-0000-000000000101';
+export async function MerchantInventoryPage() {
+  const { merchantId } = await getAuthContext();
+  if (!merchantId) return <div>未登录</div>;
 
-export function MerchantInventoryPage() {
-  const [rows, setRows] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data, error } = await supabase
+    .from('tlv_merchant_inventory')
+    .select('product_id, location_code, qty, reserved_qty, inbound_qty, tlv_merchant_products!inner (sku, name)')
+    .eq('merchant_id', merchantId);
+  if (error) console.error(error);
+  const rows = (data || []).map((r: any) => ({
+    ...r,
+    sku: r.merchant_products?.sku,
+    name: r.merchant_products?.name,
+  }));
+
+  return <InventoryUI rows={rows} />;
+}
+
+function InventoryUI({ rows }: { rows: any[] }) {
   const [search, setSearch] = useState('');
-
-  useEffect(() => {
-    supabase
-      .from('tlv_merchant_inventory')
-      .select('product_id, location_code, qty, reserved_qty, inbound_qty, tlv_merchant_products!inner (sku, name)')
-      .eq('merchant_id', MERCHANT_ID)
-      .then(({ data, error }) => {
-        if (error) { console.error('inv error:', error); setRows([]); }
-        else {
-          // Flatten joined product fields
-          setRows((data || []).map((r: any) => ({
-            ...r,
-            sku: r.merchant_products?.sku,
-            name: r.merchant_products?.name,
-          })));
-        }
-        setLoading(false);
-      });
-  }, []);
-
   const filtered = rows.filter((r) => {
     if (!search) return true;
     const s = search.toLowerCase();
-    return (
-      (r.sku || '').toLowerCase().includes(s) ||
-      (r.name || '').toLowerCase().includes(s)
-    );
+    return (r.sku || '').toLowerCase().includes(s) || (r.name || '').toLowerCase().includes(s);
   });
-
   return (
     <div className="space-y-4">
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex items-center gap-3">
@@ -50,13 +40,8 @@ export function MerchantInventoryPage() {
         </div>
         <span className="text-sm text-slate-500">共 {filtered.length} 条</span>
       </div>
-
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-        {loading ? (
-          <div className="p-12 flex items-center justify-center text-slate-400">
-            <Loader2 className="w-5 h-5 animate-spin mr-2" /> 加载中...
-          </div>
-        ) : filtered.length === 0 ? (
+        {filtered.length === 0 ? (
           <div className="p-12 text-center text-slate-400 text-sm">暂无库存数据</div>
         ) : (
           <table className="w-full text-sm">
@@ -71,19 +56,16 @@ export function MerchantInventoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {filtered.map((r: any) => {
-                const name = r.name || '-';
-                return (
-                  <tr key={r.product_id + r.location_code} className="hover:bg-slate-50">
-                    <td className="px-5 py-3 font-mono font-semibold text-blue-700">{r.sku}</td>
-                    <td className="px-5 py-3 text-slate-800">{name}</td>
-                    <td className="px-5 py-3 text-slate-600 font-mono text-xs">{r.location_code || '-'}</td>
-                    <td className="px-5 py-3 text-right tabular-nums font-medium text-green-600">{r.qty ?? 0}</td>
-                    <td className="px-5 py-3 text-right tabular-nums text-amber-600">{r.reserved_qty ?? 0}</td>
-                    <td className="px-5 py-3 text-right tabular-nums text-blue-600">{r.inbound_qty ?? 0}</td>
-                  </tr>
-                );
-              })}
+              {filtered.map((r: any) => (
+                <tr key={r.product_id + r.location_code} className="hover:bg-slate-50">
+                  <td className="px-5 py-3 font-mono font-semibold text-blue-700">{r.sku}</td>
+                  <td className="px-5 py-3 text-slate-800">{r.name || '-'}</td>
+                  <td className="px-5 py-3 text-slate-600 font-mono text-xs">{r.location_code || '-'}</td>
+                  <td className="px-5 py-3 text-right tabular-nums font-medium text-green-600">{r.qty ?? 0}</td>
+                  <td className="px-5 py-3 text-right tabular-nums text-amber-600">{r.reserved_qty ?? 0}</td>
+                  <td className="px-5 py-3 text-right tabular-nums text-blue-600">{r.inbound_qty ?? 0}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         )}

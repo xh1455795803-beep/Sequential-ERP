@@ -1,23 +1,23 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
-import { Store, Plus, Loader2, Link2 } from 'lucide-react';
+import { useState } from 'react';
+import { supabase, getAuthContext } from '../../lib/supabase';
+import { Store, Link2, Plus } from 'lucide-react';
 
-const MERCHANT_ID = '00000000-0000-0000-0000-000000000101';
 const PLATFORMS = ['Shopify', 'TikTok Shop', 'Shopee', 'Lazada', 'Amazon', 'eBay', 'WooCommerce'];
 
-export function MerchantShopsPage() {
-  const [shops, setShops] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+export async function MerchantShopsPage() {
+  const { merchantId } = await getAuthContext();
+  if (!merchantId) return <div>未登录</div>;
+  const { data, error } = await supabase
+    .from('tlv_merchant_shops').select('*').eq('merchant_id', merchantId);
+  if (error) console.error(error);
+  return <ShopsView merchantId={merchantId} shops={data || []} />;
+}
+
+function ShopsView({ merchantId, shops }: any) {
+  const [list, setList] = useState<any[]>(shops);
   const [form, setForm] = useState({ platform: 'Shopify', shop_name: '', api_token: '' });
   const [connecting, setConnecting] = useState(false);
   const [msg, setMsg] = useState('');
-
-  useEffect(() => {
-    supabase.from('tlv_merchant_shops').select('*').eq('merchant_id', MERCHANT_ID).then(({ data, error }) => {
-      if (!error) setShops(data || []);
-      setLoading(false);
-    });
-  }, []);
 
   async function connect(e: React.FormEvent) {
     e.preventDefault(); setMsg('');
@@ -25,14 +25,14 @@ export function MerchantShopsPage() {
     setConnecting(true);
     try {
       const { error } = await supabase.from('tlv_merchant_shops').insert({
-        merchant_id: MERCHANT_ID, platform: form.platform, shop_name: form.shop_name,
-        api_token: form.api_token || 'mock-token-' + Date.now(), status: 'connected',
+        merchant_id: merchantId, platform: form.platform, shop_name: form.shop_name,
+        api_token: form.api_token || null, status: 'connected',
       });
       if (error) throw error;
       setMsg(`已成功连接 ${form.platform}: ${form.shop_name}`);
       setForm({ platform: 'Shopify', shop_name: '', api_token: '' });
-      const { data } = await supabase.from('tlv_merchant_shops').select('*').eq('merchant_id', MERCHANT_ID);
-      setShops(data || []);
+      const { data } = await supabase.from('tlv_merchant_shops').select('*').eq('merchant_id', merchantId);
+      setList(data || []);
     } catch (e: any) { setMsg(e?.message || '连接失败'); }
     finally { setConnecting(false); }
   }
@@ -40,14 +40,13 @@ export function MerchantShopsPage() {
   async function disconnect(id: string) {
     const { error } = await supabase.from('tlv_merchant_shops').update({ status: 'disconnected' }).eq('id', id);
     if (!error) {
-      setShops((s) => s.map((x) => (x.id === id ? { ...x, status: 'disconnected' } : x)));
+      setList((s) => s.map((x) => (x.id === id ? { ...x, status: 'disconnected' } : x)));
       setMsg('已断开连接');
     }
   }
 
   return (
     <div className="space-y-4">
-      {/* Connect form */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
         <div className="flex items-center gap-2 mb-4">
           <Link2 className="w-5 h-5 text-blue-600" />
@@ -70,29 +69,24 @@ export function MerchantShopsPage() {
           <div>
             <label className="text-xs text-slate-500">API Token (可选)</label>
             <input value={form.api_token} onChange={(e) => setForm({ ...form, api_token: e.target.value })}
-              placeholder="mock token" type="password"
+              placeholder="如暂无，可留空" type="password"
               className="mt-1 w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
           </div>
           <div className="flex items-end">
             <button type="submit" disabled={connecting}
               className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg text-sm font-medium">
-              {connecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-              {connecting ? '连接中...' : '连接店铺'}
+              <Plus className="w-4 h-4" />{connecting ? '连接中...' : '连接店铺'}
             </button>
           </div>
         </form>
         {msg && <div className="mt-3 text-sm text-green-700 bg-green-50 border border-green-100 p-2.5 rounded-lg">{msg}</div>}
       </div>
-
-      {/* Connected shops */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="px-5 py-3 border-b border-slate-100 flex items-center gap-2">
           <Store className="w-4 h-4 text-slate-500" />
           <h3 className="font-semibold text-slate-700">已连接店铺</h3>
         </div>
-        {loading ? (
-          <div className="p-12 flex items-center justify-center text-slate-400"><Loader2 className="w-5 h-5 animate-spin mr-2" /> 加载中...</div>
-        ) : shops.length === 0 ? (
+        {list.length === 0 ? (
           <div className="p-12 text-center text-slate-400 text-sm">暂无已连接店铺</div>
         ) : (
           <table className="w-full text-sm">
@@ -106,7 +100,7 @@ export function MerchantShopsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {shops.map((s: any) => (
+              {list.map((s: any) => (
                 <tr key={s.id} className="hover:bg-slate-50">
                   <td className="px-5 py-3 font-medium text-slate-800">{s.platform}</td>
                   <td className="px-5 py-3 text-slate-700">{s.shop_name}</td>

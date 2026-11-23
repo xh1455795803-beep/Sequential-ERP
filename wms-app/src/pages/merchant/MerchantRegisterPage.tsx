@@ -33,17 +33,48 @@ export function MerchantRegisterPage() {
 
     setLoading(true);
     try {
-      const { data, error: sErr } = await supabase.auth.signUp({ email: form.email, password: form.password });
+      const { data, error: sErr } = await supabase.auth.signUp({
+        email: form.email,
+        password: form.password,
+        options: {
+          data: {
+            portal_role: 'merchant',
+          },
+        },
+      });
       if (sErr) throw sErr;
       const uid = data.user?.id;
       if (!uid) throw new Error('注册失败');
 
+      // 仓库ID和tenant_id保持一致
+      const warehouseId = form.warehouse_id || null;
+
       const { error: iErr } = await supabase.from('tlv_merchants').insert({
-        id: uid, merchant_name: form.merchant_name, contact_name: form.contact_name,
-        email: form.email, phone: form.phone || null, warehouse_id: form.warehouse_id || null,
-        country: form.country, balance: 0, status: 'active',
+        id: uid,
+        warehouse_id: warehouseId,
+        business_name: form.merchant_name,
+        contact_name: form.contact_name || null,
+        contact_email: form.email,
+        contact_phone: form.phone || null,
+        country: form.country,
+        balance: 0,
+        frozen_balance: 0,
+        status: 'pending',
       });
       if (iErr) throw iErr;
+
+      // 写回 tenant_id 到 user_metadata（使用 RPC，如果有的话）
+      try {
+        await supabase.rpc('set_user_tenant_metadata', {
+          p_user_id: uid,
+          p_tenant_id: uid,
+          p_portal_role: 'merchant',
+        });
+      } catch {
+        // 如果 RPC 不存在，忽略错误（可能需要通过数据库 trigger 实现）
+        console.warn('RPC set_user_tenant_metadata not available');
+      }
+
       navigate({ to: '/merchant/login' });
     } catch (e: any) { setErr(e?.message || '注册失败'); }
     finally { setLoading(false); }

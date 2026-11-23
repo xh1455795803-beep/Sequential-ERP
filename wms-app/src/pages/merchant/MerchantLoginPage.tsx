@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { supabase } from '../../lib/supabase';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Loader2 } from 'lucide-react';
 
 export function MerchantLoginPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('merchant1@thalvior.demo');
-  const [password, setPassword] = useState('123456');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState('');
 
@@ -42,14 +42,15 @@ export function MerchantLoginPage() {
           <div>
             <label className="text-xs text-slate-600 mb-1 block">密码</label>
             <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && login()}
               className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm" />
           </div>
           {err && <div className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg">{err}</div>}
           <button onClick={login} disabled={loading}
-            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold rounded-lg transition">
+            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2">
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             {loading ? '登录中...' : '登 录'}
           </button>
-          <div className="text-center text-xs text-slate-400">Demo: merchant1@thalvior.demo / 123456</div>
         </div>
       </div>
     </div>

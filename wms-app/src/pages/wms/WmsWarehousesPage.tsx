@@ -1,13 +1,6 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
-import { MapPin, Phone, Mail, Loader2, Building2 } from 'lucide-react';
-
-const FALLBACK = [
-  { id: '00000000-0000-0000-0000-000000000001', name: '深圳前海云仓', code: 'SZ-HQ', country: 'CN', contact_name: '李运营', contact_phone: '+86 13800001111', status: 'active' },
-  { id: '00000000-0000-0000-0000-000000000002', name: '义乌分仓', code: 'YW-02', country: 'CN', contact_name: '王仓管', contact_phone: '+86 13800002222', status: 'active' },
-  { id: '00000000-0000-0000-0000-000000000003', name: '波兰海外仓', code: 'PL-01', country: 'PL', contact_name: 'Anna', contact_phone: '+48 500 123 456', status: 'active' },
-  { id: '00000000-0000-0000-0000-000000000004', name: '美国洛杉矶仓', code: 'US-LA', country: 'US', contact_name: 'Jack', contact_phone: '+1 323-555-0199', status: 'maintenance' },
-];
+import { supabase, getAuthContext } from '../../lib/supabase';
+import { MapPin, Phone, Mail, Loader2, Building2, User } from 'lucide-react';
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {
   active: { label: '运营中', cls: 'bg-emerald-50 text-emerald-700 border-emerald-100' },
@@ -16,19 +9,24 @@ const STATUS_META: Record<string, { label: string; cls: string }> = {
 };
 
 export function WmsWarehousesPage() {
-  const [rows, setRows] = useState<any[]>(FALLBACK);
+  const [warehouseId, setWarehouseId] = useState<string | null>(null);
+  const [row, setRow] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState('');
 
   useEffect(() => {
     (async () => {
+      const ctx = await getAuthContext();
+      if (!ctx.warehouseId) return;
+      setWarehouseId(ctx.warehouseId);
       try {
         const { data, error } = await supabase
           .from('tlv_warehouses')
-          .select('id, name, code, country, contact_name, contact_phone, contact_email, status')
-          .order('country', { ascending: true });
-        if (error) throw error;
-        if (data && data.length) setRows(data);
+          .select('id, name, code, country, address, contact_name, contact_phone, contact_email, status, created_at')
+          .eq('id', ctx.warehouseId)
+          .single();
+        if (error || !data) throw new Error(error?.message || '仓库未找到');
+        setRow(data);
       } catch (e: any) {
         setErr(e.message);
       } finally {
@@ -37,70 +35,86 @@ export function WmsWarehousesPage() {
     })();
   }, []);
 
+  if (!warehouseId) return <div className="p-12 text-center text-slate-500">未登录</div>;
+  if (loading) return <div className="p-12 flex items-center justify-center text-slate-400"><Loader2 className="w-5 h-5 animate-spin mr-2" />加载中...</div>;
+  if (!row) return <div className="p-12 text-center text-slate-500">仓库信息未找到</div>;
+
+  const meta = STATUS_META[row.status] || STATUS_META.active;
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-slate-800">仓库管理</h2>
-          <p className="text-sm text-slate-500 mt-0.5">所有运营中的仓库 · Thalvior 跨境物流网络</p>
-        </div>
-        <div className="text-xs text-slate-500">
-          共 <b className="text-emerald-700">{rows.length}</b> 个仓库
-        </div>
+      <div>
+        <h2 className="text-xl font-bold text-slate-800">当前仓库</h2>
+        <p className="text-sm text-slate-500 mt-0.5">您当前登录的仓库账户信息</p>
       </div>
 
-      {loading && (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-12 flex items-center justify-center text-slate-400 text-sm">
-          <Loader2 className="w-5 h-5 animate-spin mr-2" /> 加载中...
+      {err && <div className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">{err}</div>}
+
+      <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
+                <Building2 className="w-7 h-7" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold">{row.name}</h1>
+                <div className="text-emerald-100 mt-1 font-mono text-sm">{row.code} · {row.country}</div>
+              </div>
+            </div>
+            <span className={`px-3 py-1 text-xs rounded-full border ${meta.cls} bg-white font-medium`}>{meta.label}</span>
+          </div>
         </div>
-      )}
 
-      {!loading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {rows.map((w: any) => {
-            const meta = STATUS_META[w.status] || STATUS_META.active;
-            return (
-              <div key={w.id} className="bg-white rounded-xl shadow-sm border border-slate-100 p-5 hover:shadow-md transition">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shrink-0">
-                      <Building2 className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-slate-800 leading-tight">{w.name}</div>
-                      <div className="text-xs text-slate-500 font-mono">{w.code}</div>
-                    </div>
-                  </div>
-                  <span className={`px-2 py-0.5 text-[11px] rounded-full border ${meta.cls}`}>{meta.label}</span>
-                </div>
-
-                <div className="space-y-2 text-sm text-slate-600 border-t border-slate-100 pt-3">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span>{w.country || '-'}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span>{w.contact_name || '-'} · {w.contact_phone || '无电话'}</span>
-                  </div>
-                  {w.contact_email && (
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span className="truncate">{w.contact_email}</span>
-                    </div>
-                  )}
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">基本信息</h3>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-start gap-3">
+                <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                <div>
+                  <div className="text-slate-400 text-xs">地址</div>
+                  <div className="text-slate-700">{row.address || '-'}</div>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      )}
+              <div className="flex items-center gap-3">
+                <Building2 className="w-4 h-4 text-slate-400 shrink-0" />
+                <div>
+                  <div className="text-slate-400 text-xs">仓库ID</div>
+                  <div className="text-slate-700 font-mono text-xs">{row.id}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <User className="w-4 h-4 text-slate-400 shrink-0" />
+                <div>
+                  <div className="text-slate-400 text-xs">状态</div>
+                  <div className="text-slate-700">{row.status}</div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-      {err && (
-        <div className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
-          查询异常，展示示例数据 · {err}
+          <div>
+            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">联系方式</h3>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center gap-3">
+                <Phone className="w-4 h-4 text-slate-400 shrink-0" />
+                <div>
+                  <div className="text-slate-400 text-xs">联系人</div>
+                  <div className="text-slate-700">{row.contact_name || '-'} · {row.contact_phone || '-'}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                <div>
+                  <div className="text-slate-400 text-xs">邮箱</div>
+                  <div className="text-slate-700 truncate">{row.contact_email || '-'}</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

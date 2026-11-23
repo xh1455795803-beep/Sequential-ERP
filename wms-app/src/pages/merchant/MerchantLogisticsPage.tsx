@@ -1,27 +1,23 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
-import { ChevronDown, ChevronRight, Package, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { supabase, getAuthContext } from '../../lib/supabase';
+import { ChevronDown, ChevronRight, Package } from 'lucide-react';
 
-const MERCHANT_ID = '00000000-0000-0000-0000-000000000101';
+export async function MerchantLogisticsPage() {
+  const { merchantId } = await getAuthContext();
+  if (!merchantId) return <div>未登录</div>;
+  const { data, error } = await supabase
+    .from('tlv_outbound_orders')
+    .select('*')
+    .eq('merchant_id', merchantId)
+    .neq('tracking_no', null)
+    .order('created_at', { ascending: false });
+  if (error) console.error(error);
+  return <LogisticsView merchantId={merchantId} orders={data || []} />;
+}
 
-export function MerchantLogisticsPage() {
-  const [orders, setOrders] = useState<any[]>([]);
+function LogisticsView({ merchantId, orders }: any) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [trackingCache, setTrackingCache] = useState<Record<string, any[]>>({});
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    supabase
-      .from('tlv_outbound_orders')
-      .select('*')
-      .eq('merchant_id', MERCHANT_ID)
-      .neq('tracking_no', null)
-      .order('created_at', { ascending: false })
-      .then(({ data, error }) => {
-        if (!error) setOrders(data || []);
-        setLoading(false);
-      });
-  }, []);
 
   async function toggle(row: any) {
     const key = row.id;
@@ -29,7 +25,7 @@ export function MerchantLogisticsPage() {
       const { data } = await supabase
         .from('tlv_logistics_tracking')
         .select('*')
-        .eq('merchant_id', MERCHANT_ID)
+        .eq('merchant_id', merchantId)
         .eq('tracking_no', row.tracking_no)
         .order('event_time', { ascending: false });
       setTrackingCache((c) => ({ ...c, [key]: data || [] }));
@@ -46,12 +42,7 @@ export function MerchantLogisticsPage() {
         </div>
         <p className="text-sm text-slate-500 mt-1">查看所有已发货的出库单及追踪事件</p>
       </div>
-
-      {loading ? (
-        <div className="bg-white rounded-xl border border-slate-100 p-12 flex items-center justify-center text-slate-400">
-          <Loader2 className="w-5 h-5 animate-spin mr-2" /> 加载中...
-        </div>
-      ) : orders.length === 0 ? (
+      {orders.length === 0 ? (
         <div className="bg-white rounded-xl border border-slate-100 p-12 text-center text-slate-400 text-sm">暂无带物流单号的出库单</div>
       ) : (
         <div className="space-y-3">
@@ -79,7 +70,6 @@ export function MerchantLogisticsPage() {
                   </div>
                 </div>
               </button>
-
               {expanded[o.id] && (
                 <div className="px-5 pb-4 border-t border-slate-100 pt-4">
                   {(trackingCache[o.id] || []).length === 0 ? (
