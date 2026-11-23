@@ -40,26 +40,21 @@ TRUNCATE TABLE wms_billing_rates CASCADE;
 TRUNCATE TABLE wms_carrier_api_logs CASCADE;
 TRUNCATE TABLE wms_staff_performance CASCADE;
 TRUNCATE TABLE wms_staff_tasks CASCADE;
-TRUNCATE TABLE inventory_adjustments CASCADE;
-TRUNCATE TABLE stock_adjustments CASCADE;
-TRUNCATE TABLE wms_locations CASCADE;
-TRUNCATE TABLE wms_zones CASCADE;
-TRUNCATE TABLE wms_warehouses CASCADE;
-TRUNCATE TABLE wms_carriers CASCADE;
-TRUNCATE TABLE wms_skus CASCADE;
-TRUNCATE TABLE wms_user_roles CASCADE;
-TRUNCATE TABLE wms_customers CASCADE;
-TRUNCATE TABLE wms_sync_status CASCADE;
-TRUNCATE TABLE wms_audit_log CASCADE;
-TRUNCATE TABLE wms_settings CASCADE;
-TRUNCATE TABLE wms_webhook_deliveries CASCADE;
-TRUNCATE TABLE wms_work_orders CASCADE;
-TRUNCATE TABLE wms_fba_returns CASCADE;
-TRUNCATE TABLE wms_fba_relabels CASCADE;
-TRUNCATE TABLE wms_shipment_cancellations CASCADE;
-TRUNCATE TABLE wms_supplies CASCADE;
-TRUNCATE TABLE wms_supply_usage CASCADE;
-TRUNCATE TABLE wms_shipment_cancellation_items CASCADE;
+DO $$
+DECLARE
+  tbl text;
+BEGIN
+  FOR tbl IN SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename IN (
+    'inventory_adjustments','stock_adjustments',
+    'wms_locations','wms_zones','wms_warehouses','wms_carriers','wms_skus',
+    'wms_user_roles','wms_customers','wms_sync_status','wms_audit_log',
+    'wms_settings','wms_webhook_deliveries','wms_work_orders',
+    'wms_fba_returns','wms_fba_relabels','wms_shipment_cancellations',
+    'wms_supplies','wms_supply_usage','wms_shipment_cancellation_items'
+  ) LOOP
+    EXECUTE format('TRUNCATE TABLE %I CASCADE', tbl);
+  END LOOP;
+END $$;
 
 -- Reset sequences
 SELECT setval(pg_get_serial_sequence('wms_inventory_logs','id'),1,false);

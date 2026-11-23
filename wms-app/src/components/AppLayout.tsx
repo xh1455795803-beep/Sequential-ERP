@@ -126,15 +126,26 @@ export function AppLayout() {
     new Set(['工作台', '入库', '出库', '库存', '转运', '退件/换货', '盘点', '计费', '智能作业', '设置']),
   );
 
+  // 所有 hooks 必须在条件 return 之前
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
     const { data: sub } = supabase.auth.onAuthStateChange((_, sess) => setUser(sess?.user));
     return () => sub.subscription.unsubscribe();
   }, []);
 
+  // Index redirect: /wms/ → /wms/dashboard or /wms/login
+  useEffect(() => {
+    if (window.location.pathname === '/wms/' || window.location.pathname === '/wms') {
+      supabase.auth.getSession().then(({ data }) => {
+        if (data.session) navigate({ to: '/dashboard' });
+        else navigate({ to: '/login' });
+      });
+    }
+  }, [navigate]);
+
   async function logout() {
     await supabase.auth.signOut();
-    navigate({ to: '/wms/login' });
+    navigate({ to: '/login' });
   }
 
   function toggleGroup(title: string) {
@@ -144,6 +155,14 @@ export function AppLayout() {
       else next.add(title);
       return next;
     });
+  }
+
+  // Login / mobile pages → 只渲染 Outlet（无侧边栏布局）
+  const pathname = window.location.pathname;
+  const isLoginPage = pathname.endsWith('/login');
+  const isMobilePage = pathname.includes('/wms/m');
+  if (isLoginPage || isMobilePage) {
+    return <Outlet />;
   }
 
   const currentPath = window.location.pathname;

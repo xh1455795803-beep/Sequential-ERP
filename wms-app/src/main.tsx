@@ -1,271 +1,294 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { RouterProvider, createRouter, createRootRoute, createRoute } from '@tanstack/react-router';
+import { RouterProvider, createRouter, createRootRoute, createRoute, redirect } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { supabase } from './lib/supabase';
 import { AppLayout } from './components/AppLayout';
 import { MobileLayout } from './components/MobileLayout';
 import './styles.css';
+import { AsnsPage, AsnDetailPage } from './pages/AsnsPage';
+import { AuditLogPage } from './pages/AuditLogPage';
+import { BillingPage } from './pages/BillingPage';
+import { BomManagementPage } from './pages/BomManagementPage';
+import { CarriersPage } from './pages/CarriersPage';
+import { CustomerPortalPage } from './pages/CustomerPortalPage';
+import { DashboardPage } from './pages/DashboardPage';
+import { ErpSyncStatusPage } from './pages/ErpSyncStatusPage';
+import { FbaReturnsPage } from './pages/FbaReturnsPage';
+import { InventoryAdjustPage } from './pages/InventoryAdjustPage';
+import { InventoryMovePage } from './pages/InventoryMovePage';
+import { InventoryPage } from './pages/InventoryPage';
+import { KittingOrdersPage } from './pages/KittingOrdersPage';
+import { LocationsPage } from './pages/LocationsPage';
+import { LoginPage } from './pages/LoginPage';
+import { MobileAsnPutawayPage } from './pages/MobileAsnPutawayPage';
+import { MobileHomePage } from './pages/MobileHomePage';
+import { MobileMovePage } from './pages/MobileMovePage';
+import { MobileMyPerformancePage } from './pages/MobileMyPerformancePage';
+import { MobileReceiveScanPage } from './pages/MobileReceiveScanPage';
+import { MobileReturnsPage } from './pages/MobileReturnsPage';
+import { MobileStocktakingPage } from './pages/MobileStocktakingPage';
+import { ReturnsPage } from './pages/ReturnsPage';
+import { RoleManagementPage } from './pages/RoleManagementPage';
+import { SKUsPage } from './pages/SKUsPage';
+import { SettingsPage } from './pages/SettingsPage';
+import { ShipmentCancellationPage } from './pages/ShipmentCancellationPage';
+import { ShipmentsPage, ShipmentDetailPage } from './pages/ShipmentsPage';
+import { StaffPerformancePage } from './pages/StaffPerformancePage';
+import { StocktakingPage } from './pages/StocktakingPage';
+import { SuppliesPage } from './pages/SuppliesPage';
+import { TransferPage as TransfersPage } from './pages/TransfersPage';
+import { WarehousesPage } from './pages/WarehousesPage';
+import { WaveStrategiesPage } from './pages/WaveStrategiesPage';
+import { WaveTasksPage } from './pages/WaveTasksPage';
+import { WavesPage } from './pages/WavesPage';
+import { WebhookAdminPage } from './pages/WebhookAdminPage';
+import { WorkOrdersPage } from './pages/WorkOrdersPage';
 
 // Query client
 const queryClient = new QueryClient();
 
-// Auth guard
+// Auth guard — 简单版本
 async function requireAuth() {
   const { data: { session } } = await supabase.auth.getSession();
-  if (!session) throw new Error('UNAUTHORIZED');
-  return session;
+  if (!session) throw redirect({ to: '/login' });
 }
 
 // ============================================
 // ROUTES — Admin (AppLayout)
 // ============================================
-const rootRoute = createRootRoute();
-const layoutRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/',
-  component: AppLayout,
-});
-
+const rootRoute = createRootRoute({ component: AppLayout });
 // Login (no auth guard)
 const loginRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: 'login',
-  component: () => import('./pages/LoginPage').then(m => m.LoginPage),
+  getParentRoute: () => rootRoute, path: 'login',
+  component: LoginPage,
 });
 
-// Auth wrapper — all admin routes require auth
-function guard<T extends { getParentRoute: () => any; path: string; }>(spec: T) {
-  return { ...spec, beforeLoad: requireAuth };
+// Auth wrapper — 替代 createRoute，自动加 beforeLoad: requireAuth
+function createAuthRoute<T extends { getParentRoute: () => any; path?: string }>(spec: T) {
+  return createRoute({ ...spec, beforeLoad: requireAuth });
 }
 
-const dashboardRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'dashboard' }),
-  component: () => import('./pages/DashboardPage').then(m => m.DashboardPage),
+const dashboardRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'dashboard',
+  component: DashboardPage,
 });
 
-const warehousesRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'warehouses' }),
-  component: () => import('./pages/WarehousesPage').then(m => m.WarehousesPage),
+const warehousesRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'warehouses',
+  component: WarehousesPage,
 });
 
-const locationsRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'locations' }),
-  component: () => import('./pages/LocationsPage').then(m => m.LocationsPage),
+const locationsRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'locations',
+  component: LocationsPage,
 });
 
 // Inventory group
-const inventoryRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'inventory' }),
-  component: () => import('./pages/InventoryPage').then(m => m.InventoryPage),
+const inventoryRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'inventory',
+  component: InventoryPage,
 });
 
-const skusRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'skus' }),
-  component: () => import('./pages/SKUsPage').then(m => m.SKUsPage),
+const skusRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'skus',
+  component: SKUsPage,
 });
 
-const inventoryMoveRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'inventory/move' }),
-  component: () => import('./pages/InventoryMovePage').then(m => m.InventoryMovePage),
+const inventoryMoveRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'inventory/move',
+  component: InventoryMovePage,
 });
 
-const inventoryAdjustRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'inventory/adjust' }),
-  component: () => import('./pages/InventoryAdjustPage').then(m => m.InventoryAdjustPage),
+const inventoryAdjustRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'inventory/adjust',
+  component: InventoryAdjustPage,
 });
 
 // ASN group
-const asnsRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'asns' }),
-  component: () => import('./pages/AsnsPage').then(m => m.AsnsPage),
+const asnsRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'asns',
+  component: AsnsPage,
 });
 
-const asnDetailRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'asns/$id' }),
-  component: () => import('./pages/AsnsPage').then(m => m.AsnDetailPage),
+const asnDetailRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'asns/$id',
+  component: AsnDetailPage,
 });
 
 // Shipments group
-const shipmentsRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'shipments' }),
-  component: () => import('./pages/ShipmentsPage').then(m => m.ShipmentsPage),
+const shipmentsRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'shipments',
+  component: ShipmentsPage,
 });
 
-const shipmentDetailRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'shipments/$id' }),
-  component: () => import('./pages/ShipmentsPage').then(m => m.ShipmentDetailPage),
+const shipmentDetailRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'shipments/$id',
+  component: ShipmentDetailPage,
 });
 
-const shipmentCancelRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'shipment-cancellations' }),
-  component: () => import('./pages/ShipmentCancellationPage').then(m => m.ShipmentCancellationPage),
+const shipmentCancelRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'shipment-cancellations',
+  component: ShipmentCancellationPage,
 });
 
 // Waves
-const wavesRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'waves' }),
-  component: () => import('./pages/WavesPage').then(m => m.WavesPage),
+const wavesRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'waves',
+  component: WavesPage,
 });
 
-const waveStrategiesRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'wave-strategies' }),
-  component: () => import('./pages/WaveStrategiesPage').then(m => m.WaveStrategiesPage),
+const waveStrategiesRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'wave-strategies',
+  component: WaveStrategiesPage,
 });
 
-const waveTasksRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'wave-tasks' }),
-  component: () => import('./pages/WaveTasksPage').then(m => m.WaveTasksPage),
+const waveTasksRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'wave-tasks',
+  component: WaveTasksPage,
 });
 
 // Stocktaking
-const stocktakingRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'stocktaking' }),
-  component: () => import('./pages/StocktakingPage').then(m => m.StocktakingPage),
+const stocktakingRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'stocktaking',
+  component: StocktakingPage,
 });
 
 // Returns
-const returnsRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'returns' }),
-  component: () => import('./pages/ReturnsPage').then(m => m.ReturnsPage),
+const returnsRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'returns',
+  component: ReturnsPage,
 });
 
 // FBA Returns + Relabels
-const fbaReturnsRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'fba-returns' }),
-  component: () => import('./pages/FbaReturnsPage').then(m => m.FbaReturnsPage),
+const fbaReturnsRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'fba-returns',
+  component: FbaReturnsPage,
 });
 
 // Transfers
-const transfersRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'transfers' }),
-  component: () => import('./pages/TransfersPage').then(m => m.TransfersPage),
+const transfersRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'transfers',
+  component: TransfersPage,
 });
 
 // Billing + Carriers
-const billingRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'billing' }),
-  component: () => import('./pages/BillingPage').then(m => m.BillingPage),
+const billingRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'billing',
+  component: BillingPage,
 });
 
-const carriersRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'carriers' }),
-  component: () => import('./pages/CarriersPage').then(m => m.CarriersPage),
+const carriersRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'carriers',
+  component: CarriersPage,
 });
 
 // BOM + Kitting (simplified)
-const bomRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'bom' }),
-  component: () => import('./pages/BomManagementPage').then(m => m.BomManagementPage),
+const bomRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'bom',
+  component: BomManagementPage,
 });
 
-const kittingRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'kitting' }),
-  component: () => import('./pages/KittingOrdersPage').then(m => m.KittingOrdersPage),
+const kittingRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'kitting',
+  component: KittingOrdersPage,
 });
 
 // Staff + Supplies
-const staffPerfRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'staff/performance' }),
-  component: () => import('./pages/StaffPerformancePage').then(m => m.StaffPerformancePage),
+const staffPerfRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'staff/performance',
+  component: StaffPerformancePage,
 });
 
-const suppliesRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'supplies' }),
-  component: () => import('./pages/SuppliesPage').then(m => m.SuppliesPage),
+const suppliesRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'supplies',
+  component: SuppliesPage,
 });
 
 // Work Orders
-const workOrdersRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'work-orders' }),
-  component: () => import('./pages/WorkOrdersPage').then(m => m.WorkOrdersPage),
+const workOrdersRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'work-orders',
+  component: WorkOrdersPage,
 });
 
 // Settings group
-const settingsRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'settings' }),
-  component: () => import('./pages/SettingsPage').then(m => m.SettingsPage),
+const settingsRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'settings',
+  component: SettingsPage,
 });
 
-const auditRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'audit' }),
-  component: () => import('./pages/AuditLogPage').then(m => m.AuditLogPage),
+const auditRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'audit',
+  component: AuditLogPage,
 });
 
-const erpSyncRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'erp-sync' }),
-  component: () => import('./pages/ErpSyncStatusPage').then(m => m.ErpSyncStatusPage),
+const erpSyncRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'erp-sync',
+  component: ErpSyncStatusPage,
 });
 
-const webhooksRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'webhooks' }),
-  component: () => import('./pages/WebhookAdminPage').then(m => m.WebhookAdminPage),
+const webhooksRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'webhooks',
+  component: WebhookAdminPage,
 });
 
-const rolesRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'settings/roles' }),
-  component: () => import('./pages/RoleManagementPage').then(m => m.RoleManagementPage),
+const rolesRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'settings/roles',
+  component: RoleManagementPage,
 });
 
-const customerRoute = createRoute({
-  ...guard({ getParentRoute: () => layoutRoute, path: 'customer' }),
-  component: () => import('./pages/CustomerPortalPage').then(m => m.CustomerPortalPage),
+const customerRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'customer',
+  component: CustomerPortalPage,
 });
 
 // ============================================
 // ROUTES — Mobile (MobileLayout)
 // ============================================
-const mobileLayoutRoute = createRoute({
-  ...guard({ getParentRoute: () => rootRoute, path: 'm' }),
+const mobileLayoutRoute = createAuthRoute({
+  getParentRoute: () => rootRoute, path: 'm',
   component: MobileLayout,
 });
 
-const mobileHomeRoute = createRoute({
+const mobileHomeRoute = createAuthRoute({
   getParentRoute: () => mobileLayoutRoute,
   path: '/',
-  component: () => import('./pages/MobileHomePage').then(m => m.MobileHomePage),
+  component: MobileHomePage,
 });
 
-const mobileWaveTasksRoute = createRoute({
-  getParentRoute: () => mobileLayoutRoute,
-  path: 'wave-tasks',
-  component: () => import('./pages/WaveTasksPage').then(m => m.WaveTasksPage),
+const mobileWaveTasksRoute = createAuthRoute({
+  getParentRoute: () => mobileLayoutRoute, path: 'wave-tasks',
+  component: WaveTasksPage,
 });
 
-const mobileReceiveRoute = createRoute({
-  getParentRoute: () => mobileLayoutRoute,
-  path: 'asns/receive',
-  component: () => import('./pages/MobileReceiveScanPage').then(m => m.MobileReceiveScanPage),
+const mobileReceiveRoute = createAuthRoute({
+  getParentRoute: () => mobileLayoutRoute, path: 'asns/receive',
+  component: MobileReceiveScanPage,
 });
 
-const mobileAsnPutawayRoute = createRoute({
-  getParentRoute: () => mobileLayoutRoute,
-  path: 'asns/$id',
-  component: () => import('./pages/MobileAsnPutawayPage').then(m => m.MobileAsnPutawayPage),
+const mobileAsnPutawayRoute = createAuthRoute({
+  getParentRoute: () => mobileLayoutRoute, path: 'asns/$id',
+  component: MobileAsnPutawayPage,
 });
 
-const mobileStockRoute = createRoute({
-  getParentRoute: () => mobileLayoutRoute,
-  path: 'stocktaking',
-  component: () => import('./pages/MobileStocktakingPage').then(m => m.MobileStocktakingPage),
+const mobileStockRoute = createAuthRoute({
+  getParentRoute: () => mobileLayoutRoute, path: 'stocktaking',
+  component: MobileStocktakingPage,
 });
 
-const mobileReturnsRoute = createRoute({
-  getParentRoute: () => mobileLayoutRoute,
-  path: 'returns',
-  component: () => import('./pages/MobileReturnsPage').then(m => m.MobileReturnsPage),
+const mobileReturnsRoute = createAuthRoute({
+  getParentRoute: () => mobileLayoutRoute, path: 'returns',
+  component: MobileReturnsPage,
 });
 
-const mobileMoveRoute = createRoute({
-  getParentRoute: () => mobileLayoutRoute,
-  path: 'move',
-  component: () => import('./pages/MobileMovePage').then(m => m.MobileMovePage),
+const mobileMoveRoute = createAuthRoute({
+  getParentRoute: () => mobileLayoutRoute, path: 'move',
+  component: MobileMovePage,
 });
 
-const mobileStatsRoute = createRoute({
-  getParentRoute: () => mobileLayoutRoute,
-  path: 'my-stats',
-  component: () => import('./pages/MobileMyPerformancePage').then(m => m.MobileMyPerformancePage),
+const mobileStatsRoute = createAuthRoute({
+  getParentRoute: () => mobileLayoutRoute, path: 'my-stats',
+  component: MobileMyPerformancePage,
 });
 
 // ============================================
@@ -285,8 +308,6 @@ const layoutChildren = [
   staffPerfRoute, suppliesRoute, workOrdersRoute,
   settingsRoute, rolesRoute, auditRoute, erpSyncRoute, webhooksRoute, customerRoute,
 ];
-layoutRoute.addChildren(layoutChildren);
-
 mobileLayoutRoute.addChildren([
   mobileHomeRoute, mobileWaveTasksRoute, mobileReceiveRoute, mobileAsnPutawayRoute,
   mobileStockRoute, mobileReturnsRoute, mobileMoveRoute, mobileStatsRoute,
@@ -294,7 +315,7 @@ mobileLayoutRoute.addChildren([
 
 const routeTree = rootRoute.addChildren([
   loginRoute,
-  layoutRoute,
+  ...layoutChildren,
   mobileLayoutRoute,
 ]);
 
