@@ -12,10 +12,18 @@ export function MerchantInventoryPage() {
   useEffect(() => {
     supabase
       .from('tlv_merchant_inventory')
-      .select('sku, location, qty_on_hand, qty_reserved, qty_in_transit, merchant_products (name)')
+      .select('product_id, location_code, qty, reserved_qty, inbound_qty, tlv_merchant_products!inner (sku, name)')
       .eq('merchant_id', MERCHANT_ID)
       .then(({ data, error }) => {
-        if (!error) setRows(data || []);
+        if (error) { console.error('inv error:', error); setRows([]); }
+        else {
+          // Flatten joined product fields
+          setRows((data || []).map((r: any) => ({
+            ...r,
+            sku: r.merchant_products?.sku,
+            name: r.merchant_products?.name,
+          })));
+        }
         setLoading(false);
       });
   }, []);
@@ -25,7 +33,7 @@ export function MerchantInventoryPage() {
     const s = search.toLowerCase();
     return (
       (r.sku || '').toLowerCase().includes(s) ||
-      ((r.merchant_products as any)?.name || '').toLowerCase().includes(s)
+      (r.name || '').toLowerCase().includes(s)
     );
   });
 
@@ -64,15 +72,15 @@ export function MerchantInventoryPage() {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {filtered.map((r: any) => {
-                const name = (r.merchant_products as any)?.name || r.name || '-';
+                const name = r.name || '-';
                 return (
-                  <tr key={r.sku + r.location} className="hover:bg-slate-50">
+                  <tr key={r.product_id + r.location_code} className="hover:bg-slate-50">
                     <td className="px-5 py-3 font-mono font-semibold text-blue-700">{r.sku}</td>
                     <td className="px-5 py-3 text-slate-800">{name}</td>
-                    <td className="px-5 py-3 text-slate-600 font-mono text-xs">{r.location || '-'}</td>
-                    <td className="px-5 py-3 text-right tabular-nums font-medium text-green-600">{r.qty_on_hand ?? 0}</td>
-                    <td className="px-5 py-3 text-right tabular-nums text-amber-600">{r.qty_reserved ?? 0}</td>
-                    <td className="px-5 py-3 text-right tabular-nums text-blue-600">{r.qty_in_transit ?? 0}</td>
+                    <td className="px-5 py-3 text-slate-600 font-mono text-xs">{r.location_code || '-'}</td>
+                    <td className="px-5 py-3 text-right tabular-nums font-medium text-green-600">{r.qty ?? 0}</td>
+                    <td className="px-5 py-3 text-right tabular-nums text-amber-600">{r.reserved_qty ?? 0}</td>
+                    <td className="px-5 py-3 text-right tabular-nums text-blue-600">{r.inbound_qty ?? 0}</td>
                   </tr>
                 );
               })}

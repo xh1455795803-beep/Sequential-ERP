@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from '@tanstack/react-router';
+import { Outlet, useLocation, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import {
@@ -25,7 +25,7 @@ export function MerchantLayout() {
   const [balance, setBalance] = useState<number | null>(null);
 
   // Check if on login/register page → render Outlet only
-  const path = window.location.pathname;
+  const path = useLocation().pathname;
   const isAuth = path.endsWith('/login') || path.endsWith('/register');
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export function MerchantLayout() {
     navigate({ to: '/merchant/login' });
   }
 
-  const currentPath = window.location.pathname;
+  const currentPath = useLocation().pathname;
 
   return (
     <div className="flex h-screen bg-slate-50">

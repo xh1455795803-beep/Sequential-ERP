@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from '@tanstack/react-router';
+import { Outlet, useLocation, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import {
@@ -18,7 +18,7 @@ export function AdminLayout() {
   const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [collapsed, setCollapsed] = useState(false);
-  const path = window.location.pathname;
+  const path = useLocation().pathname;
   const isAuth = path.endsWith('/login');
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export function AdminLayout() {
   if (isAuth) return <Outlet />;
 
   async function logout() { await supabase.auth.signOut(); navigate({ to: '/admin/login' }); }
-  const currentPath = window.location.pathname;
+  const currentPath = useLocation().pathname;
 
   return (
     <div className="flex h-screen bg-slate-50">

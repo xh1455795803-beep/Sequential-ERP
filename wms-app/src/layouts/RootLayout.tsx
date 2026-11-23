@@ -1,24 +1,24 @@
-import { Outlet, useNavigate } from '@tanstack/react-router';
+import { Outlet, useLocation, useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { MerchantLayout } from './MerchantLayout';
 import { WmsLayout } from './WmsLayout';
 import { AdminLayout } from './AdminLayout';
 
-/**
- * RootLayout — 路径感知分发器
- * 根据 window.location.pathname 判断当前属于哪个 portal，
- * 渲染对应的 Layout + <Outlet />
- */
 export function RootLayout() {
-  const pathname = window.location.pathname;
-
-  // Index redirect
+  const location = useLocation();
+  const pathname = location.pathname;
   const navigate = useNavigate();
+
   useEffect(() => {
     if (pathname === '/' || pathname === '') {
       navigate({ to: '/merchant/login' });
     }
   }, [pathname, navigate]);
+
+  // Landing page (no prefix match)
+  if (!pathname.startsWith('/merchant') && !pathname.startsWith('/wms') && !pathname.startsWith('/admin')) {
+    return <LandingPage />;
+  }
 
   if (pathname.startsWith('/merchant')) {
     return <MerchantLayout />;
@@ -30,7 +30,6 @@ export function RootLayout() {
     return <AdminLayout />;
   }
 
-  // Fallback landing
   return <LandingPage />;
 }
 
