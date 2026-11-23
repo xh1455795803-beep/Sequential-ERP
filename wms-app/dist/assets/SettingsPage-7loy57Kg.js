@@ -1,0 +1,1 @@
+import{j as t}from"./index-s6_uosZ9.js";function s(){return t.jsxs("div",{className:"p-6",children:[t.jsx("h1",{className:"text-2xl font-bold text-gray-800",children:"SettingsPage"}),t.jsx("p",{className:"text-gray-500 mt-2",children:"页面开发中..."})]})}export{s as SettingsPage};

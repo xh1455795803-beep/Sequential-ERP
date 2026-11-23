@@ -1,0 +1,1 @@
+import{j as e}from"./index-s6_uosZ9.js";function a(){return e.jsxs("div",{className:"p-6",children:[e.jsx("h1",{className:"text-2xl font-bold text-gray-800",children:"RoleManagementPage"}),e.jsx("p",{className:"text-gray-500 mt-2",children:"页面开发中..."})]})}export{a as RoleManagementPage};

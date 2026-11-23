@@ -1,0 +1,9 @@
+/* Tailwind v4 styles */
+@import "tailwindcss";
+
+@theme {
+  --color-brand-500: #3b82f6;
+  --color-brand-100: #dbeafe;
+  --color-deep-700: #1e293b;
+  --color-deep-800: #0f172a;
+}
