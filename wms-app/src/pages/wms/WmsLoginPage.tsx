@@ -16,7 +16,7 @@ export function WmsLoginPage() {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      navigate({ to: '/wms/dashboard' });
+      navigate({ to: '/dashboard' });
     } catch (e: any) { setErr(e.message || '登录失败，请检查邮箱和密码'); }
     finally { setLoading(false); }
   }

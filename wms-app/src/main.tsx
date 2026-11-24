@@ -3,41 +3,21 @@ import ReactDOM from 'react-dom/client';
 import { RouterProvider, createRouter, createRootRoute, createRoute, redirect } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { supabase, getAuthContext, PortalRole } from './lib/supabase';
-import { RootLayout } from './layouts/RootLayout';
+import { WmsLayout } from './layouts/WmsLayout';
+import { WmsLandingPage } from './pages/wms/WmsLandingPage';
 import './styles.css';
 
 const queryClient = new QueryClient();
 
 // ============ AUTH GUARD ============
-async function requireAuth(allowedPortal: PortalRole) {
+async function requireAuth() {
   const ctx = await getAuthContext();
-  if (!ctx.user) throw redirect({ to: `/${allowedPortal}/login` });
-  if (ctx.portalRole !== allowedPortal) {
-    // 登录了但角色不匹配 — 重定向到对应 portal 的 dashboard
-    const target = ctx.portalRole || 'merchant';
-    throw redirect({ to: `/${target}/dashboard` });
-  }
+  if (!ctx.user) throw redirect({ to: '/login' });
 }
 
 // ============ IMPORTS ============
-import { UnifiedLoginPage } from './pages/UnifiedLoginPage';
-// Merchant
-import { MerchantLoginPage } from './pages/merchant/MerchantLoginPage';
-import { MerchantRegisterPage } from './pages/merchant/MerchantRegisterPage';
-import { MerchantDashboardPage } from './pages/merchant/MerchantDashboardPage';
-import { MerchantInventoryPage } from './pages/merchant/MerchantInventoryPage';
-import { MerchantInboundPage } from './pages/merchant/MerchantInboundPage';
-import { MerchantInboundCreatePage } from './pages/merchant/MerchantInboundCreatePage';
-import { MerchantOutboundPage } from './pages/merchant/MerchantOutboundPage';
-import { MerchantOutboundCreatePage } from './pages/merchant/MerchantOutboundCreatePage';
-import { MerchantLogisticsPage } from './pages/merchant/MerchantLogisticsPage';
-import { MerchantWalletPage } from './pages/merchant/MerchantWalletPage';
-import { MerchantShopsPage } from './pages/merchant/MerchantShopsPage';
-import { MerchantProfitPage } from './pages/merchant/MerchantProfitPage';
-import { MerchantPackagePage } from './pages/merchant/MerchantPackagePage';
-
-// WMS
 import { WmsLoginPage } from './pages/wms/WmsLoginPage';
+import { WmsRegisterPage } from './pages/wms/WmsRegisterPage';
 import { WmsDashboardPage } from './pages/wms/WmsDashboardPage';
 import { WmsMerchantInboxPage } from './pages/wms/WmsMerchantInboxPage';
 import { WmsOrdersPage } from './pages/wms/WmsOrdersPage';
@@ -55,74 +35,53 @@ import { WmsFlowConfigPage } from './pages/wms/WmsFlowConfigPage';
 import { WmsIssuePage } from './pages/wms/WmsIssuePage';
 import { WmsCustomerPage } from './pages/wms/WmsCustomerPage';
 
-// Admin
-import { AdminLoginPage } from './pages/admin/AdminLoginPage';
-import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
-import { AdminMerchantsPage } from './pages/admin/AdminMerchantsPage';
-import { AdminWarehousesPage } from './pages/admin/AdminWarehousesPage';
-import { AdminBillingRulesPage } from './pages/admin/AdminBillingRulesPage';
-import { AdminSettlementsPage } from './pages/admin/AdminSettlementsPage';
-
 // ============ ROUTES ============
-const rootRoute = createRootRoute({ component: RootLayout });
+const rootRoute = createRootRoute({ component: Root });
 
-const r = (spec: any, portal?: PortalRole) => 
-  portal ? createRoute({ ...spec, beforeLoad: () => requireAuth(portal) }) : createRoute(spec);
+function Root() {
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+  const inAuth = pathname === '/' || pathname.endsWith('/login') || pathname.endsWith('/register');
+  if (inAuth) return <Outlet />;
+  return <WmsLayout />;
+}
+
+import { Outlet } from '@tanstack/react-router';
+
+const r = (spec: any) => createRoute(spec);
+const p = (spec: any) => createRoute({ ...spec, beforeLoad: requireAuth });
 
 const routeTree = rootRoute.addChildren([
-  // Unified /login
-  r({ getParentRoute: () => rootRoute, path: 'login', component: UnifiedLoginPage }),
+  r({ getParentRoute: () => rootRoute, path: '/', component: WmsLandingPage }),
+  r({ getParentRoute: () => rootRoute, path: 'login', component: WmsLoginPage }),
+  r({ getParentRoute: () => rootRoute, path: 'register', component: WmsRegisterPage }),
 
-  // Merchant /merchant/*
-  r({ getParentRoute: () => rootRoute, path: 'merchant/login', component: MerchantLoginPage }),
-  r({ getParentRoute: () => rootRoute, path: 'merchant/register', component: MerchantRegisterPage }),
-  r({ getParentRoute: () => rootRoute, path: 'merchant/dashboard', component: MerchantDashboardPage }, 'merchant'),
-  r({ getParentRoute: () => rootRoute, path: 'merchant/inventory', component: MerchantInventoryPage }, 'merchant'),
-  r({ getParentRoute: () => rootRoute, path: 'merchant/inbound', component: MerchantInboundPage }, 'merchant'),
-  r({ getParentRoute: () => rootRoute, path: 'merchant/inbound/new', component: MerchantInboundCreatePage }, 'merchant'),
-  r({ getParentRoute: () => rootRoute, path: 'merchant/orders', component: MerchantOutboundPage }, 'merchant'),
-  r({ getParentRoute: () => rootRoute, path: 'merchant/orders/new', component: MerchantOutboundCreatePage }, 'merchant'),
-  r({ getParentRoute: () => rootRoute, path: 'merchant/logistics', component: MerchantLogisticsPage }, 'merchant'),
-  r({ getParentRoute: () => rootRoute, path: 'merchant/wallet', component: MerchantWalletPage }, 'merchant'),
-  r({ getParentRoute: () => rootRoute, path: 'merchant/shops', component: MerchantShopsPage }, 'merchant'),
-  r({ getParentRoute: () => rootRoute, path: 'merchant/profit', component: MerchantProfitPage }, 'merchant'),
-  r({ getParentRoute: () => rootRoute, path: 'merchant/packages', component: MerchantPackagePage }, 'merchant'),
-
-  // WMS /wms/*
-  r({ getParentRoute: () => rootRoute, path: 'wms/login', component: WmsLoginPage }),
-  r({ getParentRoute: () => rootRoute, path: 'wms/dashboard', component: WmsDashboardPage }, 'warehouse'),
-  r({ getParentRoute: () => rootRoute, path: 'wms/merchant-inbox', component: WmsMerchantInboxPage }, 'warehouse'),
-  r({ getParentRoute: () => rootRoute, path: 'wms/orders', component: WmsOrdersPage }, 'warehouse'),
-  r({ getParentRoute: () => rootRoute, path: 'wms/orders/$id', component: WmsOrderDetailPage }, 'warehouse'),
-  r({ getParentRoute: () => rootRoute, path: 'wms/billing', component: WmsBillingPage }, 'warehouse'),
-  r({ getParentRoute: () => rootRoute, path: 'wms/reports', component: WmsReportsPage }, 'warehouse'),
-  r({ getParentRoute: () => rootRoute, path: 'wms/warehouses', component: WmsWarehousesPage }, 'warehouse'),
-  r({ getParentRoute: () => rootRoute, path: 'wms/inventory', component: WmsInventoryPage }, 'warehouse'),
-  r({ getParentRoute: () => rootRoute, path: 'wms/inventory/age', component: WmsInventoryAgePage }, 'warehouse'),
-  r({ getParentRoute: () => rootRoute, path: 'wms/stock-take', component: WmsStockTakePage }, 'warehouse'),
-  r({ getParentRoute: () => rootRoute, path: 'wms/employees', component: WmsEmployeesPage }, 'warehouse'),
-  r({ getParentRoute: () => rootRoute, path: 'wms/performance', component: WmsPerformancePage }, 'warehouse'),
-  r({ getParentRoute: () => rootRoute, path: 'wms/packages', component: WmsPackagePage }, 'warehouse'),
-  r({ getParentRoute: () => rootRoute, path: 'wms/flow-config', component: WmsFlowConfigPage }, 'warehouse'),
-  r({ getParentRoute: () => rootRoute, path: 'wms/issues', component: WmsIssuePage }, 'warehouse'),
-  r({ getParentRoute: () => rootRoute, path: 'wms/customers', component: WmsCustomerPage }, 'warehouse'),
-
-  // Admin /admin/*
-  r({ getParentRoute: () => rootRoute, path: 'admin/login', component: AdminLoginPage }),
-  r({ getParentRoute: () => rootRoute, path: 'admin/dashboard', component: AdminDashboardPage }, 'admin'),
-  r({ getParentRoute: () => rootRoute, path: 'admin/merchants', component: AdminMerchantsPage }, 'admin'),
-  r({ getParentRoute: () => rootRoute, path: 'admin/warehouses', component: AdminWarehousesPage }, 'admin'),
-  r({ getParentRoute: () => rootRoute, path: 'admin/billing-rules', component: AdminBillingRulesPage }, 'admin'),
-  r({ getParentRoute: () => rootRoute, path: 'admin/settlements', component: AdminSettlementsPage }, 'admin'),
+  p({ getParentRoute: () => rootRoute, path: 'dashboard', component: WmsDashboardPage }),
+  p({ getParentRoute: () => rootRoute, path: 'merchant-inbox', component: WmsMerchantInboxPage }),
+  p({ getParentRoute: () => rootRoute, path: 'orders', component: WmsOrdersPage }),
+  p({ getParentRoute: () => rootRoute, path: 'orders/$id', component: WmsOrderDetailPage }),
+  p({ getParentRoute: () => rootRoute, path: 'billing', component: WmsBillingPage }),
+  p({ getParentRoute: () => rootRoute, path: 'reports', component: WmsReportsPage }),
+  p({ getParentRoute: () => rootRoute, path: 'warehouses', component: WmsWarehousesPage }),
+  p({ getParentRoute: () => rootRoute, path: 'inventory', component: WmsInventoryPage }),
+  p({ getParentRoute: () => rootRoute, path: 'inventory/age', component: WmsInventoryAgePage }),
+  p({ getParentRoute: () => rootRoute, path: 'stock-take', component: WmsStockTakePage }),
+  p({ getParentRoute: () => rootRoute, path: 'employees', component: WmsEmployeesPage }),
+  p({ getParentRoute: () => rootRoute, path: 'performance', component: WmsPerformancePage }),
+  p({ getParentRoute: () => rootRoute, path: 'packages', component: WmsPackagePage }),
+  p({ getParentRoute: () => rootRoute, path: 'flow-config', component: WmsFlowConfigPage }),
+  p({ getParentRoute: () => rootRoute, path: 'issues', component: WmsIssuePage }),
+  p({ getParentRoute: () => rootRoute, path: 'customers', component: WmsCustomerPage }),
 ]);
 
-const router = createRouter({ routeTree });
+const router = createRouter({
+  routeTree,
+  basepath: '/wms',
+});
 
 declare module '@tanstack/react-router' {
   interface Register { router: typeof router }
 }
 
-// ============ RENDER ============
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
