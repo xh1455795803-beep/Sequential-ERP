@@ -1,14 +1,18 @@
-import { Outlet, useLocation, useNavigate, Link } from '@tanstack/react-router';
+import { Outlet, useLocation, Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { MerchantLayout } from './MerchantLayout';
 import { WmsLayout } from './WmsLayout';
 import { AdminLayout } from './AdminLayout';
+import { UnifiedLoginPage } from '../pages/UnifiedLoginPage';
 
 export function RootLayout() {
   const location = useLocation();
   const pathname = location.pathname;
 
-  // 统一登录/注册页 → 由子路由 component 全屏接管
+  // 根路径 → 直接显示登录页（不跳转，不 landing）
+  if (pathname === '/') return <UnifiedLoginPage />;
+
+  // 统一登录/注册页 → 全屏
   if (pathname === '/login' || pathname.startsWith('/merchant/register')) {
     return <Outlet />;
   }
@@ -16,8 +20,7 @@ export function RootLayout() {
   if (pathname.startsWith('/merchant')) return <MerchantLayout />;
   if (pathname.startsWith('/wms')) return <WmsLayout />;
   if (pathname.startsWith('/admin')) return <AdminLayout />;
-  // 其他 → LandingPage
-  return <LandingPage />;
+  return <Outlet />;
 }
 
 function LandingPage() {
