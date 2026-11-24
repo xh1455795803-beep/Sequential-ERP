@@ -20,6 +20,7 @@ async function requireAuth(allowedPortal: PortalRole) {
 }
 
 // ============ IMPORTS ============
+import { UnifiedLoginPage } from './pages/UnifiedLoginPage';
 // Merchant
 import { MerchantLoginPage } from './pages/merchant/MerchantLoginPage';
 import { MerchantRegisterPage } from './pages/merchant/MerchantRegisterPage';
@@ -69,6 +70,9 @@ const r = (spec: any, portal?: PortalRole) =>
   portal ? createRoute({ ...spec, beforeLoad: () => requireAuth(portal) }) : createRoute(spec);
 
 const routeTree = rootRoute.addChildren([
+  // Unified /login
+  r({ getParentRoute: () => rootRoute, path: 'login', component: UnifiedLoginPage }),
+
   // Merchant /merchant/*
   r({ getParentRoute: () => rootRoute, path: 'merchant/login', component: MerchantLoginPage }),
   r({ getParentRoute: () => rootRoute, path: 'merchant/register', component: MerchantRegisterPage }),
