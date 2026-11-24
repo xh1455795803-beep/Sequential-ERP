@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { RouterProvider, createRouter, createRootRoute, createRoute, redirect } from '@tanstack/react-router';
+import { RouterProvider, createRouter, createRootRoute, createRoute, redirect, Outlet, useRouterState } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { supabase, getAuthContext, PortalRole } from './lib/supabase';
 import { WmsLayout } from './layouts/WmsLayout';
@@ -35,17 +35,15 @@ import { WmsFlowConfigPage } from './pages/wms/WmsFlowConfigPage';
 import { WmsIssuePage } from './pages/wms/WmsIssuePage';
 import { WmsCustomerPage } from './pages/wms/WmsCustomerPage';
 
-// ============ ROUTES ============
-const rootRoute = createRootRoute({ component: Root });
-
+// ============ ROOT ============
 function Root() {
-  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+  // React Router 内部 pathname（basepath=/wms 已自动剥离）
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const inAuth = pathname === '/' || pathname.endsWith('/login') || pathname.endsWith('/register');
-  if (inAuth) return <Outlet />;
-  return <WmsLayout />;
+  return inAuth ? <Outlet /> : <WmsLayout />;
 }
 
-import { Outlet } from '@tanstack/react-router';
+const rootRoute = createRootRoute({ component: Root });
 
 const r = (spec: any) => createRoute(spec);
 const p = (spec: any) => createRoute({ ...spec, beforeLoad: requireAuth });
@@ -73,10 +71,7 @@ const routeTree = rootRoute.addChildren([
   p({ getParentRoute: () => rootRoute, path: 'customers', component: WmsCustomerPage }),
 ]);
 
-const router = createRouter({
-  routeTree,
-  basepath: '/wms',
-});
+const router = createRouter({ routeTree, basepath: '/wms' });
 
 declare module '@tanstack/react-router' {
   interface Register { router: typeof router }
