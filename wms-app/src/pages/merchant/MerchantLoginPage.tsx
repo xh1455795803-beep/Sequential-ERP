@@ -18,39 +18,51 @@ export function MerchantLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center">
-            <ShoppingCart className="w-7 h-7 text-white" />
-          </div>
-          <div>
-            <div className="text-xl font-bold text-slate-800">商家工作台</div>
-            <div className="text-xs text-slate-500">Thalvior Seller Portal</div>
+    <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
+      {/* 装饰 blob */}
+      <div className="blob w-[480px] h-[480px] -top-20 -left-24" style={{ background: '#bae0fd' }} />
+      <div className="blob w-[400px] h-[400px] -bottom-16 -right-20" style={{ background: '#fce7f3' }} />
+      <div className="blob w-[320px] h-[320px] top-1/3 right-1/4" style={{ background: '#dcfce7' }} />
+
+      <div className="glass w-full max-w-md relative z-10 overflow-hidden">
+        {/* 顶部柔和装饰条 */}
+        <div className="relative h-24 bg-gradient-to-br from-sky-100 via-cyan-50 to-mint-50 flex items-center justify-center">
+          <div className="absolute -bottom-8 w-20 h-20 rounded-2xl bg-white shadow-lg shadow-sky-100 flex items-center justify-center ring-4 ring-white">
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-sky-300 to-cyan-200 flex items-center justify-center shadow-inner">
+              <ShoppingCart className="w-7 h-7 text-white" />
+            </div>
           </div>
         </div>
-        <div className="flex gap-1 mb-6 bg-slate-100 rounded-lg p-1">
-          <button className="flex-1 py-2 text-sm font-semibold bg-white rounded-md shadow text-blue-600">登录</button>
-          <button onClick={() => navigate({ to: '/merchant/register' })} className="flex-1 py-2 text-sm text-slate-500 hover:text-slate-700">注册</button>
-        </div>
-        <div className="space-y-4">
-          <div>
-            <label className="text-xs text-slate-600 mb-1 block">邮箱</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm" />
+
+        <div className="pt-14 pb-8 px-8">
+          <div className="text-center mb-7">
+            <h1 className="text-xl font-bold text-ink-900">商家工作台</h1>
+            <p className="text-xs text-ink-500 mt-1">Thalvior Seller Portal</p>
           </div>
-          <div>
-            <label className="text-xs text-slate-600 mb-1 block">密码</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && login()}
-              className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm" />
+
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-medium text-ink-500 mb-1.5 block">邮箱</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-3 py-2.5 bg-white/70 border border-white focus:border-sky-300 rounded-xl focus:ring-2 focus:ring-sky-200/50 outline-none text-sm transition" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-ink-500 mb-1.5 block">密码</label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && login()}
+                className="w-full px-3 py-2.5 bg-white/70 border border-white focus:border-sky-300 rounded-xl focus:ring-2 focus:ring-sky-200/50 outline-none text-sm transition" />
+            </div>
+            {err && <div className="text-xs text-rose-600 bg-rose-50/80 px-3 py-2 rounded-xl border border-rose-100">{err}</div>}
+            <button onClick={login} disabled={loading}
+              className="w-full py-2.5 bg-gradient-to-r from-sky-500 to-cyan-500 hover:from-sky-600 hover:to-cyan-600 disabled:opacity-50 text-white font-semibold rounded-xl transition flex items-center justify-center gap-2 shadow-md shadow-sky-200/50">
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {loading ? '登录中...' : '登 录'}
+            </button>
           </div>
-          {err && <div className="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg">{err}</div>}
-          <button onClick={login} disabled={loading}
-            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2">
-            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            {loading ? '登录中...' : '登 录'}
-          </button>
+
+          <div className="mt-6 pt-5 border-t border-white/60 text-center text-xs text-ink-300">
+            © Thalvior · 商家端
+          </div>
         </div>
       </div>
     </div>
