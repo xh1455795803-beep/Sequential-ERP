@@ -32,6 +32,7 @@ import { MerchantOutboundCreatePage } from './pages/merchant/MerchantOutboundCre
 import { MerchantLogisticsPage } from './pages/merchant/MerchantLogisticsPage';
 import { MerchantWalletPage } from './pages/merchant/MerchantWalletPage';
 import { MerchantShopsPage } from './pages/merchant/MerchantShopsPage';
+import { MerchantProfitPage } from './pages/merchant/MerchantProfitPage';
 
 // WMS
 import { WmsLoginPage } from './pages/wms/WmsLoginPage';
@@ -43,6 +44,10 @@ import { WmsBillingPage } from './pages/wms/WmsBillingPage';
 import { WmsReportsPage } from './pages/wms/WmsReportsPage';
 import { WmsWarehousesPage } from './pages/wms/WmsWarehousesPage';
 import { WmsInventoryPage } from './pages/wms/WmsInventoryPage';
+import { WmsInventoryAgePage } from './pages/wms/WmsInventoryAgePage';
+import { WmsStockTakePage } from './pages/wms/WmsStockTakePage';
+import { WmsEmployeesPage } from './pages/wms/WmsEmployeesPage';
+import { WmsPerformancePage } from './pages/wms/WmsPerformancePage';
 
 // Admin
 import { AdminLoginPage } from './pages/admin/AdminLoginPage';
@@ -71,6 +76,7 @@ const routeTree = rootRoute.addChildren([
   r({ getParentRoute: () => rootRoute, path: 'merchant/logistics', component: MerchantLogisticsPage }, 'merchant'),
   r({ getParentRoute: () => rootRoute, path: 'merchant/wallet', component: MerchantWalletPage }, 'merchant'),
   r({ getParentRoute: () => rootRoute, path: 'merchant/shops', component: MerchantShopsPage }, 'merchant'),
+  r({ getParentRoute: () => rootRoute, path: 'merchant/profit', component: MerchantProfitPage }, 'merchant'),
 
   // WMS /wms/*
   r({ getParentRoute: () => rootRoute, path: 'wms/login', component: WmsLoginPage }),
@@ -82,6 +88,10 @@ const routeTree = rootRoute.addChildren([
   r({ getParentRoute: () => rootRoute, path: 'wms/reports', component: WmsReportsPage }, 'warehouse'),
   r({ getParentRoute: () => rootRoute, path: 'wms/warehouses', component: WmsWarehousesPage }, 'warehouse'),
   r({ getParentRoute: () => rootRoute, path: 'wms/inventory', component: WmsInventoryPage }, 'warehouse'),
+  r({ getParentRoute: () => rootRoute, path: 'wms/inventory/age', component: WmsInventoryAgePage }, 'warehouse'),
+  r({ getParentRoute: () => rootRoute, path: 'wms/stock-take', component: WmsStockTakePage }, 'warehouse'),
+  r({ getParentRoute: () => rootRoute, path: 'wms/employees', component: WmsEmployeesPage }, 'warehouse'),
+  r({ getParentRoute: () => rootRoute, path: 'wms/performance', component: WmsPerformancePage }, 'warehouse'),
 
   // Admin /admin/*
   r({ getParentRoute: () => rootRoute, path: 'admin/login', component: AdminLoginPage }),

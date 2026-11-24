@@ -3,14 +3,19 @@ import { useEffect, useState } from 'react';
 import { supabase, getAuthContext } from '../lib/supabase';
 import {
   LayoutDashboard, Package, Truck, Inbox, ShoppingCart, ClipboardList,
-  Wallet, BarChart3, LogOut, Menu, X, User, Building2,
+  Wallet, BarChart3, LogOut, Menu, X, User, Building2, CalendarDays,
+  ClipboardCheck, Users, TrendingUp,
 } from 'lucide-react';
 
 const MENU = [
   { path: '/wms/dashboard', label: '工作台', icon: LayoutDashboard },
-  { path: '/wms/merchant-inbox', label: '商家入库待处理', icon: Inbox, badge: '2' },
-  { path: '/wms/orders', label: '代打包订单', icon: ShoppingCart, badge: '1' },
+  { path: '/wms/merchant-inbox', label: '商家入库待处理', icon: Inbox },
+  { path: '/wms/orders', label: '代打包订单', icon: ShoppingCart },
   { path: '/wms/inventory', label: '库存管理', icon: Package },
+  { path: '/wms/inventory/age', label: '库龄分析', icon: CalendarDays },
+  { path: '/wms/stock-take', label: '库存盘点', icon: ClipboardCheck },
+  { path: '/wms/employees', label: '员工管理', icon: Users },
+  { path: '/wms/performance', label: '绩效报表', icon: TrendingUp },
   { path: '/wms/warehouses', label: '仓库管理', icon: Building2 },
   { path: '/wms/billing', label: '计费规则', icon: Wallet },
   { path: '/wms/reports', label: '数据报表', icon: BarChart3 },

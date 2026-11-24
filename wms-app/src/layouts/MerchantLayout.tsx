@@ -3,7 +3,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { supabase, getAuthContext } from '../lib/supabase';
 import {
   LayoutDashboard, Package, ShoppingCart, Truck, Wallet, Store,
-  LogOut, Menu, X, User, Loader2,
+  LogOut, Menu, X, User, Loader2, TrendingUp,
 } from 'lucide-react';
 
 type MenuItem = { path: string; label: string; icon: any };
@@ -16,6 +16,7 @@ const MENU: MenuItem[] = [
   { path: '/merchant/logistics', label: '物流追踪', icon: Truck },
   { path: '/merchant/shops', label: '平台店铺', icon: Store },
   { path: '/merchant/wallet', label: '账单/充值', icon: Wallet },
+  { path: '/merchant/profit', label: '利润核算', icon: TrendingUp },
 ];
 
 function BalanceDisplay() {
