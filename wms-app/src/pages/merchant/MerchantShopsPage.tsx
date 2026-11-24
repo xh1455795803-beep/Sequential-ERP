@@ -1,8 +1,15 @@
 import { useEffect, useState } from 'react';
 import { supabase, getAuthContext } from '../../lib/supabase';
-import { Store, Link2, Plus } from 'lucide-react';
+import { Store, Link2, Plus, RefreshCw } from 'lucide-react';
 
 const PLATFORMS = ['Shopify', 'TikTok Shop', 'Shopee', 'Lazada', 'Amazon', 'eBay', 'WooCommerce'];
+const SYNC_MAP: Record<string, string> = {
+  'TikTok Shop': 'sync-tiktok-orders',
+  'Shopee': 'sync-shopee-orders',
+  'Lazada': 'sync-lazada-orders',
+  'Ozon': 'sync-ozon-orders',
+  'Mercado Libre': 'sync-mercado-orders',
+};
 
 export function MerchantShopsPage() {
   const [loading, setLoading] = useState(true);
@@ -57,6 +64,19 @@ function ShopsView({ merchantId, shops }: any) {
     if (!error) {
       setList((s) => s.map((x) => (x.id === id ? { ...x, status: 'disconnected' } : x)));
       setMsg('已断开连接');
+    }
+  }
+
+  async function syncNow(platform: string) {
+    const fn = SYNC_MAP[platform];
+    if (!fn) { setMsg(`${platform} 暂未对接自动同步`); return; }
+    setMsg(`${platform} 同步中...`);
+    try {
+      const { data, error } = await supabase.functions.invoke(fn, { body: { merchant_id: merchantId } });
+      if (error) throw error;
+      setMsg(`✓ ${platform} 同步完成，${data?.synced ?? 0} 条订单`);
+    } catch (e: any) {
+      setMsg(`✗ ${platform} 同步失败：${e?.message || e}`);
     }
   }
 
@@ -125,7 +145,12 @@ function ShopsView({ merchantId, shops }: any) {
                     </span>
                   </td>
                   <td className="px-5 py-3 text-slate-500 text-xs">{s.created_at?.slice(0, 16).replace('T', ' ')}</td>
-                  <td className="px-5 py-3 text-right">
+                  <td className="px-5 py-3 text-right space-x-2">
+                    {SYNC_MAP[s.platform] && s.status === 'connected' && (
+                      <button onClick={() => syncNow(s.platform)} className="text-xs text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">
+                        <RefreshCw className="w-3 h-3" /> 同步订单
+                      </button>
+                    )}
                     {s.status === 'connected' && (
                       <button onClick={() => disconnect(s.id)} className="text-xs text-red-500 hover:text-red-700">断开</button>
                     )}
