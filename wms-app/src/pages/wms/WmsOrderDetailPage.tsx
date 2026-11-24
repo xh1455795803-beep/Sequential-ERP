@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase, getAuthContext } from '../../lib/supabase';
 import { useParams, useNavigate } from '@tanstack/react-router';
-import { MapPin, User, Package, Truck, Scale, Loader2, ChevronLeft, ClipboardList } from 'lucide-react';
+import { MapPin, User, Package, Truck, Scale, Loader2, ChevronLeft, ClipboardList, FileText, AlertTriangle, Download, Printer, QrCode } from 'lucide-react';
 
 const SM: Record<string, { l: string; c: string }> = {
   pending: { l: '待拣货', c: 'bg-slate-100 text-slate-700' }, picking: { l: '拣货中', c: 'bg-blue-50 text-blue-700' },
@@ -87,8 +87,25 @@ export function WmsOrderDetailPage() {
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <button onClick={() => navigate({ to: '/wms/orders' })} className="p-2 hover:bg-white rounded-lg"><ChevronLeft className="w-5 h-5 text-slate-500" /></button>
-        <div><h2 className="text-xl font-bold text-slate-800 flex items-center gap-2"><span className="font-mono">{row.order_no}</span><span className={`text-[11px] px-2 py-0.5 rounded-full ${meta.c}`}>{meta.l}</span></h2><p className="text-sm text-slate-500 mt-0.5">{row.merchant_name} · {row.platform}</p></div>
+        <div><h2 className="text-xl font-bold text-slate-800 flex items-center gap-2"><span className="font-mono">{row.order_no}</span>
+          <span className={`text-[11px] px-2 py-0.5 rounded-full ${meta.c}`}>{meta.l}</span>
+          {row.is_cod && <span className="text-[10px] px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-semibold">COD ¥{row.cod_amount || 0}</span>}
+        </h2><p className="text-sm text-slate-500 mt-0.5">{row.merchant_name} · {row.platform} · 创建于 {new Date(row.created_at).toLocaleString('zh-CN')}</p></div>
       </div>
+
+      {row.status === 'balance_hold' && (
+        <div className="p-4 border border-red-200 bg-red-50 rounded-lg flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+          <div>
+            <div className="font-semibold text-red-800">⚠ 余额不足</div>
+            <div className="text-sm text-red-700 mt-0.5">{row.merchant_note || '当前商家钱包余额不足以支付本次出库预计扣费'}</div>
+            <div className="text-xs text-red-600 mt-1">
+              预计扣费 <b>¥{(row.estimated_fee ?? 0).toFixed(2)}</b> · 请通知商家充值后再处理
+            </div>
+          </div>
+        </div>
+      )}
+
       {err && <div className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">{err}</div>}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -99,8 +116,18 @@ export function WmsOrderDetailPage() {
             <div className="flex justify-between"><span className="text-slate-400">电话</span><b className="text-slate-800">{row.receiver_phone || '-'}</b></div>
             <div className="flex justify-between items-start"><span className="text-slate-400">地址</span><span className="text-right max-w-[70%]">{row.receiver_address || '-'}</span></div>
             <div className="flex justify-between"><span className="text-slate-400">COD</span><b className={row.cod_amount ? 'text-amber-600' : 'text-slate-400'}>{row.cod_amount ? `¥${row.cod_amount}` : '否'}</b></div>
-            {row.weight_kg && <div className="flex justify-between"><span className="text-slate-400">重量</span><b className="text-slate-800">{row.weight_kg} kg</b></div>}
-            {row.charge_amount != null && <div className="flex justify-between"><span className="text-slate-400">费用</span><b className="text-emerald-700">¥{row.charge_amount}</b></div>}
+            {row.weight_kg && <div className="flex justify-between"><span className="text-slate-400">包裹重量</span><b className="text-slate-800">{row.weight_kg} kg</b></div>}
+            {row.estimated_fee != null && (
+              <div className="border-t border-slate-100 mt-2 pt-2">
+                <div className="flex justify-between"><span className="text-slate-400">预计扣费</span><b className={row.balance_deducted ? 'text-slate-800' : 'text-red-600'}>¥{row.estimated_fee.toFixed(2)}</b></div>
+                <div className="text-[10px] text-slate-400 mt-0.5">
+                  {row.items?.length || 0}件 × ¥3.00 + {row.weight_kg ? `${row.weight_kg}kg × ¥4.00/kg` : '最低¥2.00'}
+                </div>
+              </div>
+            )}
+            {row.charge_amount != null && (
+              <div className="flex justify-between"><span className="text-slate-400">实际扣费</span><b className="text-emerald-700">¥{row.charge_amount}</b></div>
+            )}
           </div>
         </div>
 
@@ -121,12 +148,37 @@ export function WmsOrderDetailPage() {
               <div key={i} className={`p-3 rounded-lg border ${s.t ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-slate-50 border-slate-100 text-slate-400'}`}><div className="font-medium">{s.l}</div><div className="text-[10px] mt-0.5">{s.t ? new Date(s.t).toLocaleString() : '—'}</div></div>
             ))}
           </div>
-          {st && (
+          {st && row.status !== 'balance_hold' && (
             <div className="mt-5 p-4 border border-emerald-100 bg-emerald-50 rounded-lg">
               <div className="font-medium text-emerald-800 mb-3">下一步: {st.l}</div>
               {st.t === 'weighed' && <div className="flex items-center gap-2 mb-3"><Scale className="w-4 h-4 text-slate-500" /><input value={w} onChange={(e) => setW(e.target.value)} placeholder="包裹重量 (kg)" type="number" step="0.01" className="px-3 py-2 w-40 border border-slate-200 rounded-md text-sm" /></div>}
-              {st.t === 'shipped' && <div className="flex items-center gap-2 mb-3"><Truck className="w-4 h-4 text-slate-500" /><input value={track} onChange={(e) => setTrack(e.target.value)} placeholder="物流跟踪号" className="flex-1 max-w-md px-3 py-2 border border-slate-200 rounded-md text-sm" /></div>}
+              {st.t === 'shipped' && (
+                <div className="flex items-center gap-2 mb-3">
+                  <Truck className="w-4 h-4 text-slate-500" />
+                  <input value={track} onChange={(e) => setTrack(e.target.value)} placeholder="物流跟踪号" className="flex-1 max-w-md px-3 py-2 border border-slate-200 rounded-md text-sm" />
+                  <button onClick={() => alert('调用 generate-label-pdf Edge Function 下载面单 PDF')}
+                    className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-xs inline-flex items-center gap-1.5">
+                    <QrCode className="w-3.5 h-3.5" /> 生成面单
+                  </button>
+                  <button onClick={() => alert('打印拣货单功能')}
+                    className="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-xs inline-flex items-center gap-1.5">
+                    <Printer className="w-3.5 h-3.5" /> 打印拣货单
+                  </button>
+                </div>
+              )}
               <button disabled={busy} onClick={advance} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-md text-sm font-medium flex items-center gap-2">{busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <MapPin className="w-4 h-4" />}{st.l}</button>
+            </div>
+          )}
+          {row.status === 'balance_hold' && (
+            <div className="mt-5 flex gap-2">
+              <button onClick={() => alert('通知商家充值 — 通过 MerchantShopsPage 或钱包充值页')}
+                className="px-3 py-2 text-xs bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-md inline-flex items-center gap-1.5">
+                <User className="w-3.5 h-3.5" /> 通知商家充值
+              </button>
+              <button onClick={() => alert('管理员手动扣除商家余额后放行')}
+                className="px-3 py-2 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-md inline-flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5" /> 手动放行
+              </button>
             </div>
           )}
           {ops.length > 0 && (

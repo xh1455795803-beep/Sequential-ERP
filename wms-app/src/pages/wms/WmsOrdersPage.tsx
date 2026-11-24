@@ -5,22 +5,27 @@ import { Search, ShoppingCart, Loader2 } from 'lucide-react';
 
 const TABS = [
   { k: 'all', l: '全部', s: [] as string[] },
+  { k: 'balance_hold', l: '余额不足', s: ['balance_hold'], alert: true },
   { k: 'pending', l: '待拣货', s: ['pending'] },
-  { k: 'packing', l: '打包中', s: ['picking', 'packing'] },
-  { k: 'weighed', l: '已称重', s: ['weighed'] },
+  { k: 'packing', l: '打包中', s: ['picking', 'packing', 'packed', 'qc'] },
+  { k: 'weighed', l: '已称重', s: ['weighed', 'verified'] },
   { k: 'shipped', l: '已出库', s: ['shipped'] },
   { k: 'exception', l: '异常', s: ['cancelled', 'exception', 'returned'] },
 ];
 
 const SM: Record<string, { l: string; c: string }> = {
+  balance_hold: { l: '余额不足', c: 'bg-red-50 text-red-700 border border-red-200' },
   pending: { l: '待拣货', c: 'bg-slate-100 text-slate-700' },
   picking: { l: '拣货中', c: 'bg-blue-50 text-blue-700' },
+  packed:  { l: '已打包', c: 'bg-purple-50 text-purple-700' },
+  qc:      { l: '质检中', c: 'bg-amber-50 text-amber-700' },
   packing: { l: '打包中', c: 'bg-amber-50 text-amber-700' },
-  weighed: { l: '已称重', c: 'bg-purple-50 text-purple-700' },
+  weighed: { l: '已称重', c: 'bg-cyan-50 text-cyan-700' },
+  verified:{ l: '已核验', c: 'bg-indigo-50 text-indigo-700' },
   shipped: { l: '已出库', c: 'bg-emerald-50 text-emerald-700' },
-  cancelled: { l: '已取消', c: 'bg-red-50 text-red-700' },
-  exception: { l: '异常', c: 'bg-red-50 text-red-700' },
-  returned: { l: '退回', c: 'bg-rose-50 text-rose-700' },
+  cancelled:{ l: '已取消', c: 'bg-red-50 text-red-700' },
+  exception:{ l: '异常', c: 'bg-red-50 text-red-700' },
+  returned:{ l: '退回', c: 'bg-rose-50 text-rose-700' },
 };
 
 export function WmsOrdersPage() {
@@ -85,9 +90,17 @@ export function WmsOrdersPage() {
             const a = t.k === tab;
             return (
               <button key={t.k} onClick={() => setTab(t.k)}
-                className={`px-4 py-3 text-sm whitespace-nowrap border-b-2 transition ${a ? 'border-emerald-600 text-emerald-700 font-medium' : 'border-transparent text-slate-500 hover:text-slate-700'}`}>
+                className={`px-4 py-3 text-sm whitespace-nowrap border-b-2 transition ${
+                  t.alert ? (a ? 'border-red-600 text-red-700 font-medium bg-red-50' : 'border-transparent text-red-500 hover:text-red-700')
+                  : (a ? 'border-emerald-600 text-emerald-700 font-medium' : 'border-transparent text-slate-500 hover:text-slate-700')
+                }`}>
                 {t.l}
-                {t.k !== 'all' && <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full ${a ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{counts[t.k] ?? 0}</span>}
+                {t.k !== 'all' && (
+                  <span className={`ml-1.5 text-[10px] px-1.5 py-0.5 rounded-full ${
+                    t.alert ? (a ? 'bg-red-600 text-white' : 'bg-red-100 text-red-600')
+                    : (a ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500')
+                  }`}>{counts[t.k] ?? 0}</span>
+                )}
               </button>
             );
           })}
@@ -111,19 +124,34 @@ export function WmsOrdersPage() {
               <th className="text-left px-5 py-3 font-medium">平台</th>
               <th className="text-left px-5 py-3 font-medium">收件人</th>
               <th className="text-left px-5 py-3 font-medium">状态</th>
+              <th className="text-left px-5 py-3 font-medium">预估扣费</th>
               <th className="text-left px-5 py-3 font-medium">跟踪号</th>
               <th className="px-5 py-3"></th>
             </tr></thead>
             <tbody className="divide-y divide-slate-50">
               {filtered.map((r: any) => {
                 const m = SM[r.status] || SM.pending;
+                const isBalanceHold = r.status === 'balance_hold';
                 return (
-                  <tr key={r.id} className="hover:bg-slate-50 cursor-pointer" onClick={() => navigate({ to: `/wms/orders/${r.id}` as any })}>
-                    <td className="px-5 py-3 font-mono font-semibold text-slate-800">{r.order_no}</td>
+                  <tr key={r.id} className={`hover:bg-slate-50 cursor-pointer ${isBalanceHold ? 'bg-red-50/60' : ''}`} onClick={() => navigate({ to: `/wms/orders/${r.id}` as any })}>
+                    <td className="px-5 py-3 font-mono font-semibold text-slate-800">
+                      {r.order_no}
+                      {r.is_cod && <span className="ml-1.5 text-[9px] px-1 py-0.5 bg-amber-100 text-amber-700 rounded font-medium">COD</span>}
+                    </td>
                     <td className="px-5 py-3 text-slate-700">{r.merchant_name}</td>
                     <td className="px-5 py-3 text-slate-600">{r.platform}</td>
                     <td className="px-5 py-3 text-slate-600">{r.receiver_name}</td>
-                    <td className="px-5 py-3"><span className={`text-[11px] px-2 py-0.5 rounded-full ${m.c}`}>{m.l}</span></td>
+                    <td className="px-5 py-3">
+                      <span className={`text-[11px] px-2 py-0.5 rounded-full ${m.c}`}>{m.l}</span>
+                      {isBalanceHold && r.merchant_note && (
+                        <div className="text-[10px] text-red-600 mt-0.5">{r.merchant_note}</div>
+                      )}
+                    </td>
+                    <td className="px-5 py-3 tabular-nums text-sm">
+                      {r.estimated_fee != null ? (
+                        <span className={`font-semibold ${r.balance_deducted ? 'text-slate-700' : 'text-red-600'}`}>¥{r.estimated_fee.toFixed(2)}</span>
+                      ) : '—'}
+                    </td>
                     <td className="px-5 py-3 font-mono text-xs text-slate-500">{r.tracking_no || '-'}</td>
                     <td className="px-5 py-3 text-right">
                       <button onClick={(e) => { e.stopPropagation(); navigate({ to: `/wms/orders/${r.id}` as any }); }}
