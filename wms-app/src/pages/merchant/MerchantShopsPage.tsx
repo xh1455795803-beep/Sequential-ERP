@@ -1,16 +1,31 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase, getAuthContext } from '../../lib/supabase';
 import { Store, Link2, Plus } from 'lucide-react';
 
 const PLATFORMS = ['Shopify', 'TikTok Shop', 'Shopee', 'Lazada', 'Amazon', 'eBay', 'WooCommerce'];
 
-export async function MerchantShopsPage() {
-  const { merchantId } = await getAuthContext();
+export function MerchantShopsPage() {
+  const [loading, setLoading] = useState(true);
+  const [merchantId, setMerchantId] = useState<string | null>(null);
+  const [shops, setShops] = useState<any[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const ctx = await getAuthContext();
+      if (!ctx.merchantId) { setLoading(false); return; }
+      setMerchantId(ctx.merchantId);
+      const { data, error } = await supabase
+        .from('tlv_merchant_shops').select('*').eq('merchant_id', ctx.merchantId);
+      if (error) console.error(error);
+      setShops(data || []);
+      setLoading(false);
+    })();
+  }, []);
+
+  if (loading) return <div className="p-12 text-center text-slate-400">加载中...</div>;
   if (!merchantId) return <div>未登录</div>;
-  const { data, error } = await supabase
-    .from('tlv_merchant_shops').select('*').eq('merchant_id', merchantId);
-  if (error) console.error(error);
-  return <ShopsView merchantId={merchantId} shops={data || []} />;
+
+  return <ShopsView merchantId={merchantId} shops={shops} />;
 }
 
 function ShopsView({ merchantId, shops }: any) {

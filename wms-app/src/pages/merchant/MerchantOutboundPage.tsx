@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { supabase, getAuthContext } from '../../lib/supabase';
 import { Plus } from 'lucide-react';
@@ -22,20 +22,27 @@ const SOURCE_TABS = [
   { key: 'PLATFORM', label: '平台同步' },
 ];
 
-export async function MerchantOutboundPage() {
-  const { merchantId } = await getAuthContext();
-  if (!merchantId) return <div>未登录</div>;
-  const { data, error } = await supabase
-    .from('tlv_outbound_orders').select('*').eq('merchant_id', merchantId)
-    .order('created_at', { ascending: false });
-  if (error) console.error(error);
-  return <OutboundView rows={data || []} />;
-}
-
-function OutboundView({ rows }: { rows: any[] }) {
+export function MerchantOutboundPage() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [rows, setRows] = useState<any[]>([]);
   const [sourceTab, setSourceTab] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
+
+  useEffect(() => {
+    (async () => {
+      const { merchantId } = await getAuthContext();
+      if (!merchantId) { setLoading(false); return; }
+      const { data, error } = await supabase
+        .from('tlv_outbound_orders').select('*').eq('merchant_id', merchantId)
+        .order('created_at', { ascending: false });
+      if (error) console.error(error);
+      setRows(data || []);
+      setLoading(false);
+    })();
+  }, []);
+
+  if (loading) return <div className="p-12 text-center text-slate-400">加载中...</div>;
 
   const filtered = rows.filter((r) => {
     if (sourceTab === 'MANUAL' && (r.source || r.platform || '').toUpperCase() !== 'MANUAL') return false;
@@ -95,14 +102,14 @@ function OutboundView({ rows }: { rows: any[] }) {
                   <tr key={r.id} className="hover:bg-slate-50">
                     <td className="px-5 py-3 font-mono font-medium text-slate-800">{r.order_no || r.id}</td>
                     <td className="px-5 py-3 text-slate-600">{r.platform || '-'}</td>
-                    <td className="px-5 py-3 text-slate-700">{r.receiver_name || r.recipient_name || '-'}</td>
+                    <td className="px-5 py-3 text-slate-700">{r.receiver_name || '-'}</td>
                     <td className="px-5 py-3">
                       <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${STATUS_BADGE[r.status || 'pending'] || 'bg-slate-100 text-slate-600'}`}>
                         {STATUS_LABEL[r.status || 'pending'] || r.status}
                       </span>
                     </td>
                     <td className="px-5 py-3 text-right tabular-nums">{r.weight_kg ?? '-'}</td>
-                    <td className="px-5 py-3 text-right tabular-nums text-blue-700">¥{(r.total_charge ?? r.fee ?? 0).toFixed(2)}</td>
+                    <td className="px-5 py-3 text-right tabular-nums text-blue-700">¥{(r.total_charge ?? 0).toFixed(2)}</td>
                     <td className="px-5 py-3 text-center">
                       {r.is_cod ? <span className="text-xs bg-red-50 text-red-600 px-2 py-0.5 rounded">是</span> : <span className="text-xs text-slate-400">-</span>}
                     </td>

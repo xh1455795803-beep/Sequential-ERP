@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { supabase, getAuthContext } from '../../lib/supabase';
 import { Plus } from 'lucide-react';
@@ -15,19 +15,29 @@ const STATUS_LABEL: Record<string, string> = {
 };
 const STATUSES = ['ALL', 'pending', 'received', 'inspecting', 'completed'];
 
-export async function MerchantInboundPage() {
-  const { merchantId } = await getAuthContext();
-  if (!merchantId) return <div>未登录</div>;
-  const { data, error } = await supabase
-    .from('tlv_inbound_orders').select('*').eq('merchant_id', merchantId)
-    .order('created_at', { ascending: false });
-  if (error) console.error(error);
-  return <InboundView rows={data || []} />;
-}
-
-function InboundView({ rows }: { rows: any[] }) {
+export function MerchantInboundPage() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [rows, setRows] = useState<any[]>([]);
   const [status, setStatus] = useState('ALL');
+
+  useEffect(() => {
+    (async () => {
+      const { merchantId } = await getAuthContext();
+      if (!merchantId) { setLoading(false); return; }
+      const { data, error } = await supabase
+        .from('tlv_inbound_orders')
+        .select('*, tlv_warehouses(name)')
+        .eq('merchant_id', merchantId)
+        .order('created_at', { ascending: false });
+      if (error) console.error(error);
+      setRows(data || []);
+      setLoading(false);
+    })();
+  }, []);
+
+  if (loading) return <div className="p-12 text-center text-slate-400">加载中...</div>;
+
   const filtered = status === 'ALL' ? rows : rows.filter((r) => r.status === status);
 
   return (
@@ -64,7 +74,7 @@ function InboundView({ rows }: { rows: any[] }) {
                 <tr key={r.id} className="hover:bg-slate-50">
                   <td className="px-5 py-3 font-mono font-medium text-slate-800">{r.inbound_no || r.id}</td>
                   <td className="px-5 py-3 text-slate-600">{r.created_at?.slice(0, 16).replace('T', ' ')}</td>
-                  <td className="px-5 py-3 text-slate-600">{r.warehouse || '-'}</td>
+                  <td className="px-5 py-3 text-slate-600">{(r.tlv_warehouses as any)?.name || r.warehouse_id || '-'}</td>
                   <td className="px-5 py-3">
                     <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${STATUS_BADGE[r.status || 'pending'] || 'bg-slate-100 text-slate-600'}`}>
                       {STATUS_LABEL[r.status || 'pending'] || r.status}

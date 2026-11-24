@@ -1,142 +1,166 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { supabase, getAuthContext } from '../../lib/supabase';
-import { ArrowLeft, Plus, X } from 'lucide-react';
+import { Plus, Trash2, Package } from 'lucide-react';
 
-export async function MerchantInboundCreatePage() {
-  const { merchantId } = await getAuthContext();
+export function MerchantInboundCreatePage() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [merchantId, setMerchantId] = useState<string | null>(null);
+  const [warehouses, setWarehouses] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const ctx = await getAuthContext();
+      if (!ctx.merchantId) { setLoading(false); return; }
+      setMerchantId(ctx.merchantId);
+      const [wRes, pRes] = await Promise.all([
+        supabase.from('tlv_warehouses').select('id, name, code'),
+        supabase.from('tlv_merchant_products').select('id, sku, name').eq('merchant_id', ctx.merchantId),
+      ]);
+      setWarehouses(wRes.data || []);
+      setProducts(pRes.data || []);
+      setLoading(false);
+    })();
+  }, []);
+
+  if (loading) return <div className="p-12 text-center text-slate-400">加载中...</div>;
   if (!merchantId) return <div>未登录</div>;
-  const [merchantRes, prodRes] = await Promise.all([
-    supabase.from('tlv_merchants').select('warehouse_id, business_name').eq('id', merchantId).maybeSingle(),
-    supabase.from('tlv_merchant_products').select('sku, name').eq('merchant_id', merchantId),
-  ]);
-  return <InboundCreateView merchantId={merchantId} merchant={merchantRes.data} products={prodRes.data || []} />;
+
+  return <InboundCreateForm merchantId={merchantId} warehouses={warehouses} products={products} navigate={navigate} />;
 }
 
-function InboundCreateView({ merchantId, merchant, products }: any) {
-  const navigate = useNavigate();
-  const [tracking_no, setTrackingNo] = useState('');
-  const [carrier, setCarrier] = useState('');
-  const [items, setItems] = useState<{ sku: string; product_name: string; expected_qty: number; location: string }[]>([{ sku: '', product_name: '', expected_qty: 1, location: '' }]);
+function InboundCreateForm({ merchantId, warehouses, products, navigate }: any) {
+  const [form, setForm] = useState({
+    warehouse_id: warehouses[0]?.id || '',
+    reference_no: '',
+    supplier_name: '',
+    items: [{ sku: '', qty: 1 }],
+  });
   const [submitting, setSubmitting] = useState(false);
-  const [err, setErr] = useState('');
+  const [msg, setMsg] = useState('');
 
-  function upd(i: number, key: 'sku' | 'product_name' | 'expected_qty' | 'location', val: any) {
-    setItems((p) => p.map((it, idx) => (idx === i ? { ...it, [key]: val } : it)));
+  const usedSkus = products.map((p: any) => p.sku);
+
+  function updateItem(idx: number, field: string, val: any) {
+    setForm((f: any) => {
+      const items = [...f.items];
+      items[idx] = { ...items[idx], [field]: val };
+      return { ...f, items };
+    });
+  }
+  function addItem() {
+    setForm((f: any) => ({ ...f, items: [...f.items, { sku: '', qty: 1 }] }));
+  }
+  function removeItem(idx: number) {
+    setForm((f: any) => ({ ...f, items: f.items.filter((_: any, i: number) => i !== idx) }));
   }
 
   async function submit(e: React.FormEvent) {
-    e.preventDefault(); setErr('');
-    if (!merchant?.warehouse_id) return setErr('商家未绑定仓库，请联系管理员');
-    const valid = items.filter((it) => it.sku && it.expected_qty > 0);
-    if (valid.length === 0) return setErr('请至少添加一条 SKU');
+    e.preventDefault(); setMsg('');
+    if (!form.warehouse_id) { setMsg('请选择仓库'); return; }
+    if (form.items.length === 0) { setMsg('请至少添加一个入库商品'); return; }
+    for (const it of form.items) {
+      if (!it.sku || !usedSkus.includes(it.sku)) { setMsg(`SKU "${it.sku}" 不存在于商家商品库`); return; }
+      if (!it.qty || it.qty < 1) { setMsg(`SKU "${it.sku}" 数量必须 ≥ 1`); return; }
+    }
+
     setSubmitting(true);
     try {
-      const inboundNo = 'IN' + Date.now();
-      const skuCount = valid.length;
-      const totalQty = valid.reduce((s, it) => s + it.expected_qty, 0);
-      const { data: order, error } = await supabase.from('tlv_inbound_orders')
-        .insert({
-          warehouse_id: merchant.warehouse_id,
+      const { data: order, error: oErr } = await supabase
+        .from('tlv_inbound_orders').insert({
           merchant_id: merchantId,
-          merchant_name: merchant.business_name,
-          inbound_no: inboundNo,
-          source: 'MANUAL',
-          tracking_no: tracking_no || null,
-          carrier: carrier || null,
+          warehouse_id: form.warehouse_id,
           status: 'pending',
-          sku_count: skuCount,
-          total_qty: totalQty,
-        })
-        .select('id').single();
-      if (error) throw error;
-      const { error: itemErr } = await supabase.from('tlv_inbound_items').insert(
-        valid.map((it) => ({
-          inbound_id: order!.id,
-          sku: it.sku,
-          product_name: it.product_name,
-          expected_qty: it.expected_qty,
-          location: it.location || null,
-          status: 'pending',
-        }))
-      );
-      if (itemErr) throw itemErr;
-      navigate({ to: '/merchant/inbound' });
-    } catch (e: any) { setErr(e?.message || '创建失败'); }
+          reference_no: form.reference_no || null,
+          supplier_name: form.supplier_name || null,
+        }).select().single();
+      if (oErr) throw oErr;
+
+      const productMap: Record<string, any> = {};
+      for (const p of products) productMap[p.sku] = p;
+
+      for (const it of form.items) {
+        const p = productMap[it.sku];
+        await supabase.from('tlv_inbound_items').insert({
+          inbound_id: order.id,
+          product_id: p.id,
+          sku: p.sku,
+          qty: it.qty,
+          expected_qty: it.qty,
+          received_qty: 0,
+        });
+      }
+      setMsg(`入库单 ${order.inbound_no || order.id} 创建成功`);
+      setTimeout(() => navigate({ to: '/merchant/inbound' }), 800);
+    } catch (e: any) { setMsg(e?.message || '创建失败'); }
     finally { setSubmitting(false); }
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate({ to: '/merchant/inbound' })} className="p-2 hover:bg-slate-100 rounded-lg">
-          <ArrowLeft className="w-5 h-5 text-slate-600" />
-        </button>
-        <h2 className="text-lg font-semibold text-slate-800">创建入库单</h2>
-      </div>
-      <form onSubmit={submit} className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 space-y-5">
-        {merchant?.warehouse_id && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2 text-sm text-emerald-700">
-            入库仓库: {merchant.business_name} 绑定的仓库 (ID: {merchant.warehouse_id})
+    <div className="space-y-4 max-w-3xl">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+        <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+          <Package className="w-5 h-5 text-blue-600" /> 创建入库单
+        </h3>
+        <form onSubmit={submit} className="mt-5 space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="text-xs text-slate-500">目标仓库 *</label>
+              <select value={form.warehouse_id} onChange={(e) => setForm({ ...form, warehouse_id: e.target.value })}
+                className="mt-1 w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white">
+                {warehouses.map((w: any) => <option key={w.id} value={w.id}>{w.name} ({w.code})</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs text-slate-500">供应商</label>
+              <input value={form.supplier_name} onChange={(e) => setForm({ ...form, supplier_name: e.target.value })}
+                placeholder="选填"
+                className="mt-1 w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="text-xs text-slate-500">参考号</label>
+              <input value={form.reference_no} onChange={(e) => setForm({ ...form, reference_no: e.target.value })}
+                placeholder="采购单号/发货单号"
+                className="mt-1 w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
+            </div>
           </div>
-        )}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <F label="Tracking No." value={tracking_no} onChange={setTrackingNo} placeholder="物流单号 (选填)" />
-          <F label="承运商" value={carrier} onChange={setCarrier} placeholder="DHL / UPS / 顺丰..." />
-        </div>
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium text-slate-700">入库商品</label>
-            <button type="button" onClick={() => setItems((p) => [...p, { sku: '', product_name: '', expected_qty: 1, location: '' }])}
-              className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700">
-              <Plus className="w-4 h-4" /> 添加
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs text-slate-500">入库商品 *</label>
+              <button type="button" onClick={addItem} className="text-xs text-blue-600 hover:text-blue-700 inline-flex items-center gap-1">
+                <Plus className="w-3.5 h-3.5" /> 添加商品
+              </button>
+            </div>
+            <div className="space-y-2">
+              {form.items.map((it: any, idx: number) => (
+                <div key={idx} className="flex gap-2 items-center">
+                  <select value={it.sku} onChange={(e) => updateItem(idx, 'sku', e.target.value)}
+                    className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white font-mono">
+                    <option value="">选择 SKU</option>
+                    {products.map((p: any) => <option key={p.id} value={p.sku}>{p.sku} - {p.name}</option>)}
+                  </select>
+                  <input type="number" min={1} value={it.qty} onChange={(e) => updateItem(idx, 'qty', Number(e.target.value))}
+                    className="w-24 px-3 py-2 border border-slate-200 rounded-lg text-sm tabular-nums text-right" />
+                  <button type="button" onClick={() => removeItem(idx)} className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+          {msg && <div className="text-sm bg-amber-50 text-amber-700 border border-amber-100 p-2.5 rounded-lg">{msg}</div>}
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={() => navigate({ to: '/merchant/inbound' })}
+              className="px-5 py-2 border border-slate-200 rounded-lg text-slate-600 text-sm hover:bg-slate-50">取消</button>
+            <button type="submit" disabled={submitting}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg text-sm font-medium">
+              {submitting ? '创建中...' : '提交入库单'}
             </button>
           </div>
-          <div className="space-y-2">
-            {items.map((it, i) => (
-              <div key={i} className="flex gap-2 items-center flex-wrap">
-                <select value={it.sku} onChange={(e) => {
-                  const sku = e.target.value;
-                  const prod = products.find((p: any) => p.sku === sku);
-                  upd(i, 'sku', sku);
-                  if (prod && !it.product_name) upd(i, 'product_name', prod.name);
-                }}
-                  className="flex-1 min-w-[150px] px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white">
-                  <option value="">选择 SKU</option>
-                  {products.map((p: any) => <option key={p.sku} value={p.sku}>{p.sku} - {p.name}</option>)}
-                </select>
-                <input value={it.product_name} onChange={(e) => upd(i, 'product_name', e.target.value)}
-                  placeholder="商品名" className="flex-1 min-w-[120px] px-3 py-2 border border-slate-200 rounded-lg text-sm" />
-                <input type="number" min={1} value={it.expected_qty} onChange={(e) => upd(i, 'expected_qty', Number(e.target.value))}
-                  className="w-24 px-3 py-2 border border-slate-200 rounded-lg text-sm" placeholder="数量" />
-                <input value={it.location} onChange={(e) => upd(i, 'location', e.target.value)}
-                  placeholder="库位" className="w-24 px-3 py-2 border border-slate-200 rounded-lg text-sm" />
-                <button type="button" onClick={() => setItems((p) => p.filter((_, idx) => idx !== i))} disabled={items.length === 1}
-                  className="p-2 text-red-500 hover:bg-red-50 rounded-lg disabled:opacity-30"><X className="w-4 h-4" /></button>
-              </div>
-            ))}
-          </div>
-        </div>
-        {err && <div className="text-sm text-red-600 bg-red-50 border border-red-100 p-2.5 rounded-lg">{err}</div>}
-        <div className="flex justify-end gap-3">
-          <button type="button" onClick={() => navigate({ to: '/merchant/inbound' })}
-            className="px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50">取消</button>
-          <button type="submit" disabled={submitting}
-            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white rounded-lg text-sm font-medium">
-            {submitting ? '提交中...' : '提交入库单'}
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-}
-
-function F({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
-  return (
-    <div>
-      <label className="text-sm text-slate-600 font-medium">{label}</label>
-      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-        className="mt-1 w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
+        </form>
+      </div>
     </div>
   );
 }

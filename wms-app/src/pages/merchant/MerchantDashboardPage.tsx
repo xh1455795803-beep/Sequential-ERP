@@ -1,30 +1,54 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { supabase, getAuthContext } from '../../lib/supabase';
 import { Wallet, Box, Store, Package, ArrowRight } from 'lucide-react';
 
-export async function MerchantDashboardPage() {
-  const { merchantId } = await getAuthContext();
-  if (!merchantId) return <div>未登录</div>;
+export function MerchantDashboardPage() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [balance, setBalance] = useState(0);
+  const [invQty, setInvQty] = useState(0);
+  const [pendingInbound, setPendingInbound] = useState(0);
+  const [pendingOutbound, setPendingOutbound] = useState(0);
+  const [inbound, setInbound] = useState<any[]>([]);
+  const [outbound, setOutbound] = useState<any[]>([]);
 
-  const [
-    { count: invQty }, { count: pendingInbound }, { count: pendingOutbound },
-    { data: merchant }, { data: inbound }, { data: outbound },
-  ] = await Promise.all([
-    supabase.from('tlv_merchant_inventory').select('id', { count: 'exact', head: true }).eq('merchant_id', merchantId),
-    supabase.from('tlv_inbound_orders').select('id', { count: 'exact', head: true }).eq('merchant_id', merchantId).in('status', ['pending', 'received', 'inspecting']),
-    supabase.from('tlv_outbound_orders').select('id', { count: 'exact', head: true }).eq('merchant_id', merchantId).in('status', ['pending', 'picking', 'packing']),
-    supabase.from('tlv_merchants').select('balance').eq('id', merchantId).maybeSingle(),
-    supabase.from('tlv_inbound_orders').select('*').eq('merchant_id', merchantId).order('created_at', { ascending: false }).limit(5),
-    supabase.from('tlv_outbound_orders').select('*').eq('merchant_id', merchantId).order('created_at', { ascending: false }).limit(5),
-  ]);
+  useEffect(() => {
+    (async () => {
+      const { merchantId } = await getAuthContext();
+      if (!merchantId) { setLoading(false); return; }
+      const [
+        { count: invQtyR },
+        { count: piR },
+        { count: poR },
+        { data: merchant },
+        { data: inboundR },
+        { data: outboundR },
+      ] = await Promise.all([
+        supabase.from('tlv_merchant_inventory').select('id', { count: 'exact', head: true }).eq('merchant_id', merchantId),
+        supabase.from('tlv_inbound_orders').select('id', { count: 'exact', head: true }).eq('merchant_id', merchantId).in('status', ['pending', 'received', 'inspecting']),
+        supabase.from('tlv_outbound_orders').select('id', { count: 'exact', head: true }).eq('merchant_id', merchantId).in('status', ['pending', 'picking', 'packing']),
+        supabase.from('tlv_merchants').select('balance').eq('id', merchantId).maybeSingle(),
+        supabase.from('tlv_inbound_orders').select('*').eq('merchant_id', merchantId).order('created_at', { ascending: false }).limit(5),
+        supabase.from('tlv_outbound_orders').select('*').eq('merchant_id', merchantId).order('created_at', { ascending: false }).limit(5),
+      ]);
+      setInvQty(invQtyR ?? 0);
+      setPendingInbound(piR ?? 0);
+      setPendingOutbound(poR ?? 0);
+      setBalance(Number((merchant as any)?.balance) || 0);
+      setInbound(inboundR || []);
+      setOutbound(outboundR || []);
+      setLoading(false);
+    })();
+  }, []);
 
-  const balance = Number((merchant as any)?.balance) || 0;
+  if (loading) return <div className="p-12 text-center text-slate-400">加载中...</div>;
+
   const cards = [
     { label: '账户余额', value: `¥${balance.toLocaleString('zh-CN', { minimumFractionDigits: 2 })}`, icon: Wallet, color: 'from-blue-500 to-blue-600', route: '/merchant/wallet' },
-    { label: '库存 SKU', value: invQty ?? 0, icon: Box, color: 'from-violet-500 to-violet-600', route: '/merchant/inventory' },
-    { label: '待处理入库', value: pendingInbound ?? 0, icon: Store, color: 'from-amber-500 to-amber-600', route: '/merchant/inbound' },
-    { label: '待出库订单', value: pendingOutbound ?? 0, icon: Package, color: 'from-teal-500 to-teal-600', route: '/merchant/orders' },
+    { label: '库存 SKU', value: invQty, icon: Box, color: 'from-violet-500 to-violet-600', route: '/merchant/inventory' },
+    { label: '待处理入库', value: pendingInbound, icon: Store, color: 'from-amber-500 to-amber-600', route: '/merchant/inbound' },
+    { label: '待出库订单', value: pendingOutbound, icon: Package, color: 'from-teal-500 to-teal-600', route: '/merchant/orders' },
   ];
 
   return (
@@ -43,8 +67,8 @@ export async function MerchantDashboardPage() {
         ))}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Panel title="最近入库单" rows={inbound || []} colKey="inbound" navigate={navigate} route="/merchant/inbound" />
-        <Panel title="最新出库订单" rows={outbound || []} colKey="outbound" navigate={navigate} route="/merchant/orders" />
+        <Panel title="最近入库单" rows={inbound} colKey="inbound" navigate={navigate} route="/merchant/inbound" />
+        <Panel title="最新出库订单" rows={outbound} colKey="outbound" navigate={navigate} route="/merchant/orders" />
       </div>
     </div>
   );
@@ -75,7 +99,7 @@ function Panel({ title, rows, colKey, navigate, route }: any) {
           <thead className="bg-slate-50 text-slate-500 text-xs">
             <tr>
               <th className="text-left px-5 py-2.5 font-medium">单号</th>
-              <th className="text-left px-5 py-2.5 font-medium">{colKey === 'inbound' ? '仓库' : '收件人'}</th>
+              <th className="text-left px-5 py-2.5 font-medium">{colKey === 'inbound' ? '创建时间' : '收件人'}</th>
               <th className="text-left px-5 py-2.5 font-medium">状态</th>
             </tr>
           </thead>
@@ -84,8 +108,12 @@ function Panel({ title, rows, colKey, navigate, route }: any) {
               const st = STATUS_LABEL[r.status || 'pending'] || { label: r.status, cls: 'bg-slate-100 text-slate-600' };
               return (
                 <tr key={r.id} className="hover:bg-slate-50">
-                  <td className="px-5 py-3 font-mono font-medium text-slate-800">{r.id}</td>
-                  <td className="px-5 py-3 text-slate-600">{colKey === 'inbound' ? (r.warehouse || '-') : (r.receiver_name || r.recipient_name || '-')}</td>
+                  <td className="px-5 py-3 font-mono font-medium text-slate-800">{r.order_no || r.inbound_no || r.id}</td>
+                  <td className="px-5 py-3 text-slate-600">
+                    {colKey === 'inbound'
+                      ? (r.created_at?.slice(0, 16).replace('T', ' ') || '-')
+                      : (r.receiver_name || '-')}
+                  </td>
                   <td className="px-5 py-3"><span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${st.cls}`}>{st.label}</span></td>
                 </tr>
               );

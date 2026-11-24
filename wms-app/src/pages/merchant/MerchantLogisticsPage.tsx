@@ -1,18 +1,33 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase, getAuthContext } from '../../lib/supabase';
 import { ChevronDown, ChevronRight, Package } from 'lucide-react';
 
-export async function MerchantLogisticsPage() {
-  const { merchantId } = await getAuthContext();
+export function MerchantLogisticsPage() {
+  const [loading, setLoading] = useState(true);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [merchantId, setMerchantId] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const ctx = await getAuthContext();
+      if (!ctx.merchantId) { setLoading(false); return; }
+      setMerchantId(ctx.merchantId);
+      const { data, error } = await supabase
+        .from('tlv_outbound_orders')
+        .select('*')
+        .eq('merchant_id', ctx.merchantId)
+        .neq('tracking_no', null)
+        .order('created_at', { ascending: false });
+      if (error) console.error(error);
+      setOrders(data || []);
+      setLoading(false);
+    })();
+  }, []);
+
+  if (loading) return <div className="p-12 text-center text-slate-400">加载中...</div>;
   if (!merchantId) return <div>未登录</div>;
-  const { data, error } = await supabase
-    .from('tlv_outbound_orders')
-    .select('*')
-    .eq('merchant_id', merchantId)
-    .neq('tracking_no', null)
-    .order('created_at', { ascending: false });
-  if (error) console.error(error);
-  return <LogisticsView merchantId={merchantId} orders={data || []} />;
+
+  return <LogisticsView merchantId={merchantId} orders={orders} />;
 }
 
 function LogisticsView({ merchantId, orders }: any) {
@@ -54,7 +69,7 @@ function LogisticsView({ merchantId, orders }: any) {
                 <div className="flex-1 grid grid-cols-1 sm:grid-cols-4 gap-2 text-sm">
                   <div>
                     <div className="text-xs text-slate-400">订单号</div>
-                    <div className="font-mono text-slate-800">{o.id}</div>
+                    <div className="font-mono text-slate-800">{o.order_no || o.id}</div>
                   </div>
                   <div>
                     <div className="text-xs text-slate-400">物流单号</div>
@@ -80,9 +95,9 @@ function LogisticsView({ merchantId, orders }: any) {
                       {trackingCache[o.id].map((ev: any, idx: number) => (
                         <div key={ev.id || idx} className="relative mb-3 last:mb-0">
                           <div className="absolute -left-4 top-1.5 w-3 h-3 rounded-full bg-blue-500 ring-2 ring-white" />
-                          <div className="text-sm font-medium text-slate-800">{ev.event_description || ev.status || '---'}</div>
+                          <div className="text-sm font-medium text-slate-800">{ev.event_description || ev.event_status || '---'}</div>
                           <div className="text-xs text-slate-500 mt-0.5">
-                            {ev.event_time?.slice(0, 16).replace('T', ' ') || '-'} · {ev.location || o.carrier || '-'}
+                            {ev.event_time?.slice(0, 16).replace('T', ' ') || '-'} · {ev.event_location || o.carrier || '-'}
                           </div>
                         </div>
                       ))}

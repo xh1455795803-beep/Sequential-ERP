@@ -24,8 +24,8 @@ export function WmsInventoryPage() {
       const { data, error } = await supabase
         .from('tlv_merchant_inventory')
         .select(`
-          sku, product_name, location, qty_on_hand, qty_reserved,
-          tlv_merchants(name)
+          sku, product_name, location, qty_on_hand, qty_reserved, merchant_id,
+          tlv_merchants(business_name)
         `)
         .eq('warehouse_id', wid)
         .order('sku', { ascending: true });
@@ -36,7 +36,7 @@ export function WmsInventoryPage() {
         location: r.location,
         qty_on_hand: r.qty_on_hand ?? 0,
         qty_reserved: r.qty_reserved ?? 0,
-        merchant: (r.tlv_merchants as any)?.name || '未知商家',
+        merchant: (r.tlv_merchants as any)?.business_name || '未知商家',
       })));
     } catch (e: any) {
       setErr(e.message);

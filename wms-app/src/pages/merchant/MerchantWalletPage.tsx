@@ -1,15 +1,27 @@
+import { useEffect, useState } from 'react';
 import { supabase, getAuthContext } from '../../lib/supabase';
 import { Wallet, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
 
-export async function MerchantWalletPage() {
-  const { merchantId } = await getAuthContext();
-  if (!merchantId) return <div>未登录</div>;
-  const [{ data: m }, { data: tx }] = await Promise.all([
-    supabase.from('tlv_merchants').select('balance').eq('id', merchantId).maybeSingle(),
-    supabase.from('tlv_merchant_wallets').select('*').eq('merchant_id', merchantId).order('created_at', { ascending: false }).limit(30),
-  ]);
-  const balance = Number((m as any)?.balance) || 0;
-  const rows = tx || [];
+export function MerchantWalletPage() {
+  const [loading, setLoading] = useState(true);
+  const [balance, setBalance] = useState(0);
+  const [rows, setRows] = useState<any[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const { merchantId } = await getAuthContext();
+      if (!merchantId) { setLoading(false); return; }
+      const [{ data: m }, { data: tx }] = await Promise.all([
+        supabase.from('tlv_merchants').select('balance').eq('id', merchantId).maybeSingle(),
+        supabase.from('tlv_merchant_wallets').select('*').eq('merchant_id', merchantId).order('created_at', { ascending: false }).limit(30),
+      ]);
+      setBalance(Number((m as any)?.balance) || 0);
+      setRows(tx || []);
+      setLoading(false);
+    })();
+  }, []);
+
+  if (loading) return <div className="p-12 text-center text-slate-400">加载中...</div>;
 
   return (
     <div className="space-y-4">

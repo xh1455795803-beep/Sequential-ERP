@@ -21,7 +21,7 @@ export function AdminBillingRulesPage() {
     // 管理员无过滤 —— 查看所有规则（merchant_id IS NULL = 默认规则，NOT NULL = 商家自定义）
     const { data, error } = await supabase
       .from('tlv_billing_rules')
-      .select('*, merchant:tlv_merchants!billing_rules_merchant_id_fkey(name)')
+      .select('*, merchant:tlv_merchants(business_name)')
       .order('created_at', { ascending: false });
     if (!error) setRows(data || []);
     setLoading(false);
