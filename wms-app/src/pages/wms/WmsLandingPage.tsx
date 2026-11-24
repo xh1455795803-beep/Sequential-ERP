@@ -1,9 +1,20 @@
+import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { Package, Warehouse, Truck, BarChart3, Users, ScanLine } from 'lucide-react';
+import { AuthModal } from '../../components/AuthModal';
 
 export function WmsLandingPage() {
+  const [modalTab, setModalTab] = useState<'login' | 'register' | null>(null);
+
   return (
     <div className="min-h-screen relative overflow-hidden">
+      {/* Modal */}
+      <AuthModal
+        open={modalTab !== null}
+        defaultTab={modalTab ?? 'login'}
+        onClose={() => setModalTab(null)}
+      />
+
       {/* 背景光晕 */}
       <div className="fixed inset-0 -z-10 pointer-events-none">
         <div className="absolute top-0 -left-40 w-[500px] h-[500px] rounded-full bg-emerald-200/40 blur-3xl" />
@@ -22,12 +33,12 @@ export function WmsLandingPage() {
             <span className="text-xs text-ink-400 self-end mb-0.5">智能仓储管理</span>
           </Link>
           <div className="flex items-center gap-2">
-            <Link to="/login" className="px-4 py-2 text-sm font-medium text-ink-700 hover:text-ink-900 transition-colors">
+            <button onClick={() => setModalTab('login')} className="px-4 py-2 text-sm font-medium text-ink-700 hover:text-ink-900 transition-colors">
               登录
-            </Link>
-            <Link to="/register" className="px-4 py-2 text-sm font-medium rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-200/50 hover:shadow-lg hover:shadow-emerald-300/60 transition-all">
+            </button>
+            <button onClick={() => setModalTab('register')} className="px-4 py-2 text-sm font-medium rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md shadow-emerald-200/50 hover:shadow-lg hover:shadow-emerald-300/60 transition-all">
               免费注册
-            </Link>
+            </button>
           </div>
         </div>
       </nav>
@@ -46,12 +57,12 @@ export function WmsLandingPage() {
           入库上架 · 智能拣货 · 称重打包 · 波次管理 · 自动面单 · 实时盘点
         </p>
         <div className="flex items-center justify-center gap-3">
-          <Link to="/login" className="px-6 py-3 text-base font-semibold rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-200/50 hover:shadow-xl transition-all">
+          <button onClick={() => setModalTab('login')} className="px-6 py-3 text-base font-semibold rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-200/50 hover:shadow-xl transition-all">
             仓库登录
-          </Link>
-          <Link to="/register" className="px-6 py-3 text-base font-semibold rounded-xl bg-white/70 backdrop-blur border border-white shadow-sm hover:bg-white transition-all">
+          </button>
+          <button onClick={() => setModalTab('register')} className="px-6 py-3 text-base font-semibold rounded-xl bg-white/70 backdrop-blur border border-white shadow-sm hover:bg-white transition-all">
             免费注册仓库
-          </Link>
+          </button>
         </div>
       </section>
 
