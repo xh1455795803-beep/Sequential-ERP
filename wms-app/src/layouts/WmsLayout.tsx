@@ -4,18 +4,22 @@ import { supabase, getAuthContext } from '../lib/supabase';
 import {
   LayoutDashboard, Package, Truck, Inbox, ShoppingCart, ClipboardList,
   Wallet, BarChart3, LogOut, Menu, X, User, Building2, CalendarDays,
-  ClipboardCheck, Users, TrendingUp,
+  ClipboardCheck, Users, TrendingUp, AlertTriangle, GitBranch, Heart, FileBox,
 } from 'lucide-react';
 
 const MENU = [
   { path: '/wms/dashboard', label: '工作台', icon: LayoutDashboard },
   { path: '/wms/merchant-inbox', label: '商家入库待处理', icon: Inbox },
   { path: '/wms/orders', label: '代打包订单', icon: ShoppingCart },
+  { path: '/wms/packages', label: '包裹管理', icon: FileBox },
   { path: '/wms/inventory', label: '库存管理', icon: Package },
   { path: '/wms/inventory/age', label: '库龄分析', icon: CalendarDays },
   { path: '/wms/stock-take', label: '库存盘点', icon: ClipboardCheck },
+  { path: '/wms/issues', label: '问题件管理', icon: AlertTriangle, badge: true },
+  { path: '/wms/flow-config', label: '仓库流程设置', icon: GitBranch },
   { path: '/wms/employees', label: '员工管理', icon: Users },
   { path: '/wms/performance', label: '绩效报表', icon: TrendingUp },
+  { path: '/wms/customers', label: '客户管理', icon: Heart },
   { path: '/wms/warehouses', label: '仓库管理', icon: Building2 },
   { path: '/wms/billing', label: '计费规则', icon: Wallet },
   { path: '/wms/reports', label: '数据报表', icon: BarChart3 },
