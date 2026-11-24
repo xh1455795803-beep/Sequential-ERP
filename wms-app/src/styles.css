@@ -1,9 +1,127 @@
-/* Tailwind v4 styles */
+/* Thalvior ERP — 柔和渐变拟态风 (Soft Glassmorphism) */
 @import "tailwindcss";
 
 @theme {
-  --color-brand-500: #3b82f6;
-  --color-brand-100: #dbeafe;
-  --color-deep-700: #1e293b;
-  --color-deep-800: #0f172a;
+  /* ==== 柔和渐变主题色 ==== */
+  --color-brand-50:   #f0f7ff;
+  --color-brand-100:  #e0effe;
+  --color-brand-200:  #bae0fd;
+  --color-brand-300:  #7cc8fb;
+  --color-brand-400:  #38a9f6;
+  --color-brand-500:  #1f8ae2;
+  --color-brand-600:  #196fbc;
+  --color-brand-700:  #185a97;
+
+  /* 柔和语义色 — pastel */
+  --color-mint-50:    #f0fdf4;
+  --color-mint-100:   #dcfce7;
+  --color-mint-500:   #4ade80;
+  --color-mint-600:   #22c55e;
+
+  --color-coral-50:   #fff7ed;
+  --color-coral-100:  #ffedd5;
+  --color-coral-500:  #fb923c;
+  --color-coral-600:  #f97316;
+
+  --color-rose-50:    #fff1f2;
+  --color-rose-100:   #ffe4e6;
+  --color-rose-500:   #fb7185;
+  --color-rose-600:   #f43f5e;
+
+  --color-lilac-50:   #faf5ff;
+  --color-lilac-100:  #f3e8ff;
+  --color-lilac-500:  #a78bfa;
+  --color-lilac-600:  #8b5cf6;
+
+  --color-sky-50:     #f0f9ff;
+  --color-sky-100:    #e0f2fe;
+  --color-sky-500:    #38bdf8;
+  --color-sky-600:    #0ea5e9;
+
+  /* 中性 */
+  --color-ink-900:    #1e293b;
+  --color-ink-700:    #334155;
+  --color-ink-500:    #64748b;
+  --color-ink-300:    #cbd5e1;
+
+  /* glass */
+  --glass-bg:         rgba(255,255,255,0.65);
+  --glass-border:     rgba(255,255,255,0.8);
+  --glass-shadow:     0 4px 24px -8px rgba(30, 41, 59, 0.08);
 }
+
+/* ==== 全局背景 — 柔和渐变光晕 ==== */
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(1200px 800px at 10% -10%, rgba(186, 224, 253, 0.45) 0%, transparent 60%),
+    radial-gradient(1000px 700px at 110% 10%, rgba(255, 220, 220, 0.35) 0%, transparent 55%),
+    radial-gradient(900px 600px at 50% 120%, rgba(220, 252, 231, 0.35) 0%, transparent 50%),
+    #fafbfc;
+  min-height: 100vh;
+}
+
+/* ==== Glass 卡片组件类 ==== */
+.glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 1rem;
+  box-shadow: 0 2px 16px -6px rgba(30, 41, 59, 0.06),
+              0 0 0 1px rgba(148, 163, 184, 0.05) inset;
+}
+.glass-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px -8px rgba(30, 41, 59, 0.12),
+              0 0 0 1px rgba(148, 163, 184, 0.08) inset;
+}
+
+/* 柔和渐变底装饰圆（用于数字卡片右上角） */
+.blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(20px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* 状态点 — 小圆点 */
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  display: inline-block;
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.8);
+}
+
+/* 动画 */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.float-anim { animation: float 4s ease-in-out infinite; }
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg, rgba(0,0,0,0.03) 0%, rgba(0,0,0,0.06) 50%, rgba(0,0,0,0.03) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* 滚动条 */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.25);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.45); }
