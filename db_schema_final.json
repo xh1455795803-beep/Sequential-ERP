@@ -1,0 +1,1802 @@
+{
+  "tlv_billing_rules": [
+    {
+      "pos": 1,
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "pos": 2,
+      "name": "warehouse_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 3,
+      "name": "merchant_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 4,
+      "name": "rule_type",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 5,
+      "name": "rule_name",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 6,
+      "name": "unit",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 7,
+      "name": "rate",
+      "type": "numeric",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 8,
+      "name": "condition",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "pos": 9,
+      "name": "priority",
+      "type": "integer",
+      "nullable": true,
+      "default": "100"
+    },
+    {
+      "pos": 10,
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'active'::text"
+    },
+    {
+      "pos": 11,
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "tlv_billings": [
+    {
+      "pos": 1,
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "pos": 2,
+      "name": "warehouse_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 3,
+      "name": "merchant_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 4,
+      "name": "outbound_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 5,
+      "name": "items",
+      "type": "jsonb",
+      "nullable": false,
+      "default": "'[]'::jsonb"
+    },
+    {
+      "pos": 6,
+      "name": "total",
+      "type": "numeric",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 7,
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'pending'::text"
+    },
+    {
+      "pos": 8,
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "pos": 9,
+      "name": "paid_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": ""
+    }
+  ],
+  "tlv_inbound_items": [
+    {
+      "pos": 1,
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "pos": 2,
+      "name": "inbound_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 3,
+      "name": "product_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 4,
+      "name": "sku",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 5,
+      "name": "product_name",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 6,
+      "name": "expected_qty",
+      "type": "integer",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 7,
+      "name": "actual_qty",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 8,
+      "name": "inspected_qty",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 9,
+      "name": "defective_qty",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 10,
+      "name": "location",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 11,
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'pending'::text"
+    },
+    {
+      "pos": 12,
+      "name": "note",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    }
+  ],
+  "tlv_inbound_orders": [
+    {
+      "pos": 1,
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "pos": 2,
+      "name": "warehouse_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 3,
+      "name": "merchant_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 4,
+      "name": "inbound_no",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 5,
+      "name": "merchant_name",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 6,
+      "name": "source",
+      "type": "text",
+      "nullable": true,
+      "default": "'manual'::text"
+    },
+    {
+      "pos": 7,
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'pending'::text"
+    },
+    {
+      "pos": 8,
+      "name": "tracking_no",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 9,
+      "name": "carrier",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 10,
+      "name": "eta",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 11,
+      "name": "sku_count",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 12,
+      "name": "total_qty",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 13,
+      "name": "inspected_qty",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 14,
+      "name": "defective_qty",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 15,
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "pos": 16,
+      "name": "received_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 17,
+      "name": "inspecting_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 18,
+      "name": "completed_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": ""
+    }
+  ],
+  "tlv_logistics_providers": [
+    {
+      "pos": 1,
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "pos": 2,
+      "name": "code",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 3,
+      "name": "name",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 4,
+      "name": "tracking_url_template",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 5,
+      "name": "api_endpoint",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 6,
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'active'::text"
+    },
+    {
+      "pos": 7,
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "tlv_logistics_tracking": [
+    {
+      "pos": 1,
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "pos": 2,
+      "name": "outbound_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 3,
+      "name": "merchant_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 4,
+      "name": "logistics_provider_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 5,
+      "name": "tracking_no",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 6,
+      "name": "event_time",
+      "type": "timestamp with time zone",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 7,
+      "name": "event_code",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 8,
+      "name": "event_status",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 9,
+      "name": "event_location",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 10,
+      "name": "event_description",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 11,
+      "name": "raw_payload",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "pos": 12,
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "tlv_merchant_inventory": [
+    {
+      "pos": 1,
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "pos": 2,
+      "name": "warehouse_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 3,
+      "name": "merchant_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 4,
+      "name": "product_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 5,
+      "name": "sku",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 6,
+      "name": "product_name",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 7,
+      "name": "location",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 8,
+      "name": "qty_on_hand",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 9,
+      "name": "qty_reserved",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 10,
+      "name": "inbound_qty",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 11,
+      "name": "last_updated",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "tlv_merchant_products": [
+    {
+      "pos": 1,
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "pos": 2,
+      "name": "merchant_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 3,
+      "name": "warehouse_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 4,
+      "name": "sku",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 5,
+      "name": "name",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 6,
+      "name": "barcode",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 7,
+      "name": "weight_kg",
+      "type": "numeric",
+      "nullable": true,
+      "default": "0.5"
+    },
+    {
+      "pos": 8,
+      "name": "length_cm",
+      "type": "numeric",
+      "nullable": true,
+      "default": "15"
+    },
+    {
+      "pos": 9,
+      "name": "width_cm",
+      "type": "numeric",
+      "nullable": true,
+      "default": "10"
+    },
+    {
+      "pos": 10,
+      "name": "height_cm",
+      "type": "numeric",
+      "nullable": true,
+      "default": "5"
+    },
+    {
+      "pos": 11,
+      "name": "photo_url",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 12,
+      "name": "hs_code",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 13,
+      "name": "customs_description",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 14,
+      "name": "customs_value",
+      "type": "numeric",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 15,
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'active'::text"
+    },
+    {
+      "pos": 16,
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "tlv_merchant_shops": [
+    {
+      "pos": 1,
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "pos": 2,
+      "name": "merchant_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 3,
+      "name": "warehouse_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 4,
+      "name": "platform_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 5,
+      "name": "platform",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 6,
+      "name": "shop_name",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 7,
+      "name": "shop_id",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 8,
+      "name": "platform_shop_id",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 9,
+      "name": "api_token",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 10,
+      "name": "oauth_token",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 11,
+      "name": "oauth_refresh_token",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 12,
+      "name": "token_expires_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 13,
+      "name": "last_synced_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 14,
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'connected'::text"
+    },
+    {
+      "pos": 15,
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "tlv_merchant_wallets": [
+    {
+      "pos": 1,
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "pos": 2,
+      "name": "merchant_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 3,
+      "name": "warehouse_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 4,
+      "name": "type",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 5,
+      "name": "amount",
+      "type": "numeric",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 6,
+      "name": "balance_after",
+      "type": "numeric",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 7,
+      "name": "transaction_id",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 8,
+      "name": "ref_table",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 9,
+      "name": "ref_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 10,
+      "name": "note",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 11,
+      "name": "operator_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 12,
+      "name": "operator_name",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 13,
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "tlv_merchants": [
+    {
+      "pos": 1,
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "pos": 2,
+      "name": "warehouse_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 3,
+      "name": "business_name",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 4,
+      "name": "contact_name",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 5,
+      "name": "contact_email",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 6,
+      "name": "contact_phone",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 7,
+      "name": "country",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 8,
+      "name": "business_address",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 9,
+      "name": "registration_number",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 10,
+      "name": "balance",
+      "type": "numeric",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 11,
+      "name": "frozen_balance",
+      "type": "numeric",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 12,
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'pending'::text"
+    },
+    {
+      "pos": 13,
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "pos": 14,
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "tlv_outbound_items": [
+    {
+      "pos": 1,
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "pos": 2,
+      "name": "outbound_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 3,
+      "name": "product_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 4,
+      "name": "sku",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 5,
+      "name": "product_name",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 6,
+      "name": "location",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 7,
+      "name": "qty",
+      "type": "integer",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 8,
+      "name": "unit_price",
+      "type": "numeric",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 9,
+      "name": "material_sku",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 10,
+      "name": "material_qty",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 11,
+      "name": "pick_status",
+      "type": "text",
+      "nullable": true,
+      "default": "'pending'::text"
+    },
+    {
+      "pos": 12,
+      "name": "picked_qty",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    }
+  ],
+  "tlv_outbound_operations": [
+    {
+      "pos": 1,
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "pos": 2,
+      "name": "outbound_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 3,
+      "name": "warehouse_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 4,
+      "name": "operation_type",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 5,
+      "name": "status_from",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 6,
+      "name": "status_to",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 7,
+      "name": "weight_kg",
+      "type": "numeric",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 8,
+      "name": "charge_amount",
+      "type": "numeric",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 9,
+      "name": "operator_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 10,
+      "name": "operator_note",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 11,
+      "name": "data",
+      "type": "jsonb",
+      "nullable": true,
+      "default": "'{}'::jsonb"
+    },
+    {
+      "pos": 12,
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "tlv_outbound_orders": [
+    {
+      "pos": 1,
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "pos": 2,
+      "name": "warehouse_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 3,
+      "name": "merchant_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 4,
+      "name": "order_no",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 5,
+      "name": "merchant_name",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 6,
+      "name": "source",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 7,
+      "name": "platform",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 8,
+      "name": "platform_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 9,
+      "name": "platform_order_id",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 10,
+      "name": "receiver_name",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 11,
+      "name": "receiver_phone",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 12,
+      "name": "receiver_email",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 13,
+      "name": "receiver_address",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 14,
+      "name": "receiver_address2",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 15,
+      "name": "receiver_city",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 16,
+      "name": "receiver_state",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 17,
+      "name": "receiver_postal_code",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 18,
+      "name": "receiver_country",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 19,
+      "name": "logistics_provider_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 20,
+      "name": "carrier",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 21,
+      "name": "service_level",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 22,
+      "name": "is_cod",
+      "type": "boolean",
+      "nullable": true,
+      "default": "false"
+    },
+    {
+      "pos": 23,
+      "name": "cod_amount",
+      "type": "numeric",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 24,
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'pending'::text"
+    },
+    {
+      "pos": 25,
+      "name": "weight_kg",
+      "type": "numeric",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 26,
+      "name": "package_length_cm",
+      "type": "numeric",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 27,
+      "name": "package_width_cm",
+      "type": "numeric",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 28,
+      "name": "package_height_cm",
+      "type": "numeric",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 29,
+      "name": "tracking_no",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 30,
+      "name": "label_pdf_url",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 31,
+      "name": "packaging_fee",
+      "type": "numeric",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 32,
+      "name": "weight_fee",
+      "type": "numeric",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 33,
+      "name": "material_fee",
+      "type": "numeric",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 34,
+      "name": "cod_fee",
+      "type": "numeric",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 35,
+      "name": "total_charge",
+      "type": "numeric",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 36,
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "pos": 37,
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    },
+    {
+      "pos": 38,
+      "name": "picked_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 39,
+      "name": "packed_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 40,
+      "name": "weighed_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 41,
+      "name": "labeled_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 42,
+      "name": "shipped_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 43,
+      "name": "completed_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": ""
+    }
+  ],
+  "tlv_platform_sync_logs": [
+    {
+      "pos": 1,
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "pos": 2,
+      "name": "shop_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 3,
+      "name": "platform_id",
+      "type": "uuid",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 4,
+      "name": "sync_type",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 5,
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 6,
+      "name": "records_fetched",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 7,
+      "name": "records_created",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 8,
+      "name": "records_updated",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 9,
+      "name": "records_failed",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 10,
+      "name": "error_message",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 11,
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "tlv_platforms": [
+    {
+      "pos": 1,
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "pos": 2,
+      "name": "code",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 3,
+      "name": "name",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 4,
+      "name": "description",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 5,
+      "name": "api_endpoint",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 6,
+      "name": "auth_type",
+      "type": "text",
+      "nullable": true,
+      "default": "'oauth2'::text"
+    },
+    {
+      "pos": 7,
+      "name": "max_rate_per_minute",
+      "type": "integer",
+      "nullable": true,
+      "default": "60"
+    },
+    {
+      "pos": 8,
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'active'::text"
+    },
+    {
+      "pos": 9,
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "tlv_warehouse_settlements": [
+    {
+      "pos": 1,
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "pos": 2,
+      "name": "warehouse_id",
+      "type": "uuid",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 3,
+      "name": "period_start",
+      "type": "date",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 4,
+      "name": "period_end",
+      "type": "date",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 5,
+      "name": "total_billings",
+      "type": "integer",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 6,
+      "name": "total_amount",
+      "type": "numeric",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 7,
+      "name": "platform_fee",
+      "type": "numeric",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 8,
+      "name": "net_amount",
+      "type": "numeric",
+      "nullable": true,
+      "default": "0"
+    },
+    {
+      "pos": 9,
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'pending'::text"
+    },
+    {
+      "pos": 10,
+      "name": "confirmed_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 11,
+      "name": "paid_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 12,
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ],
+  "tlv_warehouses": [
+    {
+      "pos": 1,
+      "name": "id",
+      "type": "uuid",
+      "nullable": false,
+      "default": "gen_random_uuid()"
+    },
+    {
+      "pos": 2,
+      "name": "name",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 3,
+      "name": "code",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 4,
+      "name": "country",
+      "type": "text",
+      "nullable": false,
+      "default": ""
+    },
+    {
+      "pos": 5,
+      "name": "city",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 6,
+      "name": "address",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 7,
+      "name": "contact_name",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 8,
+      "name": "contact_phone",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 9,
+      "name": "contact_email",
+      "type": "text",
+      "nullable": true,
+      "default": ""
+    },
+    {
+      "pos": 10,
+      "name": "api_key",
+      "type": "text",
+      "nullable": true,
+      "default": "(gen_random_uuid())::text"
+    },
+    {
+      "pos": 11,
+      "name": "api_secret",
+      "type": "text",
+      "nullable": true,
+      "default": "(gen_random_uuid())::text"
+    },
+    {
+      "pos": 12,
+      "name": "billing_mode",
+      "type": "text",
+      "nullable": true,
+      "default": "'per_pkg'::text"
+    },
+    {
+      "pos": 13,
+      "name": "default_timezone",
+      "type": "text",
+      "nullable": true,
+      "default": "'Asia/Shanghai'::text"
+    },
+    {
+      "pos": 14,
+      "name": "status",
+      "type": "text",
+      "nullable": true,
+      "default": "'active'::text"
+    },
+    {
+      "pos": 15,
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "nullable": true,
+      "default": "now()"
+    }
+  ]
+}

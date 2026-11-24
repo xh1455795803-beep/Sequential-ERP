@@ -1,0 +1,252 @@
+tlv_billing_rules|id|uuid|NO|gen_random_uuid()
+tlv_billing_rules|warehouse_id|uuid|NO|
+tlv_billing_rules|merchant_id|uuid|YES|
+tlv_billing_rules|rule_type|text|NO|
+tlv_billing_rules|rule_name|text|NO|
+tlv_billing_rules|unit|text|NO|
+tlv_billing_rules|rate|numeric|NO|
+tlv_billing_rules|condition|jsonb|YES|'{}'::jsonb
+tlv_billing_rules|priority|integer|YES|100
+tlv_billing_rules|status|text|YES|'active'::text
+tlv_billing_rules|created_at|timestamp with time zone|YES|now()
+tlv_billings|id|uuid|NO|gen_random_uuid()
+tlv_billings|warehouse_id|uuid|NO|
+tlv_billings|merchant_id|uuid|NO|
+tlv_billings|outbound_id|uuid|YES|
+tlv_billings|items|jsonb|NO|'[]'::jsonb
+tlv_billings|total|numeric|NO|
+tlv_billings|status|text|YES|'pending'::text
+tlv_billings|created_at|timestamp with time zone|YES|now()
+tlv_billings|paid_at|timestamp with time zone|YES|
+tlv_inbound_items|id|uuid|NO|gen_random_uuid()
+tlv_inbound_items|inbound_id|uuid|NO|
+tlv_inbound_items|product_id|uuid|YES|
+tlv_inbound_items|sku|text|NO|
+tlv_inbound_items|product_name|text|YES|
+tlv_inbound_items|expected_qty|integer|NO|
+tlv_inbound_items|actual_qty|integer|YES|0
+tlv_inbound_items|inspected_qty|integer|YES|0
+tlv_inbound_items|defective_qty|integer|YES|0
+tlv_inbound_items|location|text|YES|
+tlv_inbound_items|status|text|YES|'pending'::text
+tlv_inbound_items|note|text|YES|
+tlv_inbound_orders|id|uuid|NO|gen_random_uuid()
+tlv_inbound_orders|warehouse_id|uuid|NO|
+tlv_inbound_orders|merchant_id|uuid|NO|
+tlv_inbound_orders|inbound_no|text|NO|
+tlv_inbound_orders|merchant_name|text|YES|
+tlv_inbound_orders|source|text|YES|'manual'::text
+tlv_inbound_orders|status|text|YES|'pending'::text
+tlv_inbound_orders|tracking_no|text|YES|
+tlv_inbound_orders|carrier|text|YES|
+tlv_inbound_orders|eta|timestamp with time zone|YES|
+tlv_inbound_orders|sku_count|integer|YES|0
+tlv_inbound_orders|total_qty|integer|YES|0
+tlv_inbound_orders|inspected_qty|integer|YES|0
+tlv_inbound_orders|defective_qty|integer|YES|0
+tlv_inbound_orders|created_at|timestamp with time zone|YES|now()
+tlv_inbound_orders|received_at|timestamp with time zone|YES|
+tlv_inbound_orders|inspecting_at|timestamp with time zone|YES|
+tlv_inbound_orders|completed_at|timestamp with time zone|YES|
+tlv_logistics_providers|id|uuid|NO|gen_random_uuid()
+tlv_logistics_providers|code|text|NO|
+tlv_logistics_providers|name|text|NO|
+tlv_logistics_providers|tracking_url_template|text|YES|
+tlv_logistics_providers|api_endpoint|text|YES|
+tlv_logistics_providers|status|text|YES|'active'::text
+tlv_logistics_providers|created_at|timestamp with time zone|YES|now()
+tlv_logistics_tracking|id|uuid|NO|gen_random_uuid()
+tlv_logistics_tracking|outbound_id|uuid|NO|
+tlv_logistics_tracking|merchant_id|uuid|NO|
+tlv_logistics_tracking|logistics_provider_id|uuid|YES|
+tlv_logistics_tracking|tracking_no|text|NO|
+tlv_logistics_tracking|event_time|timestamp with time zone|NO|
+tlv_logistics_tracking|event_code|text|YES|
+tlv_logistics_tracking|event_status|text|NO|
+tlv_logistics_tracking|event_location|text|YES|
+tlv_logistics_tracking|event_description|text|NO|
+tlv_logistics_tracking|raw_payload|jsonb|YES|'{}'::jsonb
+tlv_logistics_tracking|created_at|timestamp with time zone|YES|now()
+tlv_merchant_inventory|id|uuid|NO|gen_random_uuid()
+tlv_merchant_inventory|warehouse_id|uuid|NO|
+tlv_merchant_inventory|merchant_id|uuid|NO|
+tlv_merchant_inventory|product_id|uuid|YES|
+tlv_merchant_inventory|sku|text|NO|
+tlv_merchant_inventory|product_name|text|YES|
+tlv_merchant_inventory|location|text|NO|
+tlv_merchant_inventory|qty_on_hand|integer|YES|0
+tlv_merchant_inventory|qty_reserved|integer|YES|0
+tlv_merchant_inventory|inbound_qty|integer|YES|0
+tlv_merchant_inventory|last_updated|timestamp with time zone|YES|now()
+tlv_merchant_products|id|uuid|NO|gen_random_uuid()
+tlv_merchant_products|merchant_id|uuid|NO|
+tlv_merchant_products|warehouse_id|uuid|NO|
+tlv_merchant_products|sku|text|NO|
+tlv_merchant_products|name|text|NO|
+tlv_merchant_products|barcode|text|YES|
+tlv_merchant_products|weight_kg|numeric|YES|0.5
+tlv_merchant_products|length_cm|numeric|YES|15
+tlv_merchant_products|width_cm|numeric|YES|10
+tlv_merchant_products|height_cm|numeric|YES|5
+tlv_merchant_products|photo_url|text|YES|
+tlv_merchant_products|hs_code|text|YES|
+tlv_merchant_products|customs_description|text|YES|
+tlv_merchant_products|customs_value|numeric|YES|
+tlv_merchant_products|status|text|YES|'active'::text
+tlv_merchant_products|created_at|timestamp with time zone|YES|now()
+tlv_merchant_shops|id|uuid|NO|gen_random_uuid()
+tlv_merchant_shops|merchant_id|uuid|NO|
+tlv_merchant_shops|warehouse_id|uuid|NO|
+tlv_merchant_shops|platform_id|uuid|YES|
+tlv_merchant_shops|platform|text|YES|
+tlv_merchant_shops|shop_name|text|NO|
+tlv_merchant_shops|shop_id|text|YES|
+tlv_merchant_shops|platform_shop_id|text|YES|
+tlv_merchant_shops|api_token|text|YES|
+tlv_merchant_shops|oauth_token|text|YES|
+tlv_merchant_shops|oauth_refresh_token|text|YES|
+tlv_merchant_shops|token_expires_at|timestamp with time zone|YES|
+tlv_merchant_shops|last_synced_at|timestamp with time zone|YES|
+tlv_merchant_shops|status|text|YES|'connected'::text
+tlv_merchant_shops|created_at|timestamp with time zone|YES|now()
+tlv_merchant_wallets|id|uuid|NO|gen_random_uuid()
+tlv_merchant_wallets|merchant_id|uuid|NO|
+tlv_merchant_wallets|warehouse_id|uuid|NO|
+tlv_merchant_wallets|type|text|NO|
+tlv_merchant_wallets|amount|numeric|NO|
+tlv_merchant_wallets|balance_after|numeric|NO|
+tlv_merchant_wallets|transaction_id|text|YES|
+tlv_merchant_wallets|ref_table|text|YES|
+tlv_merchant_wallets|ref_id|uuid|YES|
+tlv_merchant_wallets|note|text|YES|
+tlv_merchant_wallets|operator_id|uuid|YES|
+tlv_merchant_wallets|operator_name|text|YES|
+tlv_merchant_wallets|created_at|timestamp with time zone|YES|now()
+tlv_merchants|id|uuid|NO|gen_random_uuid()
+tlv_merchants|warehouse_id|uuid|YES|
+tlv_merchants|business_name|text|NO|
+tlv_merchants|contact_name|text|YES|
+tlv_merchants|contact_email|text|YES|
+tlv_merchants|contact_phone|text|YES|
+tlv_merchants|country|text|YES|
+tlv_merchants|business_address|text|YES|
+tlv_merchants|registration_number|text|YES|
+tlv_merchants|balance|numeric|YES|0
+tlv_merchants|frozen_balance|numeric|YES|0
+tlv_merchants|status|text|YES|'pending'::text
+tlv_merchants|created_at|timestamp with time zone|YES|now()
+tlv_merchants|updated_at|timestamp with time zone|YES|now()
+tlv_outbound_items|id|uuid|NO|gen_random_uuid()
+tlv_outbound_items|outbound_id|uuid|NO|
+tlv_outbound_items|product_id|uuid|YES|
+tlv_outbound_items|sku|text|NO|
+tlv_outbound_items|product_name|text|YES|
+tlv_outbound_items|location|text|YES|
+tlv_outbound_items|qty|integer|NO|
+tlv_outbound_items|unit_price|numeric|YES|0
+tlv_outbound_items|material_sku|text|YES|
+tlv_outbound_items|material_qty|integer|YES|0
+tlv_outbound_items|pick_status|text|YES|'pending'::text
+tlv_outbound_items|picked_qty|integer|YES|0
+tlv_outbound_operations|id|uuid|NO|gen_random_uuid()
+tlv_outbound_operations|outbound_id|uuid|NO|
+tlv_outbound_operations|warehouse_id|uuid|NO|
+tlv_outbound_operations|operation_type|text|NO|
+tlv_outbound_operations|status_from|text|YES|
+tlv_outbound_operations|status_to|text|YES|
+tlv_outbound_operations|weight_kg|numeric|YES|
+tlv_outbound_operations|charge_amount|numeric|YES|
+tlv_outbound_operations|operator_id|uuid|YES|
+tlv_outbound_operations|operator_note|text|YES|
+tlv_outbound_operations|data|jsonb|YES|'{}'::jsonb
+tlv_outbound_operations|created_at|timestamp with time zone|YES|now()
+tlv_outbound_orders|id|uuid|NO|gen_random_uuid()
+tlv_outbound_orders|warehouse_id|uuid|NO|
+tlv_outbound_orders|merchant_id|uuid|NO|
+tlv_outbound_orders|order_no|text|NO|
+tlv_outbound_orders|merchant_name|text|YES|
+tlv_outbound_orders|source|text|NO|
+tlv_outbound_orders|platform|text|YES|
+tlv_outbound_orders|platform_id|uuid|YES|
+tlv_outbound_orders|platform_order_id|text|YES|
+tlv_outbound_orders|receiver_name|text|NO|
+tlv_outbound_orders|receiver_phone|text|YES|
+tlv_outbound_orders|receiver_email|text|YES|
+tlv_outbound_orders|receiver_address|text|NO|
+tlv_outbound_orders|receiver_address2|text|YES|
+tlv_outbound_orders|receiver_city|text|NO|
+tlv_outbound_orders|receiver_state|text|YES|
+tlv_outbound_orders|receiver_postal_code|text|YES|
+tlv_outbound_orders|receiver_country|text|NO|
+tlv_outbound_orders|logistics_provider_id|uuid|YES|
+tlv_outbound_orders|carrier|text|YES|
+tlv_outbound_orders|service_level|text|YES|
+tlv_outbound_orders|is_cod|boolean|YES|false
+tlv_outbound_orders|cod_amount|numeric|YES|0
+tlv_outbound_orders|status|text|YES|'pending'::text
+tlv_outbound_orders|weight_kg|numeric|YES|0
+tlv_outbound_orders|package_length_cm|numeric|YES|
+tlv_outbound_orders|package_width_cm|numeric|YES|
+tlv_outbound_orders|package_height_cm|numeric|YES|
+tlv_outbound_orders|tracking_no|text|YES|
+tlv_outbound_orders|label_pdf_url|text|YES|
+tlv_outbound_orders|packaging_fee|numeric|YES|0
+tlv_outbound_orders|weight_fee|numeric|YES|0
+tlv_outbound_orders|material_fee|numeric|YES|0
+tlv_outbound_orders|cod_fee|numeric|YES|0
+tlv_outbound_orders|total_charge|numeric|YES|0
+tlv_outbound_orders|created_at|timestamp with time zone|YES|now()
+tlv_outbound_orders|updated_at|timestamp with time zone|YES|now()
+tlv_outbound_orders|picked_at|timestamp with time zone|YES|
+tlv_outbound_orders|packed_at|timestamp with time zone|YES|
+tlv_outbound_orders|weighed_at|timestamp with time zone|YES|
+tlv_outbound_orders|labeled_at|timestamp with time zone|YES|
+tlv_outbound_orders|shipped_at|timestamp with time zone|YES|
+tlv_outbound_orders|completed_at|timestamp with time zone|YES|
+tlv_platform_sync_logs|id|uuid|NO|gen_random_uuid()
+tlv_platform_sync_logs|shop_id|uuid|YES|
+tlv_platform_sync_logs|platform_id|uuid|YES|
+tlv_platform_sync_logs|sync_type|text|NO|
+tlv_platform_sync_logs|status|text|YES|
+tlv_platform_sync_logs|records_fetched|integer|YES|0
+tlv_platform_sync_logs|records_created|integer|YES|0
+tlv_platform_sync_logs|records_updated|integer|YES|0
+tlv_platform_sync_logs|records_failed|integer|YES|0
+tlv_platform_sync_logs|error_message|text|YES|
+tlv_platform_sync_logs|created_at|timestamp with time zone|YES|now()
+tlv_platforms|id|uuid|NO|gen_random_uuid()
+tlv_platforms|code|text|NO|
+tlv_platforms|name|text|NO|
+tlv_platforms|description|text|YES|
+tlv_platforms|api_endpoint|text|YES|
+tlv_platforms|auth_type|text|YES|'oauth2'::text
+tlv_platforms|max_rate_per_minute|integer|YES|60
+tlv_platforms|status|text|YES|'active'::text
+tlv_platforms|created_at|timestamp with time zone|YES|now()
+tlv_warehouse_settlements|id|uuid|NO|gen_random_uuid()
+tlv_warehouse_settlements|warehouse_id|uuid|NO|
+tlv_warehouse_settlements|period_start|date|NO|
+tlv_warehouse_settlements|period_end|date|NO|
+tlv_warehouse_settlements|total_billings|integer|YES|0
+tlv_warehouse_settlements|total_amount|numeric|YES|0
+tlv_warehouse_settlements|platform_fee|numeric|YES|0
+tlv_warehouse_settlements|net_amount|numeric|YES|0
+tlv_warehouse_settlements|status|text|YES|'pending'::text
+tlv_warehouse_settlements|confirmed_at|timestamp with time zone|YES|
+tlv_warehouse_settlements|paid_at|timestamp with time zone|YES|
+tlv_warehouse_settlements|created_at|timestamp with time zone|YES|now()
+tlv_warehouses|id|uuid|NO|gen_random_uuid()
+tlv_warehouses|name|text|NO|
+tlv_warehouses|code|text|NO|
+tlv_warehouses|country|text|NO|
+tlv_warehouses|city|text|YES|
+tlv_warehouses|address|text|YES|
+tlv_warehouses|contact_name|text|YES|
+tlv_warehouses|contact_phone|text|YES|
+tlv_warehouses|contact_email|text|YES|
+tlv_warehouses|api_key|text|YES|(gen_random_uuid())::text
+tlv_warehouses|api_secret|text|YES|(gen_random_uuid())::text
+tlv_warehouses|billing_mode|text|YES|'per_pkg'::text
+tlv_warehouses|default_timezone|text|YES|'Asia/Shanghai'::text
+tlv_warehouses|status|text|YES|'active'::text
+tlv_warehouses|created_at|timestamp with time zone|YES|now()
