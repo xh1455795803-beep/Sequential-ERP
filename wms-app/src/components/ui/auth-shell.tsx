@@ -127,7 +127,7 @@ function LiveMetrics() {
   }, []);
 
   const metrics = [
-    { label: '仓库', value: data.warehouses, icon: LucideWarehouse },
+    { label: '仓库', value: data.warehouses, icon: Warehouse },
     { label: 'SKU 种类', value: data.skus, icon: Box },
     { label: '今日入库', value: data.todayInbound, icon: Database },
   ];
