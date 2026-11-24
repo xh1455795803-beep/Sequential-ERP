@@ -45,13 +45,13 @@ body {
   --border-strong: #dcdfe6;
   --input: #dcdfe6;
 
-  /* Brand（Thalvior 蓝） */
-  --brand: #1a63e8;
-  --brand-hover: #1550c4;
-  --brand-active: #11429f;
+  /* Brand — 企业蓝（克制、权威，像 Linear / Notion / Vercel 的蓝） */
+  --brand: #2563EB;
+  --brand-hover: #1D4ED8;
+  --brand-active: #1E40AF;
   --brand-ink: #ffffff;
-  --brand-subtle: #eaf1fd;
-  --brand-ink-text: #1550c4;
+  --brand-subtle: #EFF6FF;
+  --brand-ink-text: #1D4ED8;
 
   /* CTA（货运橙） */
   --cta: #c2410c;
@@ -108,18 +108,16 @@ body {
   --cargo-violet: oklch(56% .145 282);
   --cargo-blue: oklch(55% .144 248);
 
-  /* Sidebar（深色，和 meoo 一致） */
-  --sidebar: #1f2733;
-  --sidebar-foreground: #dce3ee;
-  --sidebar-muted: #8b98ab;
-  --sidebar-primary: #4d8aff;
+  /* Sidebar — 深海军蓝（Linear 风格） */
+  --sidebar: #0B1120;
+  --sidebar-foreground: #E2E8F0;
+  --sidebar-muted: #64748B;
+  --sidebar-primary: #3B82F6;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1a63e847;
+  --sidebar-accent: rgba(59, 130, 246, 0.12);
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #141a22;
-  --sidebar-ring: #1a63e866;
-  --sidebar-grad-a: #242e3d;
-  --sidebar-grad-b: #1b222d;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-ring: rgba(59, 130, 246, 0.4);
 
   /* Elevation / Shadow */
   --elev-none: none;

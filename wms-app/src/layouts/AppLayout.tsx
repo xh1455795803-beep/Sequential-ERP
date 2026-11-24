@@ -8,13 +8,29 @@ import {
   ShieldCheck, ClipboardList, MessageSquare, Boxes, Tag, Archive,
   Package, Truck, ShoppingCart, Zap, AlertTriangle, Shield,
   Wallet, BarChart3, Sparkles, Wrench, LogOut, Menu, X, Search, Bell,
-  ChevronDown, ChevronRight, XCircle, Building2,
+  ChevronDown, ChevronRight, XCircle,
 } from 'lucide-react';
 import { getBasepath } from '../lib/env';
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuSeparator, DropdownMenuLabel,
 } from '../components/ui/dropdown-menu';
+
+/** 侧边栏品牌 Logo —— thalvior T 字 */
+function SidebarLogo() {
+  return (
+    <svg width={28} height={28} viewBox="0 0 32 32" aria-hidden>
+      <defs>
+        <linearGradient id="slg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#3B82F6" />
+          <stop offset="100%" stopColor="#1D4ED8" />
+        </linearGradient>
+      </defs>
+      <rect width="32" height="32" rx="7" fill="url(#slg)" />
+      <path d="M8.5 9h15v3.8h-5.3v10.2h-4.4V12.8h-5.3z" fill="#fff" />
+    </svg>
+  );
+}
 
 /**
  * ========================================================
@@ -442,13 +458,11 @@ export function AppLayout() {
       >
         {/* 品牌区 */}
         <div className="flex h-12 items-center gap-2.5 border-b border-sidebar-border px-4">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-subtle text-brand">
-            <Building2 className="h-4 w-4" strokeWidth={2.2} />
-          </div>
+          <SidebarLogo />
           {!collapsed && (
             <div className="min-w-0">
-              <div className="truncate font-display text-sm font-semibold tracking-tight text-sidebar-foreground">Thalvior</div>
-              <div className="text-[10.5px] tracking-wide text-sidebar-muted/80">WMS · 仓库管理</div>
+              <div className="truncate font-display text-[13px] font-semibold tracking-tight text-sidebar-foreground">thalvior</div>
+              <div className="text-[10px] tracking-[0.12em] text-sidebar-muted/70 uppercase">WMS · 仓库管理</div>
             </div>
           )}
         </div>
@@ -520,19 +534,19 @@ export function AppLayout() {
       </aside>
 
       {/* ============ 主内容区 ============ */}
-      <main className="flex min-w-0 flex-1 flex-col">
+      <main className="flex min-w-0 flex-1 flex-col bg-surface">
         {/* Top bar */}
         <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border bg-surface-raised px-3">
-          <button onClick={() => setCollapsed((c) => !c)} className="flex h-8 w-8 items-center justify-center rounded-md text-fg-muted transition hover:bg-surface-hover hover:text-fg">
+          <button onClick={() => setCollapsed((c) => !c)} className="flex h-8 w-8 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-surface-sunken hover:text-fg">
             {collapsed ? <Menu className="h-4 w-4" /> : <X className="h-4 w-4" />}
           </button>
-          <div className="hidden h-8 items-center gap-2 rounded-md border border-border bg-surface-sunken px-3 text-[13px] text-fg-muted transition-colors hover:border-brand/40 hover:bg-surface-hover hover:text-fg sm:flex">
-            <Search className="h-3.5 w-3.5" />
-            <span>搜索订单、SKU、仓库...</span>
-            <kbd className="ml-auto hidden rounded border border-border bg-surface-raised px-1 text-[10px] font-mono text-fg-subtle lg:inline">⌘K</kbd>
+          <div className="hidden h-8 items-center gap-2 rounded-md border border-border bg-surface px-3 text-[12.5px] text-fg-muted sm:flex w-[280px] lg:w-[360px] transition-colors hover:bg-surface-raised">
+            <Search className="h-3.5 w-3.5 text-fg-subtle" />
+            <span className="flex-1">搜索订单、SKU、仓库...</span>
+            <kbd className="hidden rounded border border-border bg-surface-raised px-1 text-[10px] font-mono text-fg-subtle lg:inline">⌘K</kbd>
           </div>
           <div className="ml-auto flex items-center gap-1">
-            <button className="flex h-8 w-8 items-center justify-center rounded-md text-fg-muted transition hover:bg-surface-hover hover:text-fg" title="通知">
+            <button className="flex h-8 w-8 items-center justify-center rounded-md text-fg-muted transition-colors hover:bg-surface-sunken hover:text-fg" title="通知">
               <Bell className="h-4 w-4" />
             </button>
           </div>
