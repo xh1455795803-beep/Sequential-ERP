@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ShoppingCart, Package, Globe, Wallet, Truck, BarChart3 } from "lucide-react";
 import { AuthModal } from "@/components/auth-modal";
-import { LegalFooter } from "@/components/legal-footer";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -94,8 +93,7 @@ function LandingPage() {
         </div>
       </section>
 
-      {/* Footer — 用 LegalFooter（自动处理合规占位符隐藏） */}
-      <LegalFooter />
+      {/* Footer 由 __root.tsx 全局注入 LegalFooter，这里不重复渲染 */}
     </div>
   );
 }
